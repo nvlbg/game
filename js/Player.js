@@ -25,7 +25,7 @@ var Player = Tank.extend({
 		this.direction = "up";
 		this.updateColRect(4, 24, 1, 29);
 
-		me.debug.renderHitBox = true;
+		// me.debug.renderHitBox = true;
 
 		me.game.viewport.follow(this.pos, me.game.viewport.AXIS.BOTH);
 	},
@@ -40,13 +40,10 @@ var Player = Tank.extend({
 			this.vel.x = -this.accel.x * me.timer.tick;
 			this.vel.y = 0;
 
-			if(!this.direction === "left") {
-				if(this.direction === "right") {
-					this.flipX(true);
-				} else {
-					this.setCurrentAnimation("moveSideward");
-					this.flipX(true);
-				}
+			if(this.direction !== "left") {
+				this.setCurrentAnimation("moveSideward");
+				this.flipX(true);
+				this.updateColRect(2, 29, 4, 24);
 
 				this.direction = "left";
 			}
@@ -54,25 +51,23 @@ var Player = Tank.extend({
 			this.vel.x = this.accel.x * me.timer.tick;
 			this.vel.y = 0;
 
-			if(!this.direction === "right") {
-				if(this.direction === "left") {
-					this.flipX(true);
-				} else {
-					this.setCurrentAnimation("moveSideward");
-				}
+			if(this.direction !== "right") {
+				this.setCurrentAnimation("moveSideward");
+				this.flipX(false);
+				this.updateColRect(2, 29, 4, 24);
 
 				this.direction = "right";
 			}
-		} else if(me.input.isKeyPressed("up")) {
+		}
+
+		if(me.input.isKeyPressed("up")) {
 			this.vel.x = 0;
 			this.vel.y = -this.accel.y * me.timer.tick;
 
-			if(!this.direction === "up") {
-				if(this.direction === "down") {
-					this.flipY(true);
-				} else {
-					this.setCurrentAnimation("moveForward");
-				}
+			if(this.direction !== "up") {
+				this.setCurrentAnimation("moveForward");
+				this.flipY(false);
+				this.updateColRect(4, 24, 1, 29);
 
 				this.direction = "up";
 			}
@@ -80,19 +75,16 @@ var Player = Tank.extend({
 			this.vel.x = 0;
 			this.vel.y = this.accel.y * me.timer.tick;
 
-			if(!this.direction === "down") {
-				if(this.direction === "up") {
-					this.flipY(true);
-				} else {
-					this.setCurrentAnimation("moveForward");
-					this.flipY(true);
-				}
+			if(this.direction !== "down") {
+				this.setCurrentAnimation("moveForward");
+				this.flipY(true);
+				this.updateColRect(4, 24, 1, 29);
 
 				this.direction = "down";
 			}
 		}
 
-		// this.updateMovement();
+		this.updateMovement();
 
 		if(hadSpeed || this.vel.x !== 0 || this.vel.y !== 0) {
 			this.parent(this);
