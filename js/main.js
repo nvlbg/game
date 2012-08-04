@@ -1,5 +1,9 @@
 (function() {
-	var resources = [];
+	var resources = [
+		{ name : "sprites",    type : "image", src : "data/sprites/sprites.png" },
+		{ name : "tanks",      type : "image", src : "data/sprites/tanks.png" },
+		{ name : "water_hole", type : "tmx",   src : "data/maps/water_hole.tmx" }
+	];
 
 	var jsApp = {
 		/**
@@ -31,21 +35,21 @@
 		loaded : function() {
 			// set the "Play/Ingame" Screen Object
 			me.state.set(me.state.PLAY, new PlayScreen());
-			
+
+			me.entityPool.add("mainPlayer", Player);
+
+			me.input.bindKey(me.input.KEY.UP,    "up"         );
+			me.input.bindKey(me.input.KEY.RIGHT, "right"      );
+			me.input.bindKey(me.input.KEY.DOWN,  "down"       );
+			me.input.bindKey(me.input.KEY.LEFT,  "left"       );
+			me.input.bindKey(me.input.KEY.SPACE, "shoot", true);
+
 			// start the game 
 			me.state.change(me.state.PLAY);
 		}
 	};
 
-	var PlayScreen = me.ScreenObject.extend({
-		onResetEvent : function() {
-
-		},
-
-		onDestroyEvent : function() {
-			
-		}
+	window.onReady(function() {
+		jsApp.onload();
 	});
-
-	window.onReady( jsApp.onload );
 })();
