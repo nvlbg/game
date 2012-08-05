@@ -13,13 +13,5 @@ var Tank = me.ObjectEntity.extend({
 		
 		this.setVelocity(1.5, 1.5);
 		this.setFriction(0.25, 0.25);
-	},
-
-	/**
-	called on each frame
-	*/
-	update : function() {
-		this.parent(this);
-		return true;
 	}
 });

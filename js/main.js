@@ -5,6 +5,8 @@
 		{ name : "water_hole", type : "tmx",   src : "data/maps/water_hole.tmx" }
 	];
 
+	me.gamestat.add("team", "green"); // your team (green or blue)
+
 	var jsApp = {
 		/**
 		called when document is loaded
