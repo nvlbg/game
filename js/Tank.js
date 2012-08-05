@@ -19,15 +19,7 @@ var Tank = me.ObjectEntity.extend({
 	called on each frame
 	*/
 	update : function() {
-		var hadSpeed = this.vel.x !== 0 || this.vel.y !== 0;
-
-		this.updateMovement();
-
-		if(hadSpeed || this.vel.x !== 0 || this.vel.y !== 0) {
-			this.parent(this);
-			return true;
-		}
-
-		return false;
+		this.parent(this);
+		return true;
 	}
 });
