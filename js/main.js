@@ -2,10 +2,13 @@
 	var resources = [
 		{ name : "sprites",    type : "image", src : "data/sprites/sprites.png" },
 		{ name : "tanks",      type : "image", src : "data/sprites/tanks.png" },
+		// I think the followint line is unnecessary
+		// { name : "metatiles",  type : "image", src : "data/sprites/metatiles.png" },
 		{ name : "water_hole", type : "tmx",   src : "data/maps/water_hole.tmx" }
 	];
 
-	me.gamestat.add("team", "green"); // your team (green or blue)
+	me.gamestat.add("team", "blue"); // your team (green or blue)
+	me.gamestat.add("friendly_fire", false);
 
 	var jsApp = {
 		/**
