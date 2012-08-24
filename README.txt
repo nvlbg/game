@@ -1,1 +1,1 @@
-This is test README
+This is a game using melonJS as engine. It is supposed to be a massive multiplayer but it is currently in development.
