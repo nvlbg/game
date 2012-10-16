@@ -60,7 +60,6 @@ io.sockets.on('connection', function (socket) {
 			player.x = data.x;
 			player.y = data.y;
 			player.direction = data.d;
-			console.log(data.d);
 		});
 
 		setInterval(function() {

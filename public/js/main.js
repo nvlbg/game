@@ -64,9 +64,6 @@
 
 			// load everything & display a loading screen
 			me.state.change(me.state.LOADING);
-
-			me.state.onPause = function() {};
-			me.state.onResume = function() {};
 		},
 
 		/**
@@ -87,7 +84,7 @@
 
 
 			socket.on(TYPE.SPAWN, function(data) {
-				player = new Player(data.x, data.y, data.d, 0, 3, 0.2);
+				player = new Player(data.x, data.y, data.d, 0, 3, 0.05);
 				me.game.add(player, 4);
 
 				var other;
@@ -99,6 +96,14 @@
 				}
 
 				me.game.sort();
+
+				setInterval(function() {
+					var data = {};
+					data.x = player.pos.x;
+					data.y = player.pos.y;
+					data.d = player.direction;
+					socket.emit(TYPE.MOVE, data);
+				}, 50);
 			});
 			socket.on(TYPE.NEW_PLAYER, function(data) {
 				var p = new Enemy(data.x, data.y, data.d, 0, 3, 0.2);
@@ -118,19 +123,11 @@
 				}
 			});
 			socket.emit(TYPE.SPAWN_REQUEST);
-
-			setInterval(function() {
-				var data = {};
-				data.x = player.pos.x;
-				data.y = player.pos.y;
-				data.d = player.direction;
-				socket.emit(TYPE.MOVE, data);
-			}, 50);
 		}
 	};
 
 	window.onReady(function() {
 		jsApp.onload();
-		socket = io.connect('http://92.62.251.95:8080/');
+		socket = io.connect();
 	});
 // })();

@@ -59,9 +59,9 @@ var Player = Tank.extend({
 
 		if(updated) {
 			this.parent(this);
-			// return true;
+			return true;
 		}
-		return true;
+		return false;
 	},
 
 	shoot : function() {
