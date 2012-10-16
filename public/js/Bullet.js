@@ -20,21 +20,21 @@ var Bullet = me.ObjectEntity.extend({
 		this.speedAccel = this.speed / 100;
 		this.direction = direction;
 
-		if(direction === "up") {
+		if(direction === DIRECTION.UP) {
 			this.setCurrentAnimation("forward");
 			this.updateColRect(14, 5, 12, 8);
 			this.vel.y = -this.speed;
-		} else if(direction === "down") {
+		} else if(direction === DIRECTION.DOWN) {
 			this.setCurrentAnimation("forward");
 			this.flipY(true);
 			this.updateColRect(14, 5, 12, 8);
 			this.vel.y = this.speed;
-		} else if(direction === "left") {
+		} else if(direction === DIRECTION.LEFT) {
 			this.setCurrentAnimation("sideward");
 			this.flipX(true);
 			this.updateColRect(12, 8, 14, 5);
 			this.vel.x = -this.speed;
-		} else if(direction === "right") {
+		} else if(direction === DIRECTION.RIGHT) {
 			this.setCurrentAnimation("sideward");
 			this.updateColRect(12, 8, 14, 5);
 			this.vel.x = this.speed;
@@ -50,13 +50,13 @@ var Bullet = me.ObjectEntity.extend({
 		}
 
 		if(!this.isExploding) {
-			if(this.direction === "up") {
+			if(this.direction === DIRECTION.UP) {
 				this.vel.y -= this.speedAccel;
-			} else if(this.direction === "down") {
+			} else if(this.direction === DIRECTION.DOWN) {
 				this.vel.y += this.speedAccel;
-			} else if(this.direction === "left") {
+			} else if(this.direction === DIRECTION.LEFT) {
 				this.vel.x -= this.speedAccel;
-			} else if(this.direction === "right") {
+			} else if(this.direction === DIRECTION.RIGHT) {
 				this.vel.x += this.speedAccel;
 			}
 		}
@@ -97,7 +97,7 @@ var Bullet = me.ObjectEntity.extend({
 		}
 
 		collision = me.game.collide(this);
-		if(collision && collision.obj instanceof Tank) {
+		if(collision && collision.obj instanceof Tank && collision.obj !== player) {
 			if(collision.obj.type === me.game.ENEMY_OBJECT ||
 			   (collision.obj.type === me.game.FRIEND_OBJECT && me.gamestat.getItemValue("friendly_fire")))
 			{

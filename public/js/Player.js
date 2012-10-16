@@ -31,19 +31,21 @@ var Player = Tank.extend({
 			this.moveDown();
 		}
 
+
 		if(me.input.isKeyPressed("shoot")) {
 			this.shoot();
 		}
 
+		
 		if(this.isCurrentAnimation("shootForward") || this.isCurrentAnimation("shootSideward")) {
 			if(this.recoil > 0) {
-				if(this.direction === "up") {
+				if(this.direction === DIRECTION.UP) {
 					this.vel.y += this.recoil;
-				} else if(this.direction === "down") {
+				} else if(this.direction === DIRECTION.DOWN) {
 					this.vel.y -= this.recoil;
-				} else if(this.direction === "left") {
+				} else if(this.direction === DIRECTION.LEFT) {
 					this.vel.x += this.recoil;
-				} else if(this.direction === "right") {
+				} else if(this.direction === DIRECTION.RIGHT) {
 					this.vel.x -= this.recoil;
 				}
 			}
@@ -57,21 +59,21 @@ var Player = Tank.extend({
 
 		if(updated) {
 			this.parent(this);
-			return true;
+			// return true;
 		}
-		return false;
+		return true;
 	},
 
 	shoot : function() {
-		if(this.isCurrentAnimation("shootForward") || this.isCurrentAnimation("shootSideward")) {
-			return false;
-		}
+		// if(this.isCurrentAnimation("shootForward") || this.isCurrentAnimation("shootSideward")) {
+			// return false;
+		// }
 
 		var that = this,
 			x = this.pos.x,
 			y = this.pos.y;
 
-		if(this.direction === "up") {
+		if(this.direction === DIRECTION.UP) {
 			this.setCurrentAnimation("shootForward", function() {
 				that.setCurrentAnimation("moveForward");
 				that.setAnimationFrame(0);
@@ -80,7 +82,7 @@ var Player = Tank.extend({
 			this.vel.y += this.recoil;
 			
 			y -= 18;
-		} else if (this.direction === "down") {
+		} else if (this.direction === DIRECTION.DOWN) {
 			this.setCurrentAnimation("shootForward", function() {
 				that.setCurrentAnimation("moveForward");
 				that.setAnimationFrame(0);
@@ -90,7 +92,7 @@ var Player = Tank.extend({
 			this.vel.y -= this.recoil;
 
 			y += 18;
-		} else if (this.direction === "left") {
+		} else if (this.direction === DIRECTION.LEFT) {
 			this.setCurrentAnimation("shootSideward", function() {
 				that.setCurrentAnimation("moveSideward");
 				that.setAnimationFrame(0);
@@ -100,7 +102,7 @@ var Player = Tank.extend({
 			this.vel.x += this.recoil;
 
 			x -= 18;
-		} else if (this.direction === "right") {
+		} else if (this.direction === DIRECTION.RIGHT) {
 			this.setCurrentAnimation("shootSideward", function() {
 				that.setCurrentAnimation("moveSideward");
 				that.setAnimationFrame(0);
@@ -110,7 +112,7 @@ var Player = Tank.extend({
 
 			x += 18;
 		} else {
-			return false;
+			// return false;
 		}
 
 		this.animationspeed = me.sys.fps / 50;
@@ -157,14 +159,14 @@ var Player = Tank.extend({
 		this.vel.x -= this.accel.x * me.timer.tick;
 		this.vel.y = 0;
 
-		if(this.direction !== "left") {
-			if(this.direction !== "right") {
+		if(this.direction !== DIRECTION.LEFT) {
+			if(this.direction !== DIRECTION.RIGHT) {
 				this.updateColRect(2, 29, 4, 24);
 				this.setCurrentAnimation("moveSideward");
 			}
 
 			this.flipX(true);
-			this.direction = "left";
+			this.direction = DIRECTION.LEFT;
 		}
 	},
 
@@ -172,14 +174,14 @@ var Player = Tank.extend({
 		this.vel.x += this.accel.x * me.timer.tick;
 		this.vel.y = 0;
 
-		if(this.direction !== "right") {
-			if(this.direction !== "left") {
+		if(this.direction !== DIRECTION.RIGHT) {
+			if(this.direction !== DIRECTION.LEFT) {
 				this.updateColRect(2, 29, 4, 24);
 				this.setCurrentAnimation("moveSideward");
 			}
 
 			this.flipX(false);
-			this.direction = "right";
+			this.direction = DIRECTION.RIGHT;
 		}
 	},
 
@@ -187,14 +189,14 @@ var Player = Tank.extend({
 		this.vel.x = 0;
 		this.vel.y -= this.accel.y * me.timer.tick;
 
-		if(this.direction !== "up") {
-			if(this.direction !== "down") {
+		if(this.direction !== DIRECTION.UP) {
+			if(this.direction !== DIRECTION.DOWN) {
 				this.updateColRect(4, 24, 1, 29);
 				this.setCurrentAnimation("moveForward");
 			}
 
 			this.flipY(false);
-			this.direction = "up";
+			this.direction = DIRECTION.UP;
 		}
 	},
 
@@ -202,14 +204,14 @@ var Player = Tank.extend({
 		this.vel.x = 0;
 		this.vel.y += this.accel.y * me.timer.tick;
 
-		if(this.direction !== "down") {
-			if(this.direction !== "top") {
+		if(this.direction !== DIRECTION.DOWN) {
+			if(this.direction !== DIRECTION.UP) {
 				this.updateColRect(4, 24, 1, 29);
 				this.setCurrentAnimation("moveForward");
 			}
 
 			this.flipY(true);
-			this.direction = "down";
+			this.direction = DIRECTION.DOWN;
 		}
 	}
 });

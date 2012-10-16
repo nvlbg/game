@@ -63,21 +63,21 @@ var Tank = me.ObjectEntity.extend({
 
 		var currentAnimation = "move";
 
-		if(direction === "up" || direction === "down") {
+		if(direction === DIRECTION.UP || direction === DIRECTION.DOWN) {
 			this.updateColRect(4, 24, 1, 29);
 			currentAnimation += "Forward";
-		} else if(direction === "left" || direction === "right") {
+		} else if(direction === DIRECTION.LEFT || direction === DIRECTION.RIGHT) {
 			this.updateColRect(2, 29, 4, 24);
 			currentAnimation += "Sideward";
 		} else {
-			throw "unknown direction \"" + this.direction + "\"";
+			throw "unknown direction \"" + DIRECTION + "\"";
 		}
 		
 		this.setCurrentAnimation(currentAnimation);
 
-		if(direction === "left") {
+		if(direction === DIRECTION.LEFT) {
 			this.flipX(true);
-		} else if(direction === "down") {
+		} else if(direction === DIRECTION.DOWN) {
 			this.flipY(true);
 		}
 	},
@@ -91,5 +91,30 @@ var Tank = me.ObjectEntity.extend({
 			that.isExploding = false;
 			me.game.remove(that);
 		});
+	},
+
+	fixDirection : function() {
+		var currentAnimation = "move";
+		if(this.direction === DIRECTION.UP || this.direction === DIRECTION.DOWN) {
+			this.updateColRect(4, 24, 1, 29);
+			currentAnimation += "Forward";
+		} else if(this.direction === DIRECTION.LEFT || this.direction === DIRECTION.RIGHT) {
+			this.updateColRect(2, 29, 4, 24);
+			currentAnimation += "Sideward";
+		} else {
+			throw "unknown direction \"" + DIRECTION + "\"";
+		}
+
+		this.setCurrentAnimation(currentAnimation);
+
+		if(this.direction === DIRECTION.LEFT) {
+			this.flipX(true);
+		} else if(this.direction === DIRECTION.RIGHT) {
+			this.flipX(false);
+		} else if(this.direction === DIRECTION.UP) {
+			this.flipY(false);
+		} else if(this.direction === DIRECTION.DOWN) {
+			this.flipY(true);
+		}
 	}
 });
