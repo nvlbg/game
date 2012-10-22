@@ -13,9 +13,11 @@ var TYPE = {
 	NEW_PLAYER : 2,
 	MOVE : 3,
 	PLAYER_UPDATED : 4,
-	PLAYER_DISCONNECTED : 5
+	CORRECTION : 5,
+	PLAYER_CORRECTION : 6,
+	PLAYER_DISCONNECTED : 7
 };
-var players = [];
+var players = {};
 var idCounter = 0;
 var DIRECTION = {
 	UP : 0,
@@ -25,20 +27,44 @@ var DIRECTION = {
 };
 
 function Player(x, y, dir) {
-	var id = idCounter++;
+	this.id = idCounter++;
 
 	this.x = x;
 	this.y = y;
+	this.velX = 0;
+	this.velY = 0;
+	this.pressed = [false, false, false, false];
 	this.direction = dir;
 
-	this.getId = function() { return id; };
-	this.toJSON = function() {
-		var res = {};
-		res.i = id;
-		res.x = this.x;
-		res.y = this.y;
-		res.d = this.direction;
-		return res;
+	this.update = function() {
+		if(this.pressed[0]) {
+			this.velX = -3;
+			this.velY = 0;
+		} else if(this.pressed[1]) {
+			this.velX = 3;
+			this.velY = 0;
+		}
+
+		if(this.pressed[2]) {
+			this.velX = 0;
+			this.velY = -3;
+		} else if(this.pressed[3]) {
+			this.velX = 0;
+			this.velY = 3;
+		}
+
+		this.x += this.velX;
+		this.y += this.velY;
+
+		if(x < 32) {
+			this.x = 32;
+		}
+
+		if(y < 32) {
+			this.y = 32;
+		}
+
+		this.velX = this.velY = 0;
 	};
 }
 
@@ -48,30 +74,75 @@ io.sockets.on('connection', function (socket) {
 
 	socket.on(TYPE.SPAWN_REQUEST, function() {
 		player = new Player(32, 64, DIRECTION.DOWN);
-		var json = player.toJSON();
-		json.p = players;
+		var data = {
+			x : player.x,
+			y : player.y,
+			d : player.direction,
+			p : []
+		};
 
-		socket.emit(TYPE.SPAWN, json);
-		socket.broadcast.emit(TYPE.NEW_PLAYER, player.toJSON());
+		for(var i in players) {
+			data.p.push({
+				x : players[i].x,
+				y : players[i].y,
+				p : players[i].pressed,
+				d : players[i].direction,
 
-		players.push(player);
+				i : players[i].id
+			});
+		}
+
+		socket.emit(TYPE.SPAWN, data);
+
+		socket.broadcast.emit(TYPE.NEW_PLAYER, {
+			x : player.x,
+			y : player.y,
+			p : player.pressed,
+			d : player.direction,
+
+			i : player.id
+		});
+
+		players[player.id] = player;
 
 		socket.on(TYPE.MOVE, function(data) {
-			player.x = data.x;
-			player.y = data.y;
 			player.direction = data.d;
+			player.pressed = data.p;
+
+			
+			socket.broadcast.emit(TYPE.PLAYER_UPDATED, {
+				p : data.p,
+				d : data.d,
+				x : player.x,
+				y : player.y,
+				
+				i : player.id
+			});
 		});
 
 		setInterval(function() {
-			socket.broadcast.emit(TYPE.PLAYER_UPDATED, player.toJSON());
-		}, 50);
+			player.update();
+		}, 1000 / 60);
+
+		setInterval(function() {
+			var correction = {
+				x : player.x,
+				y : player.y,
+				d : player.direction
+			};
+
+			socket.emit(TYPE.CORRECTION, correction);
+
+			correction.i = player.id;
+			socket.broadcast.emit(TYPE.PLAYER_CORRECTION, correction);
+		}, 3000);
 	});
 
 	socket.on('disconnect', function() {
-		socket.broadcast.emit(TYPE.PLAYER_DISCONNECTED, player.getId());
+		socket.broadcast.emit(TYPE.PLAYER_DISCONNECTED, player.id);
 
-		if(players !== null) {
-			players.splice(players.indexOf(player), 1);
+		if(players !== null && typeof player !== 'undefined') {
+			delete players[player.id];
 		}
 	});
 });

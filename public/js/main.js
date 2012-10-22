@@ -15,16 +15,19 @@
 		NEW_PLAYER : 2,
 		MOVE : 3,
 		PLAYER_UPDATED : 4,
-		PLAYER_DISCONNECTED : 5
+		CORRECTION : 5,
+		PLAYER_CORRECTION : 6,
+		PLAYER_DISCONNECTED : 7
 	};
-	var players = [];
-	var player = null;
 	var DIRECTION = {
 		UP : 0,
 		DOWN : 1,
 		LEFT : 2,
 		RIGHT : 3
 	};
+	var players = {};
+	var player = null;
+	var socket = null;
 
 	var jsApp = {
 		/**
@@ -49,8 +52,6 @@
 			me.gamestat.add("team", "blue"); // your team (green or blue)
 			me.gamestat.add("friendly_fire", false);
 
-			// me.Tileset.type.WATER = "water";
-
 			// set custom constants for the game
 			me.game.BULLET_OBJECT = 4;
 			me.game.FRIEND_OBJECT = 5;
@@ -61,6 +62,9 @@
 
 			me.sys.pauseOnBlur = false;
 			me.sys.useNativeAnimFrame = true;
+
+			me.state.onPause = function() {};
+			me.state.onResume = function() {};
 
 			// load everything & display a loading screen
 			me.state.change(me.state.LOADING);
@@ -82,44 +86,49 @@
 			me.state.change(me.state.PLAY);
 
 
-
 			socket.on(TYPE.SPAWN, function(data) {
-				player = new Player(data.x, data.y, data.d, 0, 3, 0.05);
+				// player = new Player(data.x, data.y, data.d, 0, 3, 0.2);
+				player = new Player(data.x, data.y, data.d, 0, 3, 0);
 				me.game.add(player, 4);
 
 				var other;
 				for(var i = 0, len = data.p.length; i < len; i++) {
-					other = new Enemy(data.p[i].x, data.p[i].y, data.p[i].d, 0, 3, 0.2);
-					other.id = data.p[i].i; // TODO: fix by passing this to the constructor 
+					other = new Enemy(data.p[i].x, data.p[i].y, data.p[i].d, 0, 3, 0);
 					me.game.add(other, 4);
-					players.push(other);
+					players[data.p[i].i] = other;
 				}
 
 				me.game.sort();
-
-				setInterval(function() {
-					var data = {};
-					data.x = player.pos.x;
-					data.y = player.pos.y;
-					data.d = player.direction;
-					socket.emit(TYPE.MOVE, data);
-				}, 50);
 			});
 			socket.on(TYPE.NEW_PLAYER, function(data) {
-				var p = new Enemy(data.x, data.y, data.d, 0, 3, 0.2);
-				p.id = data.i;
-				players.push(p);
+				var p = new Enemy(data.x, data.y, data.d, 0, 3, 0);
+				p.pressed = data.p;
 				me.game.add(p, 4);
+				players[data.i] = p;
 				me.game.sort();
 			});
 			socket.on(TYPE.PLAYER_UPDATED, function(data) {
-				for(var i = 0, len = players.length; i < len; i++) {
-					if(players[i].id === data.i) {
-						players[i].pos.x = data.x;
-						players[i].pos.y = data.y;
-						players[i].direction = data.d;
-						break;
-					}
+				players[data.i].pos.x = data.x;
+				players[data.i].pos.y = data.y;
+				players[data.i].pressed = data.p;
+				players[data.i].direction = data.d;
+			});
+			socket.on(TYPE.CORRECTION, function(data) {
+				player.pos.x = data.x;
+				player.pos.y = data.y;
+				player.direction = data.d;
+			});
+			socket.on(TYPE.PLAYER_CORRECTION, function(data) {
+				players[data.i].pos.x = data.x;
+				players[data.i].pos.y = data.y;
+				players[data.i].direction = data.d;
+			});
+			socket.on(TYPE.PLAYER_DISCONNECTED, function(id) {
+				if(players[id]) {
+					me.game.remove(players[id]);
+					delete players[id];
+				} else {
+					console.log('Error: no such player [' + id + ']');
 				}
 			});
 			socket.emit(TYPE.SPAWN_REQUEST);
@@ -127,7 +136,7 @@
 	};
 
 	window.onReady(function() {
-		jsApp.onload();
 		socket = io.connect();
+		jsApp.onload();
 	});
 // })();

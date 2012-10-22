@@ -4,6 +4,8 @@ var Player = Tank.extend({
 	*/
 	init : function(x, y, direction, recoil, speed, friction) {
 		this.parent(x, y, direction, recoil, speed, friction);
+		//this.lastVel = new me.Vector2d(0, 0);
+		this.lastPressed = [false, false, false, false];
 		
 		me.game.viewport.follow(this.pos, me.game.viewport.AXIS.BOTH);
 	},
@@ -16,6 +18,8 @@ var Player = Tank.extend({
 			this.parent(this);
 			return true;
 		}
+
+		console.log(this.collisionMap);
 
 		var updated = this.vel.x !== 0 || this.vel.y !== 0;
 
@@ -55,7 +59,28 @@ var Player = Tank.extend({
 
 		this.updateMovement();
 
+		this.pressed = [me.input.isKeyPressed("left"), me.input.isKeyPressed("right"), me.input.isKeyPressed("up"), me.input.isKeyPressed("down")];
+		if(this.pressed[0] !== this.lastPressed[0] || this.pressed[1] !== this.lastPressed[1] || this.pressed[2] !== this.lastPressed[2] || this.pressed[3] !== this.lastPressed[3]) {
+			socket.emit(TYPE.MOVE, { p : this.pressed, d : this.direction });
+		}
+		this.lastPressed = this.pressed;
+
+		/*if(this.vel.x !== this.lastVel.x || this.vel.y !== this.lastVel.y) {
+			var data = {};
+			data.x = this.vel.x;
+			data.y = this.vel.y;
+			data.d = this.direction;
+			socket.emit(TYPE.MOVE, data);
+			console.log(data);
+		}*/
+
+		//this.lastVel.x = this.vel.x;
+		//this.lastVel.y = this.vel.y;
+
 		updated = updated || this.vel.x !== 0 || this.vel.y !== 0;
+
+		this.vel.x = 0;
+		this.vel.y = 0;
 
 		if(updated) {
 			this.parent(this);
@@ -122,96 +147,5 @@ var Player = Tank.extend({
 		me.game.sort();
 
 		return true;
-	},
-
-	updateMovement : function() {
-		this.computeVelocity(this.vel);
-
-		var collision = this.collisionMap.checkCollision(this.collisionBox, this.vel);
-
-		if (collision.y !== 0) {
-			this.vel.y = 0;
-		}
-
-		if (collision.x !== 0) {
-			this.vel.x = 0;
-		}
-
-		var x = this.pos.x, y = this.pos.y;
-		this.pos.add(this.vel);
-		collision = me.game.collide(this);
-
-		if(collision && collision.obj instanceof Tank) {
-			if(collision.y !== 0) {
-				this.vel.y = 0;
-			}
-
-			if(collision.x !== 0) {
-				this.vel.x = 0;
-			}
-
-			this.pos.x = x;
-			this.pos.y = y;
-		}
-	},
-
-	moveLeft : function() {
-		this.vel.x -= this.accel.x * me.timer.tick;
-		this.vel.y = 0;
-
-		if(this.direction !== DIRECTION.LEFT) {
-			if(this.direction !== DIRECTION.RIGHT) {
-				this.updateColRect(2, 29, 4, 24);
-				this.setCurrentAnimation("moveSideward");
-			}
-
-			this.flipX(true);
-			this.direction = DIRECTION.LEFT;
-		}
-	},
-
-	moveRight : function() {
-		this.vel.x += this.accel.x * me.timer.tick;
-		this.vel.y = 0;
-
-		if(this.direction !== DIRECTION.RIGHT) {
-			if(this.direction !== DIRECTION.LEFT) {
-				this.updateColRect(2, 29, 4, 24);
-				this.setCurrentAnimation("moveSideward");
-			}
-
-			this.flipX(false);
-			this.direction = DIRECTION.RIGHT;
-		}
-	},
-
-	moveUp : function() {
-		this.vel.x = 0;
-		this.vel.y -= this.accel.y * me.timer.tick;
-
-		if(this.direction !== DIRECTION.UP) {
-			if(this.direction !== DIRECTION.DOWN) {
-				this.updateColRect(4, 24, 1, 29);
-				this.setCurrentAnimation("moveForward");
-			}
-
-			this.flipY(false);
-			this.direction = DIRECTION.UP;
-		}
-	},
-
-	moveDown : function() {
-		this.vel.x = 0;
-		this.vel.y += this.accel.y * me.timer.tick;
-
-		if(this.direction !== DIRECTION.DOWN) {
-			if(this.direction !== DIRECTION.UP) {
-				this.updateColRect(4, 24, 1, 29);
-				this.setCurrentAnimation("moveForward");
-			}
-
-			this.flipY(true);
-			this.direction = DIRECTION.DOWN;
-		}
 	}
 });

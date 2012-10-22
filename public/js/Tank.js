@@ -70,7 +70,7 @@ var Tank = me.ObjectEntity.extend({
 			this.updateColRect(2, 29, 4, 24);
 			currentAnimation += "Sideward";
 		} else {
-			throw "unknown direction \"" + DIRECTION + "\"";
+			throw "unknown direction \"" + direction + "\"";
 		}
 		
 		this.setCurrentAnimation(currentAnimation);
@@ -115,6 +115,97 @@ var Tank = me.ObjectEntity.extend({
 			this.flipY(false);
 		} else if(this.direction === DIRECTION.DOWN) {
 			this.flipY(true);
+		}
+	},
+
+	updateMovement : function() {
+		this.computeVelocity(this.vel);
+
+		var collision = this.collisionMap.checkCollision(this.collisionBox, this.vel);
+
+		if (collision.y !== 0) {
+			this.vel.y = 0;
+		}
+
+		if (collision.x !== 0) {
+			this.vel.x = 0;
+		}
+
+		var x = this.pos.x, y = this.pos.y;
+		this.pos.add(this.vel);
+		collision = me.game.collide(this);
+
+		if(collision && collision.obj instanceof Tank) {
+			if(collision.y !== 0) {
+				this.vel.y = 0;
+			}
+
+			if(collision.x !== 0) {
+				this.vel.x = 0;
+			}
+
+			this.pos.x = x;
+			this.pos.y = y;
+		}
+	},
+
+	moveLeft : function() {
+		this.vel.x -= this.accel.x * me.timer.tick;
+		this.vel.y = 0;
+
+		if(this.direction !== DIRECTION.LEFT) {
+			if(this.direction !== DIRECTION.RIGHT) {
+				this.updateColRect(2, 29, 4, 24);
+				this.setCurrentAnimation("moveSideward");
+			}
+
+			this.flipX(true);
+			this.direction = DIRECTION.LEFT;
+		}
+	},
+
+	moveRight : function() {
+		this.vel.x += this.accel.x * me.timer.tick;
+		this.vel.y = 0;
+
+		if(this.direction !== DIRECTION.RIGHT) {
+			if(this.direction !== DIRECTION.LEFT) {
+				this.updateColRect(2, 29, 4, 24);
+				this.setCurrentAnimation("moveSideward");
+			}
+
+			this.flipX(false);
+			this.direction = DIRECTION.RIGHT;
+		}
+	},
+
+	moveUp : function() {
+		this.vel.x = 0;
+		this.vel.y -= this.accel.y * me.timer.tick;
+
+		if(this.direction !== DIRECTION.UP) {
+			if(this.direction !== DIRECTION.DOWN) {
+				this.updateColRect(4, 24, 1, 29);
+				this.setCurrentAnimation("moveForward");
+			}
+
+			this.flipY(false);
+			this.direction = DIRECTION.UP;
+		}
+	},
+
+	moveDown : function() {
+		this.vel.x = 0;
+		this.vel.y += this.accel.y * me.timer.tick;
+
+		if(this.direction !== DIRECTION.DOWN) {
+			if(this.direction !== DIRECTION.UP) {
+				this.updateColRect(4, 24, 1, 29);
+				this.setCurrentAnimation("moveForward");
+			}
+
+			this.flipY(true);
+			this.direction = DIRECTION.DOWN;
 		}
 	}
 });
