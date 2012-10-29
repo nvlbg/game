@@ -19,8 +19,6 @@ var Player = Tank.extend({
 			return true;
 		}
 
-		console.log(this.collisionMap);
-
 		var updated = this.vel.x !== 0 || this.vel.y !== 0;
 
 		if(me.input.isKeyPressed("left")) {
@@ -61,7 +59,8 @@ var Player = Tank.extend({
 
 		this.pressed = [me.input.isKeyPressed("left"), me.input.isKeyPressed("right"), me.input.isKeyPressed("up"), me.input.isKeyPressed("down")];
 		if(this.pressed[0] !== this.lastPressed[0] || this.pressed[1] !== this.lastPressed[1] || this.pressed[2] !== this.lastPressed[2] || this.pressed[3] !== this.lastPressed[3]) {
-			socket.emit(TYPE.MOVE, { p : this.pressed, d : this.direction });
+			socket.emit(TYPE.MOVE, this.pressed);
+			console.log(this.pressed);
 		}
 		this.lastPressed = this.pressed;
 

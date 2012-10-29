@@ -27,10 +27,10 @@ var Enemy = Tank.extend({
 		}
 
 		
-		if(this.direction !== this.lastDirection) {
-			this.fixDirection();
-		}
-		this.lastDirection = this.direction;
+		//if(this.direction !== this.lastDirection) {
+		//	this.fixDirection();
+		//}
+		//this.lastDirection = this.direction;
 
 		var updated = this.pos.x !== this.lastPos.x || this.pos.y !== this.lastPos.y;
 

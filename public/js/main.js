@@ -111,17 +111,16 @@
 				players[data.i].pos.x = data.x;
 				players[data.i].pos.y = data.y;
 				players[data.i].pressed = data.p;
-				players[data.i].direction = data.d;
+
+				console.log(data.p);
 			});
 			socket.on(TYPE.CORRECTION, function(data) {
 				player.pos.x = data.x;
 				player.pos.y = data.y;
-				player.direction = data.d;
 			});
 			socket.on(TYPE.PLAYER_CORRECTION, function(data) {
 				players[data.i].pos.x = data.x;
 				players[data.i].pos.y = data.y;
-				players[data.i].direction = data.d;
 			});
 			socket.on(TYPE.PLAYER_DISCONNECTED, function(id) {
 				if(players[id]) {
