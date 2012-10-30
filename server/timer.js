@@ -1,3 +1,4 @@
+var fps = require('./constants.js').fps;
 var timer = (function() {
 	// hold public stuff in our api
 	var api = {};
@@ -16,11 +17,10 @@ var timer = (function() {
 	var last = 0;
 	var now = 0;
 	var delta = 0;
-	var step = Math.ceil(1000 / 60); // ROUND IT ?
+	var step = Math.ceil(1000 / fps); // ROUND IT ?
 	// define some step with some margin
-	var minstep = (1000 / 60) * 1.25; // IS IT NECESSARY?
+	var minstep = (1000 / fps) * 1.25; // IS IT NECESSARY?
 
-	
 	/*---------------------------------------------
 		
 		PUBLIC STUFF
@@ -71,7 +71,7 @@ var timer = (function() {
 		delta = (now - last);
 
 		// get the game tick
-		api.tick = (delta > minstep && false) ? delta / step	: 1;
+		api.tick = (delta > minstep) ? delta / step	: 1;
 	};
 
 	// return our apiect

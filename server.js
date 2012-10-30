@@ -4,10 +4,14 @@ var app = require('express').createServer().listen(8080),
 	constants = require('./server/constants.js'),
 	Vector2d = require('./server/Vector2d.js'),
 
+	timer = require('./server/timer.js'),
+
 	TYPE = constants.TYPE,
 	DIRECTION = constants.DIRECTION,
 
 	Player = require('./server/Player.js');
+
+tick = 1;
 
 app.get('*', function(req, res) {
 	res.sendfile(__dirname + '/public/' + req.params[0]);
@@ -18,7 +22,12 @@ console.log('Server started at 127.0.0.1:8080');
 var players = {};
 var idCounter = 0;
 
+timer.init();
+
 setInterval(function() {
+	timer.update();
+	tick = timer.tick;
+	
 	for(var i in players) {
 		var player = players[i];
 		player.update();
@@ -35,7 +44,7 @@ setInterval(function() {
 			player.updated = false;
 		}
 	}
-}, constants.fps);
+}, 1000 / constants.fps);
 
 setInterval(function() {
 	for(var i in players) {
@@ -50,7 +59,7 @@ setInterval(function() {
 		correction.i = player.id;
 		player.socket.broadcast.emit(TYPE.PLAYER_CORRECTION, correction);
 	}
-}, constants.fps * 60 * 3);
+}, 3000);
 
 io.sockets.on('connection', function (socket) {
 	console.log('client connected');

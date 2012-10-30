@@ -53,7 +53,7 @@ var Player = Rect.extend({
 	},
 
 	moveLeft : function() {
-		this.vel.x -= this.accel.x; // TOSEE: * me.timer.tick
+		this.vel.x -= this.accel.x * tick;
 		this.vel.y = 0;
 
 		if(this.direction !== DIRECTION.LEFT) {
@@ -63,7 +63,7 @@ var Player = Rect.extend({
 	},
 
 	moveRight : function() {
-		this.vel.x += this.accel.x;
+		this.vel.x += this.accel.x * tick;
 		this.vel.y = 0;
 
 		if(this.direction !== DIRECTION.RIGHT) {
@@ -74,7 +74,7 @@ var Player = Rect.extend({
 
 	moveUp : function() {
 		this.vel.x = 0;
-		this.vel.y -= this.accel.y;
+		this.vel.y -= this.accel.y * tick;
 
 		if(this.direction !== DIRECTION.UP) {
 			this.updateColRect(24, 29);
@@ -84,7 +84,7 @@ var Player = Rect.extend({
 
 	moveDown : function() {
 		this.vel.x = 0;
-		this.vel.y += this.accel.y;
+		this.vel.y += this.accel.y * tick;
 
 		if(this.direction !== DIRECTION.DOWN) {
 			this.updateColRect(24, 29);
@@ -133,7 +133,7 @@ var Player = Rect.extend({
 
 	computeVelocity : function(vel) {
 		var applyFriction = function(v, f) {
-			return (v+f<0)?v+(f):(v-f>0)?v-(f):0; // TOSEE: I have removed me.timer.tick
+			return (v+f<0)?v+(f*tick):(v-f>0)?v-(f*tick):0;
 		};
 		
 		// apply friction

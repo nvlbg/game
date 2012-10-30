@@ -62,6 +62,7 @@
 
 			me.sys.pauseOnBlur = false;
 			me.sys.useNativeAnimFrame = true;
+			me.sys.interpolation = true;
 
 			me.state.onPause = function() {};
 			me.state.onResume = function() {};
