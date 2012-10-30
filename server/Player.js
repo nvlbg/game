@@ -8,8 +8,11 @@ var Vector2d = require('./Vector2d.js');
 var Rect = require('./Rect.js');
 
 var Player = Rect.extend({
-	init : function(pos, dir, recoil, speed, friction, id) {
+	init : function(pos, dir, recoil, speed, friction, socket, id) {
 		this.parent(pos, 32, 32);
+
+		this.updated = false;
+		this.socket = socket;
 
 		this.recoil = recoil;
 		this.accel = new Vector2d(speed, speed);

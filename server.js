@@ -18,13 +18,46 @@ console.log('Server started at 127.0.0.1:8080');
 var players = {};
 var idCounter = 0;
 
+setInterval(function() {
+	for(var i in players) {
+		var player = players[i];
+		player.update();
+
+		if(player.updated) {
+			player.socket.broadcast.emit(TYPE.PLAYER_UPDATED, {
+				p : player.pressed,
+				x : player.pos.x,
+				y : player.pos.y,
+				
+				i : player.id
+			});
+
+			player.updated = false;
+		}
+	}
+}, constants.fps);
+
+setInterval(function() {
+	for(var i in players) {
+		var player = players[i];
+		var correction = {
+			x : player.pos.x,
+			y : player.pos.y
+		};
+
+		player.socket.emit(TYPE.CORRECTION, correction);
+
+		correction.i = player.id;
+		player.socket.broadcast.emit(TYPE.PLAYER_CORRECTION, correction);
+	}
+}, constants.fps * 60 * 3);
 
 io.sockets.on('connection', function (socket) {
 	console.log('client connected');
 	var player = null;
 
 	socket.on(TYPE.SPAWN_REQUEST, function() {
-		player = new Player(new Vector2d(32, 64), DIRECTION.DOWN, 0, 3, 0, idCounter++);
+		player = new Player(new Vector2d(32, 64), DIRECTION.DOWN, 0, 3, 0, socket, idCounter++);
 		var data = {
 			x : player.pos.x,
 			y : player.pos.y,
@@ -58,32 +91,8 @@ io.sockets.on('connection', function (socket) {
 
 		socket.on(TYPE.MOVE, function(pressed) {
 			player.pressed = pressed;
-
-			
-			socket.broadcast.emit(TYPE.PLAYER_UPDATED, {
-				p : player.pressed,
-				x : player.pos.x,
-				y : player.pos.y,
-				
-				i : player.id
-			});
+			player.updated = true;
 		});
-
-		setInterval(function() {
-			player.update();
-		}, 1000 / 60);
-
-		setInterval(function() {
-			var correction = {
-				x : player.pos.x,
-				y : player.pos.y
-			};
-
-			socket.emit(TYPE.CORRECTION, correction);
-
-			correction.i = player.id;
-			socket.broadcast.emit(TYPE.PLAYER_CORRECTION, correction);
-		}, 3000);
 	});
 
 	socket.on('disconnect', function() {

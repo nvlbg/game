@@ -15,3 +15,5 @@ exports.DIRECTION = {
 	LEFT : 2,
 	RIGHT : 3
 };
+
+exports.fps = 1000 / 60;
