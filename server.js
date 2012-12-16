@@ -4,14 +4,13 @@ var app = require('express').createServer().listen(8080),
 	constants = require('./server/constants.js'),
 	Vector2d = require('./server/Vector2d.js'),
 
-	timer = require('./server/timer.js'),
-
 	TYPE = constants.TYPE,
 	DIRECTION = constants.DIRECTION,
 
 	Player = require('./server/Player.js');
 
-tick = 1;
+timer = require('./server/timer.js');
+timer.init();
 
 app.get('*', function(req, res) {
 	res.sendfile(__dirname + '/public/' + req.params[0]);
@@ -19,10 +18,9 @@ app.get('*', function(req, res) {
 
 console.log('Server started at 127.0.0.1:8080');
 
-var players = {};
+players = {};
 var idCounter = 0;
 
-timer.init();
 
 setInterval(function() {
 	timer.update();

@@ -2,10 +2,13 @@ var Player = Tank.extend({
 	/**
 	constructor
 	*/
-	init : function(x, y, direction, recoil, speed, friction) {
+	init : function(x, y, direction, recoil, speed, friction, shootSpeed, socket) {
 		this.parent(x, y, direction, recoil, speed, friction);
 		//this.lastVel = new me.Vector2d(0, 0);
-		this.lastPressed = [false, false, false, false];
+		this.shootSpeed = shootSpeed;
+		this.socket = socket;
+		this.lastPressed = 0;
+		this.canShoot = true;
 		
 		me.game.viewport.follow(this.pos, me.game.viewport.AXIS.BOTH);
 	},
@@ -20,6 +23,7 @@ var Player = Tank.extend({
 		}
 
 		var updated = this.vel.x !== 0 || this.vel.y !== 0;
+		this.pressed = 0;
 
 		if(me.input.isKeyPressed("left")) {
 			this.moveLeft();
@@ -41,13 +45,13 @@ var Player = Tank.extend({
 		
 		if(this.isCurrentAnimation("shootForward") || this.isCurrentAnimation("shootSideward")) {
 			if(this.recoil > 0) {
-				if(this.direction === DIRECTION.UP) {
+				if(this.direction === Network.DIRECTION.UP) {
 					this.vel.y += this.recoil;
-				} else if(this.direction === DIRECTION.DOWN) {
+				} else if(this.direction === Network.DIRECTION.DOWN) {
 					this.vel.y -= this.recoil;
-				} else if(this.direction === DIRECTION.LEFT) {
+				} else if(this.direction === Network.DIRECTION.LEFT) {
 					this.vel.x += this.recoil;
-				} else if(this.direction === DIRECTION.RIGHT) {
+				} else if(this.direction === Network.DIRECTION.RIGHT) {
 					this.vel.x -= this.recoil;
 				}
 			}
@@ -57,9 +61,8 @@ var Player = Tank.extend({
 
 		this.updateMovement();
 
-		this.pressed = [me.input.isKeyPressed("left"), me.input.isKeyPressed("right"), me.input.isKeyPressed("up"), me.input.isKeyPressed("down")];
-		if(this.pressed[0] !== this.lastPressed[0] || this.pressed[1] !== this.lastPressed[1] || this.pressed[2] !== this.lastPressed[2] || this.pressed[3] !== this.lastPressed[3]) {
-			socket.emit(TYPE.MOVE, this.pressed);
+		if(this.pressed !== this.lastPressed) {
+			this.socket.emit(Network.TYPE.MOVE, this.pressed);
 			console.log(this.pressed);
 		}
 		this.lastPressed = this.pressed;
@@ -92,12 +95,21 @@ var Player = Tank.extend({
 		// if(this.isCurrentAnimation("shootForward") || this.isCurrentAnimation("shootSideward")) {
 			// return false;
 		// }
+		if(this.canShoot) {
+			this.canShoot = false;
+			var that = this;
+			setTimeout(function() {
+				that.canShoot = true;
+			}, this.shootSpeed);
+		} else {
+			return false;
+		}
 
 		var that = this,
 			x = this.pos.x,
 			y = this.pos.y;
 
-		if(this.direction === DIRECTION.UP) {
+		if(this.direction === Network.DIRECTION.UP) {
 			this.setCurrentAnimation("shootForward", function() {
 				that.setCurrentAnimation("moveForward");
 				that.setAnimationFrame(0);
@@ -106,7 +118,7 @@ var Player = Tank.extend({
 			this.vel.y += this.recoil;
 			
 			y -= 18;
-		} else if (this.direction === DIRECTION.DOWN) {
+		} else if (this.direction === Network.DIRECTION.DOWN) {
 			this.setCurrentAnimation("shootForward", function() {
 				that.setCurrentAnimation("moveForward");
 				that.setAnimationFrame(0);
@@ -116,7 +128,7 @@ var Player = Tank.extend({
 			this.vel.y -= this.recoil;
 
 			y += 18;
-		} else if (this.direction === DIRECTION.LEFT) {
+		} else if (this.direction === Network.DIRECTION.LEFT) {
 			this.setCurrentAnimation("shootSideward", function() {
 				that.setCurrentAnimation("moveSideward");
 				that.setAnimationFrame(0);
@@ -126,7 +138,7 @@ var Player = Tank.extend({
 			this.vel.x += this.recoil;
 
 			x -= 18;
-		} else if (this.direction === DIRECTION.RIGHT) {
+		} else if (this.direction === Network.DIRECTION.RIGHT) {
 			this.setCurrentAnimation("shootSideward", function() {
 				that.setCurrentAnimation("moveSideward");
 				that.setAnimationFrame(0);
@@ -141,10 +153,30 @@ var Player = Tank.extend({
 
 		this.animationspeed = me.sys.fps / 50;
 
-		var bullet = new Bullet(x, y, this.direction);
+		var bullet = new Bullet(x, y, this.direction, this.GUID);
 		me.game.add(bullet, 5);
 		me.game.sort();
 
 		return true;
+	},
+
+	moveLeft : function() {
+		this.parent();
+		this.pressed |= Network.PRESSED.LEFT;
+	},
+
+	moveRight : function() {
+		this.parent();
+		this.pressed |= Network.PRESSED.RIGHT;
+	},
+
+	moveUp : function() {
+		this.parent();
+		this.pressed |= Network.PRESSED.UP;
+	},
+
+	moveDown : function() {
+		this.parent();
+		this.pressed |= Network.PRESSED.DOWN;
 	}
 });

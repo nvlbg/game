@@ -1,7 +1,8 @@
 var Tank = me.ObjectEntity.extend({
-	/**
-	constructor
-	*/
+	// members
+	pressed : 0,
+
+	// constructor
 	init : function(x, y, direction, recoil, speed, friction, enemy) {
 		var settings = {
 			image : "tanks",
@@ -63,10 +64,10 @@ var Tank = me.ObjectEntity.extend({
 
 		var currentAnimation = "move";
 
-		if(direction === DIRECTION.UP || direction === DIRECTION.DOWN) {
+		if(direction === Network.DIRECTION.UP || direction === Network.DIRECTION.DOWN) {
 			this.updateColRect(4, 24, 1, 29);
 			currentAnimation += "Forward";
-		} else if(direction === DIRECTION.LEFT || direction === DIRECTION.RIGHT) {
+		} else if(direction === Network.DIRECTION.LEFT || direction === Network.DIRECTION.RIGHT) {
 			this.updateColRect(2, 29, 4, 24);
 			currentAnimation += "Sideward";
 		} else {
@@ -75,9 +76,9 @@ var Tank = me.ObjectEntity.extend({
 		
 		this.setCurrentAnimation(currentAnimation);
 
-		if(direction === DIRECTION.LEFT) {
+		if(direction === Network.DIRECTION.LEFT) {
 			this.flipX(true);
-		} else if(direction === DIRECTION.DOWN) {
+		} else if(direction === Network.DIRECTION.DOWN) {
 			this.flipY(true);
 		}
 	},
@@ -95,25 +96,25 @@ var Tank = me.ObjectEntity.extend({
 
 	fixDirection : function() {
 		var currentAnimation = "move";
-		if(this.direction === DIRECTION.UP || this.direction === DIRECTION.DOWN) {
+		if(this.direction === Network.DIRECTION.UP || this.direction === Network.DIRECTION.DOWN) {
 			this.updateColRect(4, 24, 1, 29);
 			currentAnimation += "Forward";
-		} else if(this.direction === DIRECTION.LEFT || this.direction === DIRECTION.RIGHT) {
+		} else if(this.direction === Network.DIRECTION.LEFT || this.direction === Network.DIRECTION.RIGHT) {
 			this.updateColRect(2, 29, 4, 24);
 			currentAnimation += "Sideward";
 		} else {
-			throw "unknown direction \"" + DIRECTION + "\"";
+			throw "unknown direction \"" + direction + "\"";
 		}
 
 		this.setCurrentAnimation(currentAnimation);
 
-		if(this.direction === DIRECTION.LEFT) {
+		if(this.direction === Network.DIRECTION.LEFT) {
 			this.flipX(true);
-		} else if(this.direction === DIRECTION.RIGHT) {
+		} else if(this.direction === Network.DIRECTION.RIGHT) {
 			this.flipX(false);
-		} else if(this.direction === DIRECTION.UP) {
+		} else if(this.direction === Network.DIRECTION.UP) {
 			this.flipY(false);
-		} else if(this.direction === DIRECTION.DOWN) {
+		} else if(this.direction === Network.DIRECTION.DOWN) {
 			this.flipY(true);
 		}
 	},
@@ -153,14 +154,14 @@ var Tank = me.ObjectEntity.extend({
 		this.vel.x -= this.accel.x * me.timer.tick;
 		this.vel.y = 0;
 
-		if(this.direction !== DIRECTION.LEFT) {
-			if(this.direction !== DIRECTION.RIGHT) {
+		if(this.direction !== Network.DIRECTION.LEFT) {
+			if(this.direction !== Network.DIRECTION.RIGHT) {
 				this.updateColRect(2, 29, 4, 24);
 				this.setCurrentAnimation("moveSideward");
 			}
 
 			this.flipX(true);
-			this.direction = DIRECTION.LEFT;
+			this.direction = Network.DIRECTION.LEFT;
 		}
 	},
 
@@ -168,14 +169,14 @@ var Tank = me.ObjectEntity.extend({
 		this.vel.x += this.accel.x * me.timer.tick;
 		this.vel.y = 0;
 
-		if(this.direction !== DIRECTION.RIGHT) {
-			if(this.direction !== DIRECTION.LEFT) {
+		if(this.direction !== Network.DIRECTION.RIGHT) {
+			if(this.direction !== Network.DIRECTION.LEFT) {
 				this.updateColRect(2, 29, 4, 24);
 				this.setCurrentAnimation("moveSideward");
 			}
 
 			this.flipX(false);
-			this.direction = DIRECTION.RIGHT;
+			this.direction = Network.DIRECTION.RIGHT;
 		}
 	},
 
@@ -183,14 +184,14 @@ var Tank = me.ObjectEntity.extend({
 		this.vel.x = 0;
 		this.vel.y -= this.accel.y * me.timer.tick;
 
-		if(this.direction !== DIRECTION.UP) {
-			if(this.direction !== DIRECTION.DOWN) {
+		if(this.direction !== Network.DIRECTION.UP) {
+			if(this.direction !== Network.DIRECTION.DOWN) {
 				this.updateColRect(4, 24, 1, 29);
 				this.setCurrentAnimation("moveForward");
 			}
 
 			this.flipY(false);
-			this.direction = DIRECTION.UP;
+			this.direction = Network.DIRECTION.UP;
 		}
 	},
 
@@ -198,14 +199,14 @@ var Tank = me.ObjectEntity.extend({
 		this.vel.x = 0;
 		this.vel.y += this.accel.y * me.timer.tick;
 
-		if(this.direction !== DIRECTION.DOWN) {
-			if(this.direction !== DIRECTION.UP) {
+		if(this.direction !== Network.DIRECTION.DOWN) {
+			if(this.direction !== Network.DIRECTION.UP) {
 				this.updateColRect(4, 24, 1, 29);
 				this.setCurrentAnimation("moveForward");
 			}
 
 			this.flipY(true);
-			this.direction = DIRECTION.DOWN;
+			this.direction = Network.DIRECTION.DOWN;
 		}
 	}
 });

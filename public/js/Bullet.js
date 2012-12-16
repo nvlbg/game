@@ -1,5 +1,5 @@
 var Bullet = me.ObjectEntity.extend({
-	init : function(x, y, direction, speed) {
+	init : function(x, y, direction, speed, ownerID) {
 		var settings = {
 			image : "tanks",
 			spritewidth : 32,
@@ -7,6 +7,8 @@ var Bullet = me.ObjectEntity.extend({
 		};
 
 		this.parent(x, y, settings);
+
+		this.ownerID = ownerID;
 
 		this.collidable = true;
 		this.gravity = 0;
@@ -20,21 +22,21 @@ var Bullet = me.ObjectEntity.extend({
 		this.speedAccel = this.speed / 100;
 		this.direction = direction;
 
-		if(direction === DIRECTION.UP) {
+		if(direction === Network.DIRECTION.UP) {
 			this.setCurrentAnimation("forward");
 			this.updateColRect(14, 5, 12, 8);
 			this.vel.y = -this.speed;
-		} else if(direction === DIRECTION.DOWN) {
+		} else if(direction === Network.DIRECTION.DOWN) {
 			this.setCurrentAnimation("forward");
 			this.flipY(true);
 			this.updateColRect(14, 5, 12, 8);
 			this.vel.y = this.speed;
-		} else if(direction === DIRECTION.LEFT) {
+		} else if(direction === Network.DIRECTION.LEFT) {
 			this.setCurrentAnimation("sideward");
 			this.flipX(true);
 			this.updateColRect(12, 8, 14, 5);
 			this.vel.x = -this.speed;
-		} else if(direction === DIRECTION.RIGHT) {
+		} else if(direction === Network.DIRECTION.RIGHT) {
 			this.setCurrentAnimation("sideward");
 			this.updateColRect(12, 8, 14, 5);
 			this.vel.x = this.speed;
@@ -50,13 +52,13 @@ var Bullet = me.ObjectEntity.extend({
 		}
 
 		if(!this.isExploding) {
-			if(this.direction === DIRECTION.UP) {
+			if(this.direction === Network.DIRECTION.UP) {
 				this.vel.y -= this.speedAccel;
-			} else if(this.direction === DIRECTION.DOWN) {
+			} else if(this.direction === Network.DIRECTION.DOWN) {
 				this.vel.y += this.speedAccel;
-			} else if(this.direction === DIRECTION.LEFT) {
+			} else if(this.direction === Network.DIRECTION.LEFT) {
 				this.vel.x -= this.speedAccel;
-			} else if(this.direction === DIRECTION.RIGHT) {
+			} else if(this.direction === Network.DIRECTION.RIGHT) {
 				this.vel.x += this.speedAccel;
 			}
 		}
@@ -97,7 +99,7 @@ var Bullet = me.ObjectEntity.extend({
 		}
 
 		collision = me.game.collide(this);
-		if(collision && collision.obj instanceof Tank && collision.obj !== player) {
+		if(collision && collision.obj instanceof Tank && collision.obj.GUID !== this.ownerID) {
 			if(collision.obj.type === me.game.ENEMY_OBJECT ||
 			   (collision.obj.type === me.game.FRIEND_OBJECT && me.gamestat.getItemValue("friendly_fire")))
 			{

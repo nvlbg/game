@@ -1,8 +1,10 @@
 require('./Util.js');
 var constants = require('./constants.js');
+var game = require('./game.js');
 
 var TYPE = constants.TYPE;
 var DIRECTION = constants.DIRECTION;
+var PRESSED = constants.PRESSED;
 
 var Vector2d = require('./Vector2d.js');
 var Rect = require('./Rect.js');
@@ -19,7 +21,7 @@ var Player = Rect.extend({
 		this.friction = new Vector2d(friction, friction);
 
 		this.vel = new Vector2d(0, 0);
-		this.pressed = [false, false, false, false];
+		this.pressed = 0;
 		this.direction = dir;
 		
 		if(dir === DIRECTION.UP || dir === DIRECTION.DOWN) {
@@ -34,15 +36,15 @@ var Player = Rect.extend({
 	},
 
 	update : function() {
-		if(this.pressed[0]) {
+		if(this.pressed & PRESSED.LEFT) {
 			this.moveLeft();
-		} else if(this.pressed[1]) {
+		} else if(this.pressed & PRESSED.RIGHT) {
 			this.moveRight();
 		}
 
-		if(this.pressed[2]) {
+		if(this.pressed & PRESSED.UP) {
 			this.moveUp();
-		} else if(this.pressed[3]) {
+		} else if(this.pressed & PRESSED.DOWN) {
 			this.moveDown();
 		}
 
@@ -53,7 +55,7 @@ var Player = Rect.extend({
 	},
 
 	moveLeft : function() {
-		this.vel.x -= this.accel.x * tick;
+		this.vel.x -= this.accel.x * timer.tick;
 		this.vel.y = 0;
 
 		if(this.direction !== DIRECTION.LEFT) {
@@ -63,7 +65,7 @@ var Player = Rect.extend({
 	},
 
 	moveRight : function() {
-		this.vel.x += this.accel.x * tick;
+		this.vel.x += this.accel.x * timer.tick;
 		this.vel.y = 0;
 
 		if(this.direction !== DIRECTION.RIGHT) {
@@ -74,7 +76,7 @@ var Player = Rect.extend({
 
 	moveUp : function() {
 		this.vel.x = 0;
-		this.vel.y -= this.accel.y * tick;
+		this.vel.y -= this.accel.y * timer.tick;
 
 		if(this.direction !== DIRECTION.UP) {
 			this.updateColRect(24, 29);
@@ -84,7 +86,7 @@ var Player = Rect.extend({
 
 	moveDown : function() {
 		this.vel.x = 0;
-		this.vel.y += this.accel.y * tick;
+		this.vel.y += this.accel.y * timer.tick;
 
 		if(this.direction !== DIRECTION.DOWN) {
 			this.updateColRect(24, 29);
@@ -95,52 +97,48 @@ var Player = Rect.extend({
 
 	// TODO: make this method
 	updateMovement : function() {
-		//this.computeVelocity(this.vel);
+		this.computeVelocity(this.vel);
 
 		/*
-		var collision = this.collisionMap.checkCollision(this.collisionBox, this.vel);
-
+		var collision = game.checkCollision(this.collisionBox, this.vel);
+		
 		if (collision.y !== 0) {
 			this.vel.y = 0;
 		}
-
+		
 		if (collision.x !== 0) {
 			this.vel.x = 0;
 		}
-
+		
 		var x = this.pos.x, y = this.pos.y;
 		*/
-
+		
 		this.pos.add(this.vel);
-
+		
 		/*
-		collision = me.game.collide(this);
-
-		if(collision && collision.obj instanceof Tank) {
+		collision = game.collide(this);
+		
+		if(collision && collision.obj instanceof Player) {
 			if(collision.y !== 0) {
 				this.vel.y = 0;
 			}
-
+			
 			if(collision.x !== 0) {
 				this.vel.x = 0;
 			}
-
+			
 			this.pos.x = x;
 			this.pos.y = y;
 		}
 		*/
 	},
-
+	
 	computeVelocity : function(vel) {
-		var applyFriction = function(v, f) {
-			return (v+f<0)?v+(f*tick):(v-f>0)?v-(f*tick):0;
-		};
-		
 		// apply friction
 		if (this.friction.x)
-			this.vel.x = applyFriction(this.vel.x, this.friction.x);
+			this.vel.x = game.applyFriction(this.vel.x, this.friction.x);
 		if (this.friction.y)
-			this.vel.y = applyFriction(this.vel.y, this.friction.y);
+			this.vel.y = game.applyFriction(this.vel.y, this.friction.y);
 
 		// cap velocity
 		if (vel.y !=0)
@@ -153,6 +151,23 @@ var Player = Rect.extend({
 	updateColRect : function(w, h) {
 		this.width = w;
 		this.height = h;
+	},
+
+	checkCollision : function(obj) {
+		var res = this.collideVsAABB(obj);
+
+		if (res.x != 0 || res.y != 0) {
+			// notify the object
+			this.onCollision(res, obj);
+			// return a reference of the colliding object
+			res.obj = this;
+			return res;
+		}
+		return null;
+	},
+
+	onCollision : function(res, obj) {
+
 	}
 });
 
