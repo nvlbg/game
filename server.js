@@ -1,4 +1,4 @@
-var app = require('express').createServer().listen(8080),
+var app = require('express').createServer(),
 	io = require('socket.io').listen(app),
 	
 	constants = require('./server/constants.js'),
@@ -16,7 +16,16 @@ app.get('*', function(req, res) {
 	res.sendfile(__dirname + '/public/' + req.params[0]);
 });
 
-console.log('Server started at 127.0.0.1:8080');
+io.configure(function () {
+	io.set('log level', 0);
+
+	io.set('authorization', function (handshakeData, callback) {
+		callback(null, true); // error first callback style
+	});
+});
+
+app.listen(constants.port);
+console.log('Server started at 127.0.0.1:' + constants.port);
 
 players = {};
 var idCounter = 0;
@@ -24,7 +33,6 @@ var idCounter = 0;
 
 setInterval(function() {
 	timer.update();
-	tick = timer.tick;
 	
 	for(var i in players) {
 		var player = players[i];

@@ -1,30 +1,34 @@
-var Friend = Tank.extend({
-	init : function(x, y, direction, recoil, speed, friction) {
-		this.parent(x, y, direction, recoil, speed, friction);
+(function() {
 
-		this.lastDirection = direction;
-		this.type = me.game.FRIEND_OBJECT;
-	},
+	window.game.Friend = game.Tank.extend({
+		init : function(x, y, direction, recoil, speed, friction) {
+			this.parent(x, y, direction, recoil, speed, friction);
 
-	update : function() {
-		if(this.isExploding) {
-			this.parent(this);
-			return true;
+			this.lastDirection = direction;
+			this.type = me.game.FRIEND_OBJECT;
+		},
+
+		update : function() {
+			if(this.isExploding) {
+				this.parent(this);
+				return true;
+			}
+
+			
+			if(this.direction !== this.lastDirection) {
+				this.fixDirection();
+			}
+
+			this.lastDirection = this.direction;
+
+			var updated = this.vel.x !== 0 || this.vel.y !== 0;
+			
+			if(updated) {
+				this.parent(this);
+				return true;
+			}
+			return false;
 		}
+	});
 
-		
-		if(this.direction !== this.lastDirection) {
-			this.fixDirection();
-		}
-
-		this.lastDirection = this.direction;
-
-		var updated = this.vel.x !== 0 || this.vel.y !== 0;
-		
-		if(updated) {
-			this.parent(this);
-			return true;
-		}
-		return false;
-	}
-});
+})();

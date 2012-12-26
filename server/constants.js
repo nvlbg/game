@@ -25,6 +25,8 @@ exports.PRESSED = {
 
 exports.fps = 60;
 
+exports.port = 8080;
+
 exports.tilewidth = 32;
 exports.tileheight = 32;
 

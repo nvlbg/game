@@ -1,116 +1,120 @@
-// network enumeration
-var Network = {
-	TYPE : {
-		SPAWN_REQUEST : 0,
-		SPAWN : 1,
-		NEW_PLAYER : 2,
-		MOVE : 3,
-		PLAYER_UPDATED : 4,
-		CORRECTION : 5,
-		PLAYER_CORRECTION : 6,
-		PLAYER_DISCONNECTED : 7
-	},
+(function() {
 
-	DIRECTION : {
-		UP : 0,
-		DOWN : 1,
-		LEFT : 2,
-		RIGHT : 3
-	},
+	// network enumeration
+	window.game.Network = {
+		TYPE : {
+			SPAWN_REQUEST : 0,
+			SPAWN : 1,
+			NEW_PLAYER : 2,
+			MOVE : 3,
+			PLAYER_UPDATED : 4,
+			CORRECTION : 5,
+			PLAYER_CORRECTION : 6,
+			PLAYER_DISCONNECTED : 7
+		},
 
-	PRESSED : {
-		UP : 1 << 0,
-		DOWN : 1 << 1,
-		LEFT : 1 << 2,
-		RIGHT : 1 << 3
-	}
-};
+		DIRECTION : {
+			UP : 0,
+			DOWN : 1,
+			LEFT : 2,
+			RIGHT : 3
+		},
 
-var Networking = Object.extend({
-	// members
-	socket  : null,
-	player  : null,
-	players : null,
+		PRESSED : {
+			UP : 1 << 0,
+			DOWN : 1 << 1,
+			LEFT : 1 << 2,
+			RIGHT : 1 << 3
+		}
+	};
 
-	// constructor
-	init : function() {
-		// set players into an empty dict
-		this.players = {};
+	window.game.Networking = Object.extend({
+		// members
+		socket  : null,
+		player  : null,
+		players : null,
 
-		// establish websocket connection
-		this.socket = io.connect();
+		// constructor
+		init : function() {
+			// set players into an empty dict
+			this.players = {};
 
-		// bind socket events
-		this.socket.on(Network.TYPE.SPAWN, this.bind(this.onSpawn));
-		this.socket.on(Network.TYPE.NEW_PLAYER, this.bind(this.onNewPlayer));
-		this.socket.on(Network.TYPE.PLAYER_UPDATED, this.bind(this.onPlayerUpdate));
-		this.socket.on(Network.TYPE.CORRECTION, this.bind(this.onCorrection));
-		this.socket.on(Network.TYPE.PLAYER_CORRECTION, this.bind(this.onPlayerCorrection));
-		this.socket.on(Network.TYPE.PLAYER_DISCONNECTED, this.bind(this.onPlayerLeave));
+			// establish websocket connection
+			this.socket = io.connect();
 
-		this.socket.emit(Network.TYPE.SPAWN_REQUEST);
-	},
+			// bind socket events
+			this.socket.on(game.Network.TYPE.SPAWN, this.bind(this.onSpawn));
+			this.socket.on(game.Network.TYPE.NEW_PLAYER, this.bind(this.onNewPlayer));
+			this.socket.on(game.Network.TYPE.PLAYER_UPDATED, this.bind(this.onPlayerUpdate));
+			this.socket.on(game.Network.TYPE.CORRECTION, this.bind(this.onCorrection));
+			this.socket.on(game.Network.TYPE.PLAYER_CORRECTION, this.bind(this.onPlayerCorrection));
+			this.socket.on(game.Network.TYPE.PLAYER_DISCONNECTED, this.bind(this.onPlayerLeave));
 
-	bind : function(callback) {
-		var that = this;
-		return (function(data) {
-			callback(that, data);
-		});
-	},
+			this.socket.emit(game.Network.TYPE.SPAWN_REQUEST);
+		},
 
-	// methods/events
-	onSpawn : function(that, data) {
-		// TODO: make this vars coming from the server
-		me.gamestat.add("team", "blue");
-		me.gamestat.add("friendly_fire", false);
+		bind : function(callback) {
+			var that = this;
+			return (function(data) {
+				callback(that, data);
+			});
+		},
 
-		// player = new Player(data.x, data.y, data.d, 0, 3, 0.2);
-		that.player = new Player(data.x, data.y, data.d, 0, 3, 0, 250, that.socket);
-		me.game.add(that.player, 4);
+		// methods/events
+		onSpawn : function(that, data) {
+			// TODO: make this vars coming from the server
+			me.gamestat.add("team", "blue");
+			me.gamestat.add("friendly_fire", false);
 
-		var other;
-		for(var i = 0, len = data.p.length; i < len; i++) {
-			other = new Enemy(data.p[i].x, data.p[i].y, data.p[i].d, 0, 3, 0);
-			me.game.add(other, 4);
-			that.players[data.p[i].i] = other;
+			// player = new game.Player(data.x, data.y, data.d, 0, 3, 0.2);
+			that.player = new game.Player(data.x, data.y, data.d, 0, 3, 0, 250, that.socket);
+			me.game.add(that.player, 4);
+
+			var other;
+			for(var i = 0, len = data.p.length; i < len; i++) {
+				other = new game.Enemy(data.p[i].x, data.p[i].y, data.p[i].d, 0, 3, 0);
+				me.game.add(other, 4);
+				that.players[data.p[i].i] = other;
+			}
+
+			me.game.sort();
+		},
+
+		onNewPlayer : function(that, data) {
+			var p = new game.Enemy(data.x, data.y, data.d, 0, 3, 0);
+			p.pressed = data.p;
+			me.game.add(p, 4);
+			that.players[data.i] = p;
+			me.game.sort();
+		},
+
+		onPlayerUpdate : function(that, data) {
+			that.players[data.i].pos.x = data.x;
+			that.players[data.i].pos.y = data.y;
+			that.players[data.i].pressed = data.p;
+
+			console.log(data.p);
+		},
+
+		onCorrection : function(that, data) {
+			that.player.pos.x = data.x;
+			that.player.pos.y = data.y;
+		},
+
+		onPlayerCorrection : function(that, data) {
+			that.players[data.i].pos.x = data.x;
+			that.players[data.i].pos.y = data.y;
+		},
+
+		onPlayerLeave : function(that, id) {
+			if(that.players[id]) {
+				me.game.remove(that.players[id]);
+				delete that.players[id];
+			} else {
+				console.log('Error: no such player [' + id + ']');
+			}
 		}
 
-		me.game.sort();
-	},
+	});
 
-	onNewPlayer : function(that, data) {
-		var p = new Enemy(data.x, data.y, data.d, 0, 3, 0);
-		p.pressed = data.p;
-		me.game.add(p, 4);
-		that.players[data.i] = p;
-		me.game.sort();
-	},
-
-	onPlayerUpdate : function(that, data) {
-		that.players[data.i].pos.x = data.x;
-		that.players[data.i].pos.y = data.y;
-		that.players[data.i].pressed = data.p;
-
-		console.log(data.p);
-	},
-
-	onCorrection : function(that, data) {
-		that.player.pos.x = data.x;
-		that.player.pos.y = data.y;
-	},
-
-	onPlayerCorrection : function(that, data) {
-		that.players[data.i].pos.x = data.x;
-		that.players[data.i].pos.y = data.y;
-	},
-
-	onPlayerLeave : function(that, id) {
-		if(that.players[id]) {
-			me.game.remove(that.players[id]);
-			delete that.players[id];
-		} else {
-			console.log('Error: no such player [' + id + ']');
-		}
-	}
-
-});
+})();
