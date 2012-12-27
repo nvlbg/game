@@ -84,32 +84,30 @@
 
 			var collision = this.collisionMap.checkCollision(this.collisionBox, this.vel);
 
-			if(collision.y) {
-				if(collision.yprop.isSolid && collision.yprop.type !== "water") {
-					this.vel.y = 0;
-					this.explode();
-					return;
-				}
+			if(collision.y && collision.yprop.isSolid && collision.yprop.type !== 'water') {
+				this.vel.y = 0;
+				this.explode();
+				return;
 			}
 
-			if(collision.x) {
-				if(collision.xprop.isSolid && collision.xprop.type !== "water") {
-					this.vel.x = 0;
-					this.explode();
-					return;
-				}
+			if(collision.x && collision.xprop.isSolid && collision.xprop.type !== 'water') {
+				this.vel.x = 0;
+				this.explode();
+				return;
 			}
 
 			collision = me.game.collide(this);
-			if(collision && collision.obj instanceof Tank && collision.obj.GUID !== this.ownerID) {
-				if(collision.obj.type === me.game.ENEMY_OBJECT ||
-				   (collision.obj.type === me.game.FRIEND_OBJECT && me.gamestat.getItemValue("friendly_fire")))
-				{
-					collision.obj.explode();
-				}
+			if(collision && collision.obj instanceof game.Tank &&
+			   collision.obj.GUID !== this.ownerID) { // a Tank is hit
 
-				me.game.remove(this);
-				return;
+				if(collision.obj.type === me.game.ENEMY_OBJECT ||   // Enemy Tank or
+				   (collision.obj.type === me.game.FRIEND_OBJECT && // Friend Tank
+				   me.gamestat.getItemValue("friendly_fire"))) {    // with friendly_fire
+				
+					collision.obj.explode();
+					me.game.remove(this);
+					return;
+				}
 			}
 
 			this.pos.add(this.vel);

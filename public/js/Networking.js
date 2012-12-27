@@ -3,27 +3,32 @@
 	// network enumeration
 	window.game.Network = {
 		TYPE : {
-			SPAWN_REQUEST : 0,
-			SPAWN : 1,
-			NEW_PLAYER : 2,
-			MOVE : 3,
-			PLAYER_UPDATED : 4,
-			CORRECTION : 5,
-			PLAYER_CORRECTION : 6,
+			SPAWN_REQUEST       : 0,
+			SPAWN               : 1,
+			NEW_PLAYER          : 2,
+			MOVE                : 3,
+			PLAYER_UPDATED      : 4,
+			CORRECTION          : 5,
+			PLAYER_CORRECTION   : 6,
 			PLAYER_DISCONNECTED : 7
 		},
 
 		DIRECTION : {
-			UP : 0,
-			DOWN : 1,
-			LEFT : 2,
+			UP    : 0,
+			DOWN  : 1,
+			LEFT  : 2,
 			RIGHT : 3
 		},
 
+		TEAM : {
+			BLUE  : 0,
+			GREEN : 1
+		},
+
 		PRESSED : {
-			UP : 1 << 0,
-			DOWN : 1 << 1,
-			LEFT : 1 << 2,
+			UP    : 1 << 0,
+			DOWN  : 1 << 1,
+			LEFT  : 1 << 2,
 			RIGHT : 1 << 3
 		}
 	};
@@ -54,62 +59,71 @@
 		},
 
 		bind : function(callback) {
-			var that = this;
+			var self = this;
 			return (function(data) {
-				callback(that, data);
+				callback(self, data);
 			});
 		},
 
 		// methods/events
-		onSpawn : function(that, data) {
-			// TODO: make this vars coming from the server
-			me.gamestat.add("team", "blue");
-			me.gamestat.add("friendly_fire", false);
+		onSpawn : function(self, data) {
+			me.gamestat.add("team", data.t);
+			me.gamestat.add("friendly_fire", data.f);
 
-			// player = new game.Player(data.x, data.y, data.d, 0, 3, 0.2);
-			that.player = new game.Player(data.x, data.y, data.d, 0, 3, 0, 250, that.socket);
-			me.game.add(that.player, 4);
+			self.player = new game.Player(data.x, data.y, data.d, 0, 3, 0, 250, self.socket);
+			me.game.add(self.player, 4);
 
 			var other;
 			for(var i = 0, len = data.p.length; i < len; i++) {
-				other = new game.Enemy(data.p[i].x, data.p[i].y, data.p[i].d, 0, 3, 0);
+				if (data.p[i].t === data.t) {
+					other = new game.Friend(data.p[i].x, data.p[i].y, data.p[i].d, 0, 3, 0);
+				} else {
+					other = new game.Enemy(data.p[i].x, data.p[i].y, data.p[i].d, 0, 3, 0);
+				}
+				other.pressed = data.p[i].p;
 				me.game.add(other, 4);
-				that.players[data.p[i].i] = other;
+				self.players[data.p[i].i] = other;
 			}
 
 			me.game.sort();
 		},
 
-		onNewPlayer : function(that, data) {
-			var p = new game.Enemy(data.x, data.y, data.d, 0, 3, 0);
+		onNewPlayer : function(self, data) {
+			var p;
+			if (data.t === me.gamestat.getItemValue("team")) {
+				p = new game.Friend(data.x, data.y, data.d, 0, 3, 0);
+			} else {
+				p = new game.Enemy(data.x, data.y, data.d, 0, 3, 0);
+			}
+
 			p.pressed = data.p;
 			me.game.add(p, 4);
-			that.players[data.i] = p;
+			self.players[data.i] = p;
 			me.game.sort();
 		},
 
-		onPlayerUpdate : function(that, data) {
-			that.players[data.i].pos.x = data.x;
-			that.players[data.i].pos.y = data.y;
-			that.players[data.i].pressed = data.p;
+		onPlayerUpdate : function(self, data) {
+			self.players[data.i].pos.x = data.x;
+			self.players[data.i].pos.y = data.y;
+			self.players[data.i].pressed = data.p;
 
 			console.log(data.p);
 		},
 
-		onCorrection : function(that, data) {
-			that.player.pos.x = data.x;
-			that.player.pos.y = data.y;
+		onCorrection : function(self, data) {
+			self.player.pos.x = data.x;
+			self.player.pos.y = data.y;
 		},
 
-		onPlayerCorrection : function(that, data) {
-			that.players[data.i].pos.x = data.x;
-			that.players[data.i].pos.y = data.y;
+		onPlayerCorrection : function(self, data) {
+			self.players[data.i].pos.x = data.x;
+			self.players[data.i].pos.y = data.y;
 		},
 
-		onPlayerLeave : function(that, id) {
-			if(that.players[id]) {
-				me.game.remove(that.players[id]);
-				delete that.players[id];
+		onPlayerLeave : function(self, id) {
+			if(self.players[id]) {
+				me.game.remove(self.players[id]);
+				delete self.players[id];
 			} else {
 				console.log('Error: no such player [' + id + ']');
 			}

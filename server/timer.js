@@ -46,6 +46,8 @@ var timer = (function() {
 		// reset delta counting variables
 		framedelta = 0;
 		framecount = 0;
+
+		return true;
 	};
 
 	/**

@@ -26,10 +26,6 @@
 		// initialize the "audio"
 		me.audio.init("mp3,ogg");
 		
-		// set custom constants for the game
-		me.game.BULLET_OBJECT = 4;
-		me.game.FRIEND_OBJECT = 5;
-		
 		// set all resources to be loaded
 		me.loader.onload = this.loaded.bind(this);
 		me.loader.preload(this.resources);

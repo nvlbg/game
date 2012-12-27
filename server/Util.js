@@ -84,3 +84,23 @@ if (!Object.defineProperty) {
 Number.prototype.clamp = function(low, high) {
 	return this < low ? low : this > high ? high : +this;
 };
+
+/**
+ * return a random between min, max
+ * @param {Number} min minimum value.
+ * @param {Number} max maximum value.
+ * @extends Number
+ * @return {Number} random value
+ */
+Number.prototype.random = function(min, max) {
+	return (~~(Math.random() * (max - min + 1)) + min);
+};
+
+/**
+ * add a contains fn to the string object
+ * @extends String
+ * @return {Boolean}
+ */
+String.prototype.contains = function(word) {
+	return this.indexOf(word) > -1;
+};

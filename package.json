@@ -1,0 +1,11 @@
+{
+  "name": "html5-game",
+  "version": "0.0.1",
+  "description": "HTML5 MMO game",
+  "author": "Nikolay Lazarov <nvl.bg.rules@gmail.com>",
+  "dependencies": {
+    "socket.io": "0.9.x",
+    "express": "3.0.x"
+  },
+  "engine": "node >= 0.8.16"
+}

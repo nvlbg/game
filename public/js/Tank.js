@@ -26,14 +26,14 @@
 			this.setFriction(friction, friction);
 
 			if(enemy) {
-				if(me.gamestat.getItemValue("team") === "green") {
+				if(me.gamestat.getItemValue("team") === game.Network.TEAM.GREEN) {
 					this.addAnimation("idleForward", [17]);
 					this.addAnimation("moveForward", [17,16,15,14,13,12,11,10]);
 					this.addAnimation("shootForward", [17,18,19,18,17]);
 					this.addAnimation("idleSideward", [37]);
 					this.addAnimation("moveSideward", [37,36,35,34,33,32,31,30]);
 					this.addAnimation("shootSideward", [37,38,39,38,37]);
-				} else if(me.gamestat.getItemValue("team") === "blue") {
+				} else if(me.gamestat.getItemValue("team") === game.Network.TEAM.BLUE) {
 					this.addAnimation("idleForward", [7]);
 					this.addAnimation("moveForward", [7,6,5,4,3,2,1,0]);
 					this.addAnimation("shootForward", [7,8,9,8,7]);
@@ -44,14 +44,14 @@
 					throw "unknown team \"" + me.gamestat.getItemValue("team") + "\"";
 				}
 			} else {
-				if(me.gamestat.getItemValue("team") === "green") {
+				if(me.gamestat.getItemValue("team") === game.Network.TEAM.GREEN) {
 					this.addAnimation("idleForward", [7]);
 					this.addAnimation("moveForward", [7,6,5,4,3,2,1,0]);
 					this.addAnimation("shootForward", [7,8,9,8,7]);
 					this.addAnimation("idleSideward", [27]);
 					this.addAnimation("moveSideward", [27,26,25,24,23,22,21,20]);
 					this.addAnimation("shootSideward", [27,28,29,28,27]);
-				} else if(me.gamestat.getItemValue("team") === "blue") {
+				} else if(me.gamestat.getItemValue("team") === game.Network.TEAM.BLUE) {
 					this.addAnimation("idleForward", [17]);
 					this.addAnimation("moveForward", [17,16,15,14,13,12,11,10]);
 					this.addAnimation("shootForward", [17,18,19,18,17]);
@@ -126,11 +126,11 @@
 
 			var collision = this.collisionMap.checkCollision(this.collisionBox, this.vel);
 
-			if (collision.y !== 0) {
+			if (collision.y !== 0 || collision.yprop.type === 'water') {
 				this.vel.y = 0;
 			}
 
-			if (collision.x !== 0) {
+			if (collision.x !== 0 || collision.yprop.type === 'water') {
 				this.vel.x = 0;
 			}
 
@@ -138,7 +138,7 @@
 			this.pos.add(this.vel);
 			collision = me.game.collide(this);
 
-			if(collision && collision.obj instanceof Tank) {
+			if(collision && collision.obj instanceof game.Tank) {
 				if(collision.y !== 0) {
 					this.vel.y = 0;
 				}

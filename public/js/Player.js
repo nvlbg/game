@@ -155,7 +155,7 @@
 
 			this.animationspeed = me.sys.fps / 50;
 
-			var bullet = new game.Bullet(x, y, this.direction, this.GUID);
+			var bullet = new game.Bullet(x, y, this.direction, 5, this.GUID);
 			me.game.add(bullet, 5);
 			me.game.sort();
 
