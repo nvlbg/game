@@ -11,6 +11,8 @@
 			this.socket = socket;
 			this.lastPressed = 0;
 			this.canShoot = true;
+			this.input_seq = 0;
+			this.inputs = [];
 			
 			me.game.viewport.follow(this.pos, me.game.viewport.AXIS.BOTH);
 		},
@@ -47,13 +49,13 @@
 			
 			if(this.isCurrentAnimation("shootForward") || this.isCurrentAnimation("shootSideward")) {
 				if(this.recoil > 0) {
-					if(this.direction === game.Network.DIRECTION.UP) {
+					if(this.direction === game.ENUM.DIRECTION.UP) {
 						this.vel.y += this.recoil;
-					} else if(this.direction === game.Network.DIRECTION.DOWN) {
+					} else if(this.direction === game.ENUM.DIRECTION.DOWN) {
 						this.vel.y -= this.recoil;
-					} else if(this.direction === game.Network.DIRECTION.LEFT) {
+					} else if(this.direction === game.ENUM.DIRECTION.LEFT) {
 						this.vel.x += this.recoil;
-					} else if(this.direction === game.Network.DIRECTION.RIGHT) {
+					} else if(this.direction === game.ENUM.DIRECTION.RIGHT) {
 						this.vel.x -= this.recoil;
 					}
 				}
@@ -64,10 +66,18 @@
 			this.updateMovement();
 
 			if(this.pressed !== this.lastPressed) {
-				this.socket.emit(game.Network.TYPE.MOVE, this.pressed);
-				console.log(this.pressed);
+				this.lastPressed = this.pressed;
+				
+				this.input_seq += 1;
+
+				var input = {};
+				input[game.ENUM.TYPE.PRESSED]         = this.pressed;
+				input[game.ENUM.TYPE.SEQUENCE_NUMBER] = this.input_seq;
+				input[game.ENUM.TYPE.LOCAL_TIME]      = window.game.local_time;
+
+				this.inputs.push(input);
+				this.socket.emit(game.ENUM.TYPE.INPUT, input);
 			}
-			this.lastPressed = this.pressed;
 
 			/*if(this.vel.x !== this.lastVel.x || this.vel.y !== this.lastVel.y) {
 				var data = {};
@@ -99,53 +109,51 @@
 			// }
 			if(this.canShoot) {
 				this.canShoot = false;
-				var that = this;
 				setTimeout(function() {
-					that.canShoot = true;
-				}, this.shootSpeed);
+					this.canShoot = true;
+				}.bind(this), this.shootSpeed);
 			} else {
 				return false;
 			}
 
-			var that = this,
-				x = this.pos.x,
+			var x = this.pos.x,
 				y = this.pos.y;
 
-			if(this.direction === game.Network.DIRECTION.UP) {
+			if(this.direction === game.ENUM.DIRECTION.UP) {
 				this.setCurrentAnimation("shootForward", function() {
-					that.setCurrentAnimation("moveForward");
-					that.setAnimationFrame(0);
-					that.animationspeed = me.sys.fps / 10;
-				});
+					this.setCurrentAnimation("moveForward");
+					this.setAnimationFrame(0);
+					this.animationspeed = me.sys.fps / 10;
+				}.bind(this));
 				this.vel.y += this.recoil;
 				
 				y -= 18;
-			} else if (this.direction === game.Network.DIRECTION.DOWN) {
+			} else if (this.direction === game.ENUM.DIRECTION.DOWN) {
 				this.setCurrentAnimation("shootForward", function() {
-					that.setCurrentAnimation("moveForward");
-					that.setAnimationFrame(0);
-					that.animationspeed = me.sys.fps / 10;
-				});
+					this.setCurrentAnimation("moveForward");
+					this.setAnimationFrame(0);
+					this.animationspeed = me.sys.fps / 10;
+				}.bind(this));
 				this.flipY(true);
 				this.vel.y -= this.recoil;
 
 				y += 18;
-			} else if (this.direction === game.Network.DIRECTION.LEFT) {
+			} else if (this.direction === game.ENUM.DIRECTION.LEFT) {
 				this.setCurrentAnimation("shootSideward", function() {
-					that.setCurrentAnimation("moveSideward");
-					that.setAnimationFrame(0);
-					that.animationspeed = me.sys.fps / 10;
-				});
+					this.setCurrentAnimation("moveSideward");
+					this.setAnimationFrame(0);
+					this.animationspeed = me.sys.fps / 10;
+				}.bind(this));
 				this.flipX(true);
 				this.vel.x += this.recoil;
 
 				x -= 18;
-			} else if (this.direction === game.Network.DIRECTION.RIGHT) {
+			} else if (this.direction === game.ENUM.DIRECTION.RIGHT) {
 				this.setCurrentAnimation("shootSideward", function() {
-					that.setCurrentAnimation("moveSideward");
-					that.setAnimationFrame(0);
-					that.animationspeed = me.sys.fps / 10;
-				});
+					this.setCurrentAnimation("moveSideward");
+					this.setAnimationFrame(0);
+					this.animationspeed = me.sys.fps / 10;
+				}.bind(this));
 				this.vel.x -= this.recoil;
 
 				x += 18;
@@ -155,7 +163,7 @@
 
 			this.animationspeed = me.sys.fps / 50;
 
-			var bullet = new game.Bullet(x, y, this.direction, 5, this.GUID);
+			var bullet = me.entityPool.newInstanceOf('Bullet', x, y, this.direction, 5, this.GUID);
 			me.game.add(bullet, 5);
 			me.game.sort();
 
@@ -164,22 +172,22 @@
 
 		moveLeft : function() {
 			this.parent();
-			this.pressed |= game.Network.PRESSED.LEFT;
+			this.pressed |= game.ENUM.PRESSED.LEFT;
 		},
 
 		moveRight : function() {
 			this.parent();
-			this.pressed |= game.Network.PRESSED.RIGHT;
+			this.pressed |= game.ENUM.PRESSED.RIGHT;
 		},
 
 		moveUp : function() {
 			this.parent();
-			this.pressed |= game.Network.PRESSED.UP;
+			this.pressed |= game.ENUM.PRESSED.UP;
 		},
 
 		moveDown : function() {
 			this.parent();
-			this.pressed |= game.Network.PRESSED.DOWN;
+			this.pressed |= game.ENUM.PRESSED.DOWN;
 		}
 	});
 	

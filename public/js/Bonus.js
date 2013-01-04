@@ -27,10 +27,9 @@
 			
 			this.setCurrentAnimation("default");
 
-			var that = this;
 			setTimeout(function() {
-				that.isValid = false;
-			}, time || 5000);
+				this.isValid = false;
+			}.bind(this), time || 5000);
 		},
 
 		update : function() {
@@ -44,11 +43,13 @@
 		onCollision : function(res, obj) {
 			if(this.isValid) {
 				// TODO finish bonuses
+				/*
 				switch(this.bonus) {
 					case this.TYPE.SPEED:
 						obj.setVelocity(5, 5);
 						break;
 				}
+				*/
 
 				this.isValid = false;
 			}

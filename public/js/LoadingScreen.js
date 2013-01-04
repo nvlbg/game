@@ -49,11 +49,10 @@
 			var logo_width = this.font.measureText(context, "LOADING...").width;
 
 			// draw our text somewhere in the middle
-			this.font.draw(context,
-						   "LOADING...",
-						   (context.canvas.width - logo_width) / 2,
-						   context.canvas.height / 2 - 30
-						  );
+			this.font.draw( context,
+							"LOADING...",
+							(context.canvas.width - logo_width) / 2,
+							context.canvas.height / 2 - 30);
 
 			// display a progressive loading bar
 			var width = Math.floor(this.loadPercent * context.canvas.width);

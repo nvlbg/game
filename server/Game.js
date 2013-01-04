@@ -21,6 +21,18 @@ var Game = {
 	blue  : 0,
 	green : 0,
 
+	_dt : null,
+	_dte : null,
+	local_time : null,
+
+	authenticateSmathphone : function(socket, playerID) {
+		if (!Game.players[playerID]) {
+			socket.emit(Game.TYPE.SMARTPHONE_ACCEPT, false);
+		} else {
+			Game.players[playerID].connectSmartphone(socket);
+		}
+	},
+
 	update : function () {
 		Game.timer.update();
 		
@@ -30,6 +42,14 @@ var Game = {
 			player.update();
 
 			if(player.updated) {
+				if (player.smartphoneConnected) {
+					player.socket.emit(Game.TYPE.PLAYER_UPDATED, {
+						p : player.pressed,
+						x : player.pos.x,
+						y : player.pos.y
+					});
+				}
+
 				player.socket.broadcast.emit(Game.TYPE.PLAYER_UPDATED, {
 					p : player.pressed,
 					x : player.pos.x,
@@ -73,11 +93,9 @@ var Game = {
 
 		var player = new Player(new Vector2d(32, 64), this.DIRECTION.DOWN, 0, 3, 0, team, socket, this.idCounter++);
 
-		while (
-			   Game.collide(player) || 
-			   Game.world.checkCollision(player, new Vector2d(0, 0)).xtyle ||
-			   Game.world.checkCollision(player, new Vector2d(0, 0)).ytyle
-			  )
+		while ( Game.collide(player) || 
+				Game.world.checkCollision(player, new Vector2d(0, 0)).xtyle ||
+				Game.world.checkCollision(player, new Vector2d(0, 0)).ytyle )
 		{
 			player.pos = new Vector2d(Number.prototype.random(32, 320), Number.prototype.random(32, 320));
 		}
@@ -117,10 +135,12 @@ var Game = {
 
 		Game.players[player.id] = player;
 
-		socket.on(Game.TYPE.MOVE, function(pressed) {
-			player.pressed = pressed;
+		socket.on(Game.TYPE.INPUT, function(input) {
+			player.pressed = input[Game.TYPE.PRESSED];
 			player.updated = true;
 		});
+
+		socket.on(Game.TYPE.SMARTPHONE_ACCEPT, player.answerSmartphone);
 
 		console.log('Client connected: ' + player.id);
 		socket.on('disconnect', function() {
@@ -158,21 +178,35 @@ var Game = {
 		return null;
 	},
 
+	createTimer : function() {
+		setInterval(function() {
+			this._dt = new Date().getTime() - this._dte;
+			this._dte = new Date().getTime();
+			this.local_time += this._dt/1000.0;
+		}.bind(this), 4);
+	},
+
 	init : function () {
-		Game.constants = require('./constants.js');
+		this.local_time = 0.016;
+		this._dt = this._dte = new Date().getTime();
+
+		this.createTimer();
+
+		Game.constants = require('../shared/constants.js');
+		Game.config = require('./config.js');
 		Game.TYPE = Game.constants.TYPE;
 		Game.DIRECTION = Game.constants.DIRECTION;
 		Game.TEAM = Game.constants.TEAM;
 		Game.PRESSED = Game.constants.PRESSED;
 		Game.FRIENDLY_FIRE = Game.constants.FRIENDLY_FIRE;
 		
-		Game.world = new World(require('./../public/data/maps/' + Game.constants.MAP + '.json'));
+		Game.world = new World(require('./../public/data/maps/' + Game.config.MAP + '.json'));
 
 		Game.timer = require('./timer.js');
 		
 		if(Game.timer.init()) {
-			setInterval(Game.update,           1000 / Game.constants.FPS          );
-			setInterval(Game.correctionUpdate, Game.constants.CORRECTION_TIME_STEP);
+			setInterval(Game.update,           1000 / Game.config.FPS          );
+			setInterval(Game.correctionUpdate, Game.config.CORRECTION_TIME_STEP);
 		}
 	}
 

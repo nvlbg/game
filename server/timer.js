@@ -1,4 +1,4 @@
-var fps = require('./constants.js').fps;
+var fps = require('./config.js').FPS;
 var timer = (function() {
 	// hold public stuff in our api
 	var api = {};

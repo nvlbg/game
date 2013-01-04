@@ -57,10 +57,10 @@
 				return true;
 			}
 			if (me.input.isKeyPressed("enter")) {
-				if (this.selectedItem == 0) {
+				if (this.selectedItem === 0) {
 					//me.state.change(me.state.PLAY)
 				}
-				if (this.selectedItem == 1) {
+				if (this.selectedItem === 1) {
 					//me.state.change(me.state.CREDITS)
 				}
 				return true;

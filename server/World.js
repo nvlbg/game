@@ -1,5 +1,5 @@
 require('./Util.js');
-var constants = require('./constants.js');
+var constants = require('../shared/constants.js');
 
 var Vector2d = require('./Vector2d.js');
 var Rect = require('./Rect.js');
@@ -15,10 +15,10 @@ var World = Object.extend({
 	realheight : 0,
 
 	init : function (map_json) {
-		this.width = parseInt(map_json['width']);
-		this.height = parseInt(map_json['height']);
-		this.tilewidth = parseInt(map_json['tilewidth']);
-		this.tileheight = parseInt(map_json['tileheight']);
+		this.width = parseInt(map_json['width'], 10);
+		this.height = parseInt(map_json['height'], 10);
+		this.tilewidth = parseInt(map_json['tilewidth'], 10);
+		this.tileheight = parseInt(map_json['tileheight'], 10);
 		this.realwidth = this.width * this.tilewidth;
 		this.realheight = this.height * this.tileheight;
 
@@ -74,12 +74,12 @@ var World = Object.extend({
 			x : 0, // !=0 if collision on x axis
 			xtile : undefined,
 			y : 0, // !=0 if collision on y axis
-			ytile : undefined,
+			ytile : undefined
 		};
 		
 		if (x <= 0 || x >= this.realwidth) {
 			res.x = pv.x;
-		} else if (pv.x != 0 ) {
+		} else if (pv.x !== 0 ) {
 			res.xtile = this.collision_data[~~(x / this.tilewidth)][~~(Math.ceil(obj.bottom - 1) / this.tileheight)];
 			if (res.xtile !== 0) {
 				res.x = pv.x;
@@ -93,7 +93,7 @@ var World = Object.extend({
 		
 		if (y <= 0 || y >= this.realheight) {
 			res.y = pv.y;
-		} else if ( pv.y != 0 ) {
+		} else if ( pv.y !== 0 ) {
 			res.ytile = this.collision_data[~~(((pv.x < 0) ? ~~obj.left : Math.ceil(obj.right - 1)) / this.tilewidth)][~~(y / this.tileheight)];
 			if (res.ytile !== 0) {
 				res.y = pv.y;
@@ -109,7 +109,7 @@ var World = Object.extend({
 	},
 
 	applyFriction : function(v, f) {
-		return (v+f<0)?v+(f*timer.tick):(v-f>0)?v-(f*timer.tick):0;
+		return (v+f<0)?v+(f*Game.timer.tick):(v-f>0)?v-(f*Game.timer.tick):0;
 	}
 });
 

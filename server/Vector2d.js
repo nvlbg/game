@@ -60,15 +60,17 @@ var Vector2d = Object.extend(
 	},
 
 	abs : function() {
-		if (this.x < 0)
+		if (this.x < 0) {
 			this.x = -this.x;
-		if (this.y < 0)
+		}
+		if (this.y < 0) {
 			this.y = -this.y;
+		}
 	},
 
 	/** @return {me.Vector2D} */
 	clamp : function(low, high) {
-		return new me.Vector2d(this.x.clamp(low, high), this.y.clamp(low, high));
+		return new Vector2d(this.x.clamp(low, high), this.y.clamp(low, high));
 	},
 	
 	clampSelf : function(low, high) {
@@ -89,7 +91,7 @@ var Vector2d = Object.extend(
 	
 	/** @return {me.Vector2D} New Vector2d */
 	floor : function() {
-		return new me.Vector2d(~~this.x, ~~this.y);
+		return new Vector2d(~~this.x, ~~this.y);
 	},
 	
 	/** @return {me.Vector2D} New Vector2d */
@@ -101,7 +103,7 @@ var Vector2d = Object.extend(
 	
 	/** @return {me.Vector2D} New Vector2d */
 	ceil : function() {
-		return new me.Vector2d(Math.ceil(this.x), Math.ceil(this.y));
+		return new Vector2d(Math.ceil(this.x), Math.ceil(this.y));
 	},
 	
 	/** @return {me.Vector2D} New Vector2d */
@@ -113,7 +115,7 @@ var Vector2d = Object.extend(
 
 	/** @return {me.Vector2D} New Vector2d */
 	negate : function() {
-		return new me.Vector2d(-this.x, -this.y);
+		return new Vector2d(-this.x, -this.y);
 	},
 
 	negateSelf : function() {
@@ -162,7 +164,7 @@ var Vector2d = Object.extend(
 
 	/** @return {me.Vector2d} */
 	clone : function() {
-		return new me.Vector2d(this.x, this.y);
+		return new Vector2d(this.x, this.y);
 	},
 
 	/** @return {String} */

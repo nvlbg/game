@@ -1,5 +1,5 @@
 var initializing = false,
-	fnTest = /xyz/.test(function() {/**@nosideeffects*/xyz;}) ? /\bparent\b/ : /.*/;
+	fnTest = /\bparent\b/;
 
 Object.extend = function(prop) {
 	// _super rename to parent to ease code reading
@@ -14,9 +14,9 @@ Object.extend = function(prop) {
 	// Copy the properties over onto the new prototype
 	for ( var name in prop) {
 		// Check if we're overwriting an existing function
-		proto[name] = typeof prop[name] == "function"
-				&& typeof parent[name] == "function"
-				&& fnTest.test(prop[name]) ? (function(name, fn) {
+		proto[name] =   typeof prop[name] === "function" &&
+						typeof parent[name] === "function" &&
+						fnTest.test(prop[name]) ? (function(name, fn) {
 			return function() {
 				var tmp = this.parent;
 
@@ -73,7 +73,7 @@ if (!Object.defineProperty) {
 			// we should never reach this point....
 			throw "Object.defineProperty not supported";
 		}
-	}
+	};
 }
 
 /**

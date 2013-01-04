@@ -1,6 +1,8 @@
 (function() {
 	window.game = {};
 
+	window.game.ENUM = window.ENUM;
+
 	// configuring system variables
 	me.sys.pauseOnBlur = false;
 	me.sys.useNativeAnimFrame = true;

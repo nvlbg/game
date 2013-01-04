@@ -154,11 +154,9 @@ var Rect = Object.extend(
 		var y1 = Math.min(this.pos.y, r.pos.y);
 
 		this.width = Math.ceil(Math.max(this.pos.x + this.width,
-				r.pos.x + r.width)
-				- x1);
+				r.pos.x + r.width)  - x1);
 		this.height = Math.ceil(Math.max(this.pos.y + this.height,
-				r.pos.y + r.height)
-				- y1);
+				r.pos.y + r.height) - y1);
 		this.pos.x = ~~x1;
 		this.pos.y = ~~y1;
 
@@ -176,7 +174,7 @@ var Rect = Object.extend(
 	 * @param {int} h height of the hit box
 	 */
 	adjustSize : function(x, w, y, h) {
-		if (x != -1) {
+		if (x !== -1) {
 			this.colPos.x = x;
 			this.width = w;
 			this.hWidth = ~~(this.width / 2);
@@ -200,7 +198,7 @@ var Rect = Object.extend(
 				});
 			}
 		}
-		if (y != -1) {
+		if (y !== -1) {
 			this.colPos.y = y;
 			this.height = h;
 			this.hHeight = ~~(this.height / 2);
@@ -269,10 +267,10 @@ var Rect = Object.extend(
 	 */
 	within: function(r) {
 		return (r.left <= this.left && 
-			    r.right >= this.right &&
-			    r.top <= this.top && 
+				r.right >= this.right &&
+				r.top <= this.top && 
 				r.bottom >= this.bottom);
-    },
+	},
 	
 	/**
 	 * check if this rectangle contains the specified one
@@ -284,7 +282,7 @@ var Rect = Object.extend(
 				r.right <= this.right &&
 				r.top >= this.top && 
 				r.bottom <= this.bottom);
-    },
+	},
 	
 	/**
 	 * check if this rectangle contains the specified point
@@ -293,7 +291,7 @@ var Rect = Object.extend(
 	 */
 	containsPoint: function(v) {
 		return  (v.x >= this.left && v.x <= this.right && 
-				(v.y >= this.top) && v.y <= this.bottom)
+				(v.y >= this.top) && v.y <= this.bottom);
 	},
 
 
@@ -302,7 +300,7 @@ var Rect = Object.extend(
 	 * If there was a collision, the return vector will contains the following values: 
 	 * @example
 	 * if (v.x != 0 || v.y != 0)
-	 * { 	
+	 * { 
 	 *   if (v.x != 0)
 	 *   {
 	 *      // x axis
@@ -336,9 +334,8 @@ var Rect = Object.extend(
 			var dy = this.top  + this.hHeight - rect.top  - rect.hHeight;
 
 			// compute penetration depth for both axis
-			p.x = (rect.hWidth + this.hWidth) - (dx < 0 ? -dx : dx); // - Math.abs(dx);
-			p.y = (rect.hHeight + this.hHeight)
-					- (dy < 0 ? -dy : dy); // - Math.abs(dy);
+			p.x = (rect.hWidth + this.hWidth)   - (dx < 0 ? -dx : dx); // - Math.abs(dx);
+			p.y = (rect.hHeight + this.hHeight) - (dy < 0 ? -dy : dy); // - Math.abs(dy);
 
 			// check and "normalize" axis
 			if (p.x < p.y) {

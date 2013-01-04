@@ -26,14 +26,14 @@
 			this.setFriction(friction, friction);
 
 			if(enemy) {
-				if(me.gamestat.getItemValue("team") === game.Network.TEAM.GREEN) {
+				if(me.gamestat.getItemValue("team") === game.ENUM.TEAM.GREEN) {
 					this.addAnimation("idleForward", [17]);
 					this.addAnimation("moveForward", [17,16,15,14,13,12,11,10]);
 					this.addAnimation("shootForward", [17,18,19,18,17]);
 					this.addAnimation("idleSideward", [37]);
 					this.addAnimation("moveSideward", [37,36,35,34,33,32,31,30]);
 					this.addAnimation("shootSideward", [37,38,39,38,37]);
-				} else if(me.gamestat.getItemValue("team") === game.Network.TEAM.BLUE) {
+				} else if(me.gamestat.getItemValue("team") === game.ENUM.TEAM.BLUE) {
 					this.addAnimation("idleForward", [7]);
 					this.addAnimation("moveForward", [7,6,5,4,3,2,1,0]);
 					this.addAnimation("shootForward", [7,8,9,8,7]);
@@ -44,14 +44,14 @@
 					throw "unknown team \"" + me.gamestat.getItemValue("team") + "\"";
 				}
 			} else {
-				if(me.gamestat.getItemValue("team") === game.Network.TEAM.GREEN) {
+				if(me.gamestat.getItemValue("team") === game.ENUM.TEAM.GREEN) {
 					this.addAnimation("idleForward", [7]);
 					this.addAnimation("moveForward", [7,6,5,4,3,2,1,0]);
 					this.addAnimation("shootForward", [7,8,9,8,7]);
 					this.addAnimation("idleSideward", [27]);
 					this.addAnimation("moveSideward", [27,26,25,24,23,22,21,20]);
 					this.addAnimation("shootSideward", [27,28,29,28,27]);
-				} else if(me.gamestat.getItemValue("team") === game.Network.TEAM.BLUE) {
+				} else if(me.gamestat.getItemValue("team") === game.ENUM.TEAM.BLUE) {
 					this.addAnimation("idleForward", [17]);
 					this.addAnimation("moveForward", [17,16,15,14,13,12,11,10]);
 					this.addAnimation("shootForward", [17,18,19,18,17]);
@@ -66,10 +66,10 @@
 
 			var currentAnimation = "move";
 
-			if(direction === game.Network.DIRECTION.UP || direction === game.Network.DIRECTION.DOWN) {
+			if(direction === game.ENUM.DIRECTION.UP || direction === game.ENUM.DIRECTION.DOWN) {
 				this.updateColRect(4, 24, 1, 29);
 				currentAnimation += "Forward";
-			} else if(direction === game.Network.DIRECTION.LEFT || direction === game.Network.DIRECTION.RIGHT) {
+			} else if(direction === game.ENUM.DIRECTION.LEFT || direction === game.ENUM.DIRECTION.RIGHT) {
 				this.updateColRect(2, 29, 4, 24);
 				currentAnimation += "Sideward";
 			} else {
@@ -78,9 +78,9 @@
 			
 			this.setCurrentAnimation(currentAnimation);
 
-			if(direction === game.Network.DIRECTION.LEFT) {
+			if(direction === game.ENUM.DIRECTION.LEFT) {
 				this.flipX(true);
-			} else if(direction === game.Network.DIRECTION.DOWN) {
+			} else if(direction === game.ENUM.DIRECTION.DOWN) {
 				this.flipY(true);
 			}
 		},
@@ -89,34 +89,33 @@
 			this.isExploding = true;
 			this.collidable = false;
 
-			var that = this;
 			this.setCurrentAnimation("explode", function() {
-				that.isExploding = false;
-				me.game.remove(that);
+				this.isExploding = false;
+				me.entityPool.freeInstance(this);
 			});
 		},
 
 		fixDirection : function() {
 			var currentAnimation = "move";
-			if(this.direction === game.Network.DIRECTION.UP || this.direction === game.Network.DIRECTION.DOWN) {
+			if(this.direction === game.ENUM.DIRECTION.UP || this.direction === game.ENUM.DIRECTION.DOWN) {
 				this.updateColRect(4, 24, 1, 29);
 				currentAnimation += "Forward";
-			} else if(this.direction === game.Network.DIRECTION.LEFT || this.direction === game.Network.DIRECTION.RIGHT) {
+			} else if(this.direction === game.ENUM.DIRECTION.LEFT || this.direction === game.ENUM.DIRECTION.RIGHT) {
 				this.updateColRect(2, 29, 4, 24);
 				currentAnimation += "Sideward";
 			} else {
-				throw "unknown direction \"" + direction + "\"";
+				throw "unknown direction \"" + this.direction + "\"";
 			}
 
 			this.setCurrentAnimation(currentAnimation);
 
-			if(this.direction === game.Network.DIRECTION.LEFT) {
+			if(this.direction === game.ENUM.DIRECTION.LEFT) {
 				this.flipX(true);
-			} else if(this.direction === game.Network.DIRECTION.RIGHT) {
+			} else if(this.direction === game.ENUM.DIRECTION.RIGHT) {
 				this.flipX(false);
-			} else if(this.direction === game.Network.DIRECTION.UP) {
+			} else if(this.direction === game.ENUM.DIRECTION.UP) {
 				this.flipY(false);
-			} else if(this.direction === game.Network.DIRECTION.DOWN) {
+			} else if(this.direction === game.ENUM.DIRECTION.DOWN) {
 				this.flipY(true);
 			}
 		},
@@ -156,14 +155,14 @@
 			this.vel.x -= this.accel.x * me.timer.tick;
 			this.vel.y = 0;
 
-			if(this.direction !== game.Network.DIRECTION.LEFT) {
-				if(this.direction !== game.Network.DIRECTION.RIGHT) {
+			if(this.direction !== game.ENUM.DIRECTION.LEFT) {
+				if(this.direction !== game.ENUM.DIRECTION.RIGHT) {
 					this.updateColRect(2, 29, 4, 24);
 					this.setCurrentAnimation("moveSideward");
 				}
 
 				this.flipX(true);
-				this.direction = game.Network.DIRECTION.LEFT;
+				this.direction = game.ENUM.DIRECTION.LEFT;
 			}
 		},
 
@@ -171,14 +170,14 @@
 			this.vel.x += this.accel.x * me.timer.tick;
 			this.vel.y = 0;
 
-			if(this.direction !== game.Network.DIRECTION.RIGHT) {
-				if(this.direction !== game.Network.DIRECTION.LEFT) {
+			if(this.direction !== game.ENUM.DIRECTION.RIGHT) {
+				if(this.direction !== game.ENUM.DIRECTION.LEFT) {
 					this.updateColRect(2, 29, 4, 24);
 					this.setCurrentAnimation("moveSideward");
 				}
 
 				this.flipX(false);
-				this.direction = game.Network.DIRECTION.RIGHT;
+				this.direction = game.ENUM.DIRECTION.RIGHT;
 			}
 		},
 
@@ -186,14 +185,14 @@
 			this.vel.x = 0;
 			this.vel.y -= this.accel.y * me.timer.tick;
 
-			if(this.direction !== game.Network.DIRECTION.UP) {
-				if(this.direction !== game.Network.DIRECTION.DOWN) {
+			if(this.direction !== game.ENUM.DIRECTION.UP) {
+				if(this.direction !== game.ENUM.DIRECTION.DOWN) {
 					this.updateColRect(4, 24, 1, 29);
 					this.setCurrentAnimation("moveForward");
 				}
 
 				this.flipY(false);
-				this.direction = game.Network.DIRECTION.UP;
+				this.direction = game.ENUM.DIRECTION.UP;
 			}
 		},
 
@@ -201,14 +200,14 @@
 			this.vel.x = 0;
 			this.vel.y += this.accel.y * me.timer.tick;
 
-			if(this.direction !== game.Network.DIRECTION.DOWN) {
-				if(this.direction !== game.Network.DIRECTION.UP) {
+			if(this.direction !== game.ENUM.DIRECTION.DOWN) {
+				if(this.direction !== game.ENUM.DIRECTION.UP) {
 					this.updateColRect(4, 24, 1, 29);
 					this.setCurrentAnimation("moveForward");
 				}
 
 				this.flipY(true);
-				this.direction = game.Network.DIRECTION.DOWN;
+				this.direction = game.ENUM.DIRECTION.DOWN;
 			}
 		}
 	});

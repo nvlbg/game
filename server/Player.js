@@ -30,6 +30,27 @@ var Player = Rect.extend({
 		this.id = id;
 	},
 
+	smartphone : null,
+	smartphoneConnected : false,
+	connectSmartphone : function (smartphone) {
+		this.smartphone = smartphone;
+		this.socket.emit(Game.TYPE.SMARTPHONE_REQUEST);
+	},
+
+	answerSmartphone : function (answer) {
+		this.smartphone.emit(Game.TYPE.SMARTPHONE_ACCEPT, answer);
+
+		if ( answer === true ) {
+			this.smartphoneConnected = true;
+			this.smartphone.on(Game.TYPE.INPUT, function(input) {
+				this.pressed = input[Game.TYPE.PRESSED];
+				this.updated = true;
+			});
+		} else {
+			this.smartphone = null;
+		}
+	},
+
 	update : function() {
 		if(this.pressed & Game.PRESSED.LEFT) {
 			this.moveLeft();
@@ -127,16 +148,20 @@ var Player = Rect.extend({
 	
 	computeVelocity : function(vel) {
 		// apply friction
-		if (this.friction.x)
+		if (this.friction.x) {
 			this.vel.x = Game.world.applyFriction(this.vel.x, this.friction.x);
-		if (this.friction.y)
+		}
+		if (this.friction.y) {
 			this.vel.y = Game.world.applyFriction(this.vel.y, this.friction.y);
+		}
 
 		// cap velocity
-		if (vel.y !=0)
+		if (vel.y !== 0) {
 			vel.y = vel.y.clamp(-this.accel.y,this.accel.y);
-		if (vel.x !=0)
+		}
+		if (vel.x !== 0) {
 			vel.x = vel.x.clamp(-this.accel.x,this.accel.x);
+		}
 		
 	},
 

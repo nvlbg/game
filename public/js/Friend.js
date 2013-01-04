@@ -16,15 +16,15 @@
 				return true;
 			}
 
-			if(this.pressed & game.Network.PRESSED.LEFT) {
+			if(this.pressed & game.ENUM.PRESSED.LEFT) {
 				this.moveLeft();
-			} else if(this.pressed & game.Network.PRESSED.RIGHT) {
+			} else if(this.pressed & game.ENUM.PRESSED.RIGHT) {
 				this.moveRight();
 			}
 
-			if(this.pressed & game.Network.PRESSED.UP) {
+			if(this.pressed & game.ENUM.PRESSED.UP) {
 				this.moveUp();
-			} else if(this.pressed & game.Network.PRESSED.DOWN) {
+			} else if(this.pressed & game.ENUM.PRESSED.DOWN) {
 				this.moveDown();
 			}
 
