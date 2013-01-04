@@ -14,6 +14,9 @@ module.exports = function(grunt) {
               ' * Licensed : <%= pkg.licenses[0].name %> (<%= pkg.licenses[0].url %>)\n' +
               ' */\n'
     },
+    clean: {
+      build: ['public/build/**/*']
+    },
     concat: {
       options: {
         banner: '<%= meta.banner %>'
@@ -31,7 +34,7 @@ module.exports = function(grunt) {
               'public/js/Enemy.js',
               'public/js/Player.js',
               'public/js/main.js'],
-        dest: 'public/lib/<%= pkg.name %>.<%= pkg.version %>.js'
+        dest: 'public/build/<%= pkg.name %>.<%= pkg.version %>.js'
       }
     },
     uglify: {
@@ -40,7 +43,7 @@ module.exports = function(grunt) {
       },
       dist: {
         src: '<%= concat.dist.dest %>',
-        dest: 'public/lib/<%= pkg.name %>.<%= pkg.version %>.min.js'
+        dest: 'public/build/<%= pkg.name %>.<%= pkg.version %>.min.js'
       }
     },
     jshint: {
@@ -113,12 +116,14 @@ module.exports = function(grunt) {
     }
   });
 
+  grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   
   // Default task.
   grunt.registerTask ('default', ['jshint:clientBeforeConcat',
+                                  'clean',
                                   'concat',
                                   'jshint:clientAfterConcat',
                                   'uglify',
