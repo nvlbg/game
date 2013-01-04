@@ -1,7 +1,7 @@
 General
 =======
 
-This is a fast game using melonJS as engine. It is supposed to be a massive multiplayer but it is currently in development. Currently I have not came with an idea how to name the game, so if you thought of a good name, you can email me on nvl.bg.rules@gmail.com
+This is a fast paced game using melonJS as engine. It is supposed to be a massive multiplayer but it is currently in development. Currently I have not came with an idea how to name the game, so if you thought of a good name, you can email me on nvl.bg.rules@gmail.com
 
 
 Server requirements
