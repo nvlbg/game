@@ -100,7 +100,7 @@
 
 		onPlayerLeave : function(id) {
 			if(this.players[id]) {
-				me.entityPool.freeInstance(this.players[id]);
+				me.game.remove(this.players[id]);
 			} else {
 				console.log('Error: no such player [' + id + ']');
 			}

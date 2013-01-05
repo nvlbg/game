@@ -91,7 +91,7 @@
 
 			this.setCurrentAnimation("explode", function() {
 				this.isExploding = false;
-				me.entityPool.freeInstance(this);
+				me.game.remove(this);
 			});
 		},
 

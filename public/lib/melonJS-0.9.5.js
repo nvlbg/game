@@ -1305,14 +1305,8 @@ var me = me || {};
 		 * @private
 		 * @function
 		 */
-		api.addEntity = function(type, zOrder) {
-			var obj; 
-			if(type.image) {
-				obj = me.entityPool.newInstanceOf(type);
-			} else {
-				obj = me.entityPool.newInstanceOf(type.name, type.x, type.y, type);
-			}
-
+		api.addEntity = function(ent, zOrder) {
+			var obj = me.entityPool.newInstanceOf(ent.name, ent.x, ent.y, ent);
 			if (obj) {
 				api.add(obj, zOrder);
 			}
@@ -1483,6 +1477,7 @@ var me = me || {};
 			if (force===true) {
 				// force immediate object deletion
 				gameObjects.remove(obj);
+				me.entityPool.freeInstance(obj);
 			} else {
 				// make it invisible (this is bad...)
 				obj.visible = false
@@ -1490,6 +1485,7 @@ var me = me || {};
 				/** @private */
 				pendingRemove = (function (obj) {
 					gameObjects.remove(obj);
+					me.entityPool.freeInstance(obj);
 					pendingRemove = null;
 				}).defer(obj);
 			}
@@ -2626,7 +2622,7 @@ var me = me || {};
 			// load our file
 			httpReq.open("GET", data.src + me.nocache, false);
 			httpReq.responseType = "arraybuffer";
-			xmlhttp.onerror = onerror;
+			httpReq.onerror = onerror;
 			httpReq.onload = function(event){
 				var arrayBuffer = httpReq.response;
 				if (arrayBuffer) {
@@ -4296,6 +4292,8 @@ var me = me || {};
 
 			// scale factor of the object
 			this.scale = new me.Vector2d(1.0, 1.0);
+			this.lastflipX = this.lastflipY = false,
+			this.scaleFlag = false;
 
 			// set the default sprite index & offset
 			this.offset = new me.Vector2d(0, 0);
@@ -4305,6 +4303,12 @@ var me = me || {};
 
 			// ensure it's fully opaque by default
 			this.alpha = 1.0;			
+			
+			// make it visible by default
+			this.visible = true;
+			
+			// and not flickering
+			this.flickering = false
 		},
 
 		/**
@@ -4862,8 +4866,8 @@ var me = me || {};
 		 * me.entityPool.add("heartentity", HeartEntity, true);
 		 * me.entityPool.add("starentity", StarEntity, true);
 		 */
-		obj.add = function(className, entityObj, pooing) {
-			if (!pooing) {
+		obj.add = function(className, entityObj, pooling) {
+			if (!pooling) {
 				entityClass[className.toLowerCase()] = entityObj;
 				return;
 			}
@@ -4889,34 +4893,35 @@ var me = me || {};
 		 * me.entityPool.add("bullet", BulletEntity, true);
 		 * me.entityPool.add("enemy", EnemyEntity, true);
 		 * // ...
-		 * // when we need new bullet:
+		 * // when we need to manually create a new bullet:
 		 * var bullet = me.entityPool.newInstanceOf("bullet", x, y, direction);
 		 * // ...
 		 * // params aren't a fixed number
 		 * // when we need new enemy we can add more params, that the object construct requires:
 		 * var enemy = me.entityPool.newInstanceOf("enemy", x, y, direction, speed, power, life);
 		 * // ...
-		 * // when we want to destroy existing object:
-		 * me.entityPool.freeInstance(enemy);
-		 * me.entityPool.freeInstance(bullet);
+		 * // when we want to destroy existing object, the remove 
+		 * // function will ensure the object can then be reallocated later
+		 * me.game.remove(enemy);
+		 * me.game.remove(bullet);
 		 */
 
 		obj.newInstanceOf = function(data) {
 			var name = typeof data === 'string' ? data.toLowerCase() : undefined;
 			if (name && entityClass[name]) {
 				if (!entityClass[name]['pool']) {
-					var cls = entityClass[name];
-					arguments[0] = cls;
-					return new (cls.bind.apply(cls, arguments))();
+					var proto = entityClass[name];
+					arguments[0] = proto;
+					return new (proto.bind.apply(proto, arguments))();
 				}
-
-				var obj, entity = entityClass[name], cls = entity["class"];
+				
+				var obj, entity = entityClass[name], proto = entity["class"];
 				if (entity["pool"].length > 0) {
 					obj = entity["pool"].pop();
 					obj.init.apply(obj, Array.prototype.slice.call(arguments, 1));
 				} else {
-					arguments[0] = cls;
-					obj = new (cls.bind.apply(cls, arguments))();
+					arguments[0] = proto;
+					obj = new (proto.bind.apply(proto, arguments))();
 					obj.className = name;
 				}
 
@@ -4926,8 +4931,9 @@ var me = me || {};
 
 			// Tile objects can be created with a GID attribute;
 			// The TMX parser will use it to create the image dataerty.
-			if (data.image) {
-				return new me.SpriteObject(data.x, data.y, data.image);
+			var settings = arguments[3];
+			if (settings && settings.image) {
+				return new me.SpriteObject(settings.x, settings.y, settings.image);
 			}
 
 			if (name) {
@@ -4937,7 +4943,21 @@ var me = me || {};
 		};
 
 		/**
-		 *	Remove object from game. <br>
+		 * purge the entity pool from any unactive object <br>
+		 * Object pooling must be enabled for this function to work<br>
+		 * note: this will trigger the garbage collector
+		 * @name me.entityPool#purge
+		 * @public
+		 * @function
+		 */
+		obj.purge = function() {
+			for (className in entityClass) {
+				entityClass[className]["pool"] = [];
+			}
+		};
+
+		/**
+		 * Remove object from the entity pool <br>
 		 * Object pooling for the object class must be enabled,
 		 * and object must have been instanciated using {@link me.entityPool#newInstanceOf},
 		 * otherwise this function won't work
@@ -4947,11 +4967,10 @@ var me = me || {};
 		 * @param {Object} instance to be removed 
 		 */
 		obj.freeInstance = function(obj) {
-			me.game.remove(obj);
 
 			var name = obj.className;
 			if (!name || !entityClass[name]) {
-				console.error("Cannot free object: unknown class");
+				//console.error("Cannot free object: unknown class");
 				return;
 			}
 
@@ -4965,7 +4984,7 @@ var me = me || {};
 			}
 
 			if (notFound) {
-				console.error("Cannot free object: not found in the active pool");
+				//console.error("Cannot free object: not found in the active pool");
 				return;
 			}
 
@@ -5100,7 +5119,7 @@ var me = me || {};
 
 					// just to identify our object
 					this.isEntity = true;
-
+					
 					// dead state :)
 					/**
 					 * dead/living state of the entity<br>
@@ -9292,12 +9311,12 @@ var me = me || {};
 	 * @param {int} tileId tileId
 	 */
 	me.Tile = me.Rect.extend({
-		 /**
-		  * tileId
-		  * @public
-		  * @type int
-		  * @name me.Tile#tileId
-		  */
+		/**
+		 * tileId
+		 * @public
+		 * @type int
+		 * @name me.Tile#tileId
+		 */
 		tileId : null,
 		
 		/** @private */
@@ -9411,7 +9430,6 @@ var me = me || {};
 			};
 		},
 		
-		// 
 		// e.g. getTileProperty (gid)	
 		/**
 		 * return the properties of the specified tile <br>
@@ -9474,7 +9492,7 @@ var me = me || {};
 	 * @memberOf me
 	 * @constructor
 	 */
-	 me.TMXTileset = me.Tileset.extend({
+	me.TMXTileset = me.Tileset.extend({
 		
 		// constructor
 		init: function (xmltileset) {

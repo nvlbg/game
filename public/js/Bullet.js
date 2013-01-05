@@ -56,7 +56,7 @@
 
 		update : function() {
 			if(!this.visible) {
-				me.entityPool.freeInstance(this);
+				me.game.remove(this);
 				return false;
 			}
 
@@ -81,7 +81,7 @@
 			this.isExploding = true;
 
 			this.setCurrentAnimation("explode", function() {
-				me.entityPool.freeInstance(this);
+				me.game.remove(this);
 			}.bind(this));
 		},
 
@@ -111,7 +111,7 @@
 					me.gamestat.getItemValue("friendly_fire"))) {    // with friendly_fire
 				
 					collision.obj.explode();
-					me.entityPool.freeInstance(this);
+					me.game.remove(this);
 					return;
 				}
 			}
