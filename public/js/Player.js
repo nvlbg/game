@@ -13,6 +13,8 @@
 			this.canShoot = true;
 			this.input_seq = 0;
 			this.inputs = [];
+			this.smarthphoneConnected = false;
+			this.pressed = 0;
 			
 			me.game.viewport.follow(this.pos, me.game.viewport.AXIS.BOTH);
 		},
@@ -27,26 +29,39 @@
 			}
 
 			var updated = this.vel.x !== 0 || this.vel.y !== 0;
-			this.pressed = 0;
+			if (!this.smarthphoneConnected) {
+				this.pressed = 0;
 
-			if(me.input.isKeyPressed("left")) {
-				this.moveLeft();
-			} else if (me.input.isKeyPressed("right")) {
-				this.moveRight();
+				if(me.input.isKeyPressed("left")) {
+					this.moveLeft();
+				} else if (me.input.isKeyPressed("right")) {
+					this.moveRight();
+				}
+
+				if(me.input.isKeyPressed("up")) {
+					this.moveUp();
+				} else if (me.input.isKeyPressed("down")) {
+					this.moveDown();
+				}
+			} else {
+				if(this.pressed & game.ENUM.PRESSED.LEFT) {
+					this.moveLeft();
+				} else if (this.pressed & game.ENUM.PRESSED.RIGHT) {
+					this.moveRight();
+				}
+
+				if(this.pressed & game.ENUM.PRESSED.UP) {
+					this.moveUp();
+				} else if (this.pressed & game.ENUM.PRESSED.DOWN) {
+					this.moveDown();
+				}
 			}
-
-			if(me.input.isKeyPressed("up")) {
-				this.moveUp();
-			} else if (me.input.isKeyPressed("down")) {
-				this.moveDown();
-			}
-
 
 			if(me.input.isKeyPressed("shoot")) {
 				this.shoot();
 			}
 
-			
+
 			if(this.isCurrentAnimation("shootForward") || this.isCurrentAnimation("shootSideward")) {
 				if(this.recoil > 0) {
 					if(this.direction === game.ENUM.DIRECTION.UP) {
@@ -65,7 +80,7 @@
 
 			this.updateMovement();
 
-			if(this.pressed !== this.lastPressed) {
+			if(!this.smarthphoneConnected && this.pressed !== this.lastPressed) {
 				this.lastPressed = this.pressed;
 				
 				this.input_seq += 1;
@@ -78,18 +93,6 @@
 				this.inputs.push(input);
 				this.socket.emit(game.ENUM.TYPE.INPUT, input);
 			}
-
-			/*if(this.vel.x !== this.lastVel.x || this.vel.y !== this.lastVel.y) {
-				var data = {};
-				data.x = this.vel.x;
-				data.y = this.vel.y;
-				data.d = this.direction;
-				socket.emit(TYPE.MOVE, data);
-				console.log(data);
-			}*/
-
-			//this.lastVel.x = this.vel.x;
-			//this.lastVel.y = this.vel.y;
 
 			updated = updated || this.vel.x !== 0 || this.vel.y !== 0;
 

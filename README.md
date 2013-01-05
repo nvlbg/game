@@ -37,7 +37,7 @@ To build with grunt, you must have grunt-cli and grunt 0.4 already installed. If
 
 `$ npm install -g grunt-cli`
 
-This will not only install it, but it will be installed globally, so you can use it in other projects as well. For more information visit [gruntjs] or [gruntjs repo]
+This will not only install it, but it will be installed globally, so you can use it in other projects as well. For more information visit [gruntjs homepage] or [gruntjs repository]
 
 Now you can build the project with:
 
@@ -49,5 +49,5 @@ License
 -------
 See COPYING for more info
 
-[gruntjs]: http://gruntjs.com/
-[gruntjs repo]: https://github.com/gruntjs/grunt/
+[gruntjs homepage]: http://gruntjs.com/
+[gruntjs repository]: https://github.com/gruntjs/grunt/

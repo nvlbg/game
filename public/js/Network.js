@@ -29,10 +29,12 @@
 
 		// methods/events
 		onSmartphoneRequest : function() {
-			this.socket.emit(
-								game.ENUM.TYPE.SMARTPHONE_ACCEPT,
-								window.confirm("Are you trying to connect with your smarthphone?")
-							);
+			var confirmRequest = window.confirm("Are you trying to connect with your smarthphone?");
+			this.socket.emit(game.ENUM.TYPE.SMARTPHONE_ACCEPT, confirmRequest);
+
+			if ( confirmRequest ) {
+				this.player.smarthphoneConnected = true;
+			}
 		},
 
 		onSpawn : function(data) {
@@ -72,7 +74,7 @@
 		},
 
 		onPlayerUpdate : function(data) {
-			console.log(data.p);
+			console.log(data);
 			if (!data.i) {
 				this.player.pos.x = data.x;
 				this.player.pos.y = data.y;

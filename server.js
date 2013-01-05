@@ -15,7 +15,7 @@ app.get('/', function(req, res) {
 	res.sendfile(__dirname + '/public/index.html');
 });
 
-app.get('/favicon.ico', function(req, res) { console.log('favicon');
+app.get('/favicon.ico', function(req, res) {
 	res.writeHead(200, {'Content-Type': 'image/x-icon'} );
 	res.end();
 });
@@ -25,7 +25,6 @@ app.get('/shared/*', function(req, res) {
 });
 
 app.get('/smartphones/*', function(req, res) {
-	console.log('smartphone trying to connect ... ');
 	res.sendfile(__dirname + '/smartphones/' + req.params[0]);
 });
 

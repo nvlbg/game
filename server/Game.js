@@ -140,7 +140,7 @@ var Game = {
 			player.updated = true;
 		});
 
-		socket.on(Game.TYPE.SMARTPHONE_ACCEPT, player.answerSmartphone);
+		socket.on(Game.TYPE.SMARTPHONE_ACCEPT, player.answerSmartphone.bind(player));
 
 		console.log('Client connected: ' + player.id);
 		socket.on('disconnect', function() {

@@ -45,7 +45,7 @@ var Player = Rect.extend({
 			this.smartphone.on(Game.TYPE.INPUT, function(input) {
 				this.pressed = input[Game.TYPE.PRESSED];
 				this.updated = true;
-			});
+			}.bind(this));
 		} else {
 			this.smartphone = null;
 		}
