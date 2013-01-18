@@ -52,8 +52,8 @@ var Game = {
 
 				player.socket.broadcast.emit(Game.TYPE.PLAYER_UPDATED, {
 					p : player.pressed,
-					x : player.pos.x,
-					y : player.pos.y,
+					// x : player.pos.x,
+					// y : player.pos.y,
 					
 					i : player.id
 				});

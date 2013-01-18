@@ -1,23 +1,17 @@
 (function() {
 
-	window.game.Player = game.Tank.extend({
+	window.game.EnemyBot = game.Tank.extend({
 		/**
 		constructor
 		*/
-		init : function(x, y, direction, recoil, speed, friction, shootSpeed, socket) {
-			this.parent(x, y, direction, recoil, speed, friction);
+		init : function(x, y, direction, recoil, speed, friction, shootSpeed) {
+			this.parent(x, y, direction, recoil, speed, friction, true);
 			//this.lastVel = new me.Vector2d(0, 0);
 			this.shootSpeed = shootSpeed;
-			this.socket = socket;
 			this.lastPressed = 0;
+			this.type = me.game.ENEMY_OBJECT;
 			this.canShoot = true;
-			this.input_seq = 0;
-			this.inputs = [];
-			this.smarthphoneConnected = false;
 			this.pressed = 0;
-			this.type = me.game.FRIEND_OBJECT;
-			
-			me.game.viewport.follow(this.pos, me.game.viewport.AXIS.BOTH);
 		},
 
 		/**
@@ -30,37 +24,24 @@
 			}
 
 			var updated = this.vel.x !== 0 || this.vel.y !== 0;
-			if (!this.smarthphoneConnected) {
-				this.pressed = 0;
 
-				if(me.input.isKeyPressed("left")) {
-					this.moveLeft();
-				} else if (me.input.isKeyPressed("right")) {
-					this.moveRight();
-				}
-
-				if(me.input.isKeyPressed("up")) {
-					this.moveUp();
-				} else if (me.input.isKeyPressed("down")) {
-					this.moveDown();
-				}
-			} else {
-				if(this.pressed & game.ENUM.PRESSED.LEFT) {
-					this.moveLeft();
-				} else if (this.pressed & game.ENUM.PRESSED.RIGHT) {
-					this.moveRight();
-				}
-
-				if(this.pressed & game.ENUM.PRESSED.UP) {
-					this.moveUp();
-				} else if (this.pressed & game.ENUM.PRESSED.DOWN) {
-					this.moveDown();
-				}
+			if (Number.prototype.random(0, 50) === 0) {
+				this.pressed = Number.prototype.random(1, 8);
 			}
 
-			if(me.input.isKeyPressed("shoot")) {
-				this.shoot();
+			if(this.pressed & game.ENUM.PRESSED.LEFT) {
+				this.moveLeft();
+			} else if(this.pressed & game.ENUM.PRESSED.RIGHT) {
+				this.moveRight();
 			}
+
+			if(this.pressed & game.ENUM.PRESSED.UP) {
+				this.moveUp();
+			} else if(this.pressed & game.ENUM.PRESSED.DOWN) {
+				this.moveDown();
+			}
+
+			this.shoot();
 
 
 			if(this.isCurrentAnimation("shootForward") || this.isCurrentAnimation("shootSideward")) {
@@ -80,24 +61,6 @@
 			}
 
 			this.updateMovement();
-
-			/*
-			if(!this.smarthphoneConnected && this.pressed !== this.lastPressed) {
-				this.lastPressed = this.pressed;
-				
-				this.input_seq += 1;
-
-				var input = {};
-				input[game.ENUM.TYPE.PRESSED]         = this.pressed;
-				input[game.ENUM.TYPE.SEQUENCE_NUMBER] = this.input_seq;
-				input[game.ENUM.TYPE.LOCAL_TIME]      = window.game.local_time;
-
-				this.inputs.push(input);
-				this.socket.emit(game.ENUM.TYPE.INPUT, input);
-			}
-			*/
-
-			updated = updated || this.vel.x !== 0 || this.vel.y !== 0;
 
 			this.vel.x = 0;
 			this.vel.y = 0;
@@ -194,6 +157,40 @@
 		moveDown : function() {
 			this.parent();
 			this.pressed |= game.ENUM.PRESSED.DOWN;
+		},
+
+		updateMovement : function() {
+			this.computeVelocity(this.vel);
+
+			var collision = this.collisionMap.checkCollision(this.collisionBox, this.vel);
+
+			if (collision.y !== 0 || collision.yprop.type === 'water') {
+				this.vel.y = 0;
+				this.pressed = Number.prototype.random(1, 8);
+			}
+
+			if (collision.x !== 0 || collision.yprop.type === 'water') {
+				this.vel.x = 0;
+				this.pressed = Number.prototype.random(1, 8);
+			}
+
+			var x = this.pos.x, y = this.pos.y;
+			this.pos.add(this.vel);
+			collision = me.game.collide(this);
+
+			if(collision && collision.obj instanceof game.Tank) {
+				this.pressed = Number.prototype.random(1, 8);
+				if(collision.y !== 0) {
+					this.vel.y = 0;
+				}
+
+				if(collision.x !== 0) {
+					this.vel.x = 0;
+				}
+
+				this.pos.x = x;
+				this.pos.y = y;
+			}
 		}
 	});
 	

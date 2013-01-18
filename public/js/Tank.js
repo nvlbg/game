@@ -91,7 +91,11 @@
 
 			this.setCurrentAnimation("explode", function() {
 				this.isExploding = false;
-				me.game.remove(this);
+				// me.game.remove(this);
+				
+				this.collidable = true;
+				this.pos.x = Number.prototype.random(32, 320);
+				this.pos.y = Number.prototype.random(32, 320);
 			});
 		},
 

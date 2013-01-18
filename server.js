@@ -10,6 +10,7 @@ var express = require('express'),
 global.Game = require('./server/Game.js');
 global.Game.init();
 
+/*
 // serve requests
 app.get('/', function(req, res) {
 	res.sendfile(__dirname + '/public/index.html');
@@ -31,7 +32,11 @@ app.get('/smartphones/*', function(req, res) {
 app.get('*', function(req, res) {
 	res.sendfile(__dirname + '/public/' + req.params[0]);
 });
+*/
 
+app.use('/shared', express.static(__dirname + '/shared'));
+app.use('/smartphones', express.static(__dirname + '/smartphones'));
+app.use(express.static(__dirname + '/public'));
 
 // configure web sockets
 io.configure(function () {

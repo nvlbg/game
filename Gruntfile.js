@@ -60,7 +60,8 @@ module.exports = function(grunt) {
         eqnull: true,
         browser: true,
         node: true,
-        strict: false
+        strict: false,
+        es5: true
       },
       
       server: {

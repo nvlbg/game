@@ -73,6 +73,13 @@
 		me.input.bindKey(me.input.KEY.LEFT,  "left" );
 		me.input.bindKey(me.input.KEY.SPACE, "shoot");
 
+		// bind key events
+		me.input.bindKey(me.input.KEY.W,    "eup"   );
+		me.input.bindKey(me.input.KEY.D,    "eright");
+		me.input.bindKey(me.input.KEY.S,    "edown" );
+		me.input.bindKey(me.input.KEY.A,    "eleft" );
+		me.input.bindKey(me.input.KEY.CTRL, "eshoot");
+
 		// start the game 
 		me.state.change(me.state.PLAY);
 	};

@@ -45,6 +45,10 @@ Now you can build the project with:
 
 This will validate the .js files, will concatenate the public files, minify them and save them in public/build/
 
+Contribution
+------------
+If you want to help me develop the game, take a look at my TODO list (see the TODO file)
+
 License
 -------
 See COPYING for more info

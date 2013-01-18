@@ -74,7 +74,6 @@
 		},
 
 		onPlayerUpdate : function(data) {
-			console.log(data);
 			if (!data.i) {
 				this.player.pos.x = data.x;
 				this.player.pos.y = data.y;
@@ -82,20 +81,21 @@
 				return;
 			}
 
-			this.players[data.i].pos.x = data.x;
-			this.players[data.i].pos.y = data.y;
+			// this.players[data.i].pos.x = data.x;
+			// this.players[data.i].pos.y = data.y;
 			this.players[data.i].pressed = data.p;
 
 		},
 
 		onCorrection : function(data) {
-			this.player.pos.x = data.x;
-			this.player.pos.y = data.y;
+			// this.player.pos.x = data.x;
+			// this.player.pos.y = data.y;
 		},
 
 		onPlayerCorrection : function(data) {
-			this.players[data.i].pos.x = data.x;
-			this.players[data.i].pos.y = data.y;
+			// this.players[data.i].pos.x = data.x;
+			// this.players[data.i].pos.y = data.y;
+			this.players[data.i].interpolations.push(new me.Vector2d(data.x, data.y));
 		},
 
 		onPlayerLeave : function(id) {
