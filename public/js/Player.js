@@ -167,9 +167,32 @@
 				throw "unknown direction \"" + this.direction + "\"";
 			}
 
+			var dir = new me.Vector2d(
+							me.input.mouse.pos.x - this.pos.x - me.game.viewport.pos.x,
+							me.input.mouse.pos.y - this.pos.y - me.game.viewport.pos.y
+						);
+
+			//if(document.getElementsByTagName('div').length === 4) {
+			//	document.body.removeChild(document.getElementsByTagName('div')[3]);
+			//}
+			/*var div = document.createElement('div');
+			div.style.width = '2px';
+			div.style.height = '2px';
+			div.style.webkitTransform = 'translate(' + me.input.mouse.pos.x + 'px,' + me.input.mouse.pos.y + 'px)';
+			div.style.background = 'red';
+			document.body.appendChild(div);
+			*/
+		
+			var ctx = document.getElementsByTagName('canvas')[0].getContext('2d');
+			ctx.fillRect(me.input.mouse.pos.x, me.input.mouse.pos.y, 20, 20);
+			this.draw(me.video.getScreenContext());
+
+			dir.normalize();
+			console.log(dir);
+
 			this.animationspeed = me.sys.fps / 50;
 
-			var bullet = me.entityPool.newInstanceOf('Bullet', x, y, this.direction, 5, this.GUID);
+			var bullet = me.entityPool.newInstanceOf('Bullet', this.pos.x, this.pos.y, dir, 5, this.GUID);
 			me.game.add(bullet, 5);
 			me.game.sort();
 

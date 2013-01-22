@@ -4,6 +4,11 @@
 		<title>Title</title>
 		<meta charset="utf-8" />
 		<style>
+		body {
+			margin: 0;
+		}
+		canvas { float: left; }
+
 		@font-face {
 			font-family: Minecraftia;
 			src: url('data/fonts/Minecraftia.ttf');
@@ -27,11 +32,6 @@
 		</style>
 	</head>
 	<body>
-		<div id="info" style="width: 640px;">
-		<div id="fps" style="float: right;">
-			<span id="framecounter">(0/0 fps)</span>
-		</div></div>
-
 		<div id="jsapp">
 			<script type="text/javascript" src="socket.io/socket.io.js"></script>
 			<script type="text/javascript" src="shared/constants.js"></script>
@@ -49,6 +49,12 @@
 			<script type="text/javascript" src="js/EnemyBot.js"></script>
 			<script type="text/javascript" src="js/Player.js"></script>
 			<script type="text/javascript" src="js/main.js"></script>
+		</div>
+
+		<div id="info" style="width: 640px;">
+			<div id="fps" style="float: right;">
+				<span id="framecounter">(0/0 fps)</span>
+			</div>
 		</div>
 	</body>
 </html>

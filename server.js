@@ -34,6 +34,23 @@ app.get('*', function(req, res) {
 });
 */
 
+var ips = [];
+app.use(function(req, res, next) {
+	var ip_address = null;
+	if(req.headers['x-forwarded-for']){
+		ip_address = req.headers['x-forwarded-for'];
+	}
+	else {
+		ip_address = req.connection.remoteAddress;
+	}
+
+	if (ips.indexOf(ip_address) == -1) {
+		console.log('Client connected: ' + ip_address);
+		ips.push(ip_address);
+	}
+
+	next();
+});
 app.use('/shared', express.static(__dirname + '/shared'));
 app.use('/smartphones', express.static(__dirname + '/smartphones'));
 app.use(express.static(__dirname + '/public'));

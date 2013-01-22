@@ -72,6 +72,7 @@
 		me.input.bindKey(me.input.KEY.DOWN,  "down" );
 		me.input.bindKey(me.input.KEY.LEFT,  "left" );
 		me.input.bindKey(me.input.KEY.SPACE, "shoot");
+		me.input.bindMouse(me.input.mouse.LEFT, me.input.KEY.SPACE);
 
 		// bind key events
 		me.input.bindKey(me.input.KEY.W,    "eup"   );

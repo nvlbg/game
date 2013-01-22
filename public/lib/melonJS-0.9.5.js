@@ -1561,7 +1561,7 @@ var me = me || {};
 		};
 
 		/**
-		 * check for collision between objects
+		 * Checks if the specified entity collides with others entities.
 		 * @name me.game#collide
 		 * @public
 		 * @function
@@ -1595,17 +1595,59 @@ var me = me || {};
 		 *         console.log("y axis : bottom side !");
 		 *   }
 		 * }
-
 		 */
 		api.collide = function(objA, multiple) {
 			var res;
+			// make sure we have a boolean
+			multiple = multiple===true ? true : false;
 			if (multiple===true) {
 				var mres = [], r = 0;
-			}
+			} 
 			// this should be replace by a list of the 4 adjacent cell around the object requesting collision
 			for ( var i = gameObjects.length, obj; i--, obj = gameObjects[i];)//for (var i = objlist.length; i-- ;)
 			{
-				if (obj.inViewport && obj.visible && obj.collidable && obj.isEntity && (obj!=objA))
+				if (obj.inViewport && obj.visible && obj.collidable && (obj!=objA))
+				{
+					res = obj.collisionBox.collideVsAABB.call(obj.collisionBox, objA.collisionBox);
+					if (res.x != 0 || res.y != 0) {
+						// notify the object
+						obj.onCollision.call(obj, res, objA);
+						// return the type (deprecated)
+						res.type = obj.type;
+						// return a reference of the colliding object
+						res.obj  = obj;
+						// stop here if we don't look for multiple collision detection
+						if (!multiple) {
+							return res;
+						}
+						mres[r++] = res;
+					}
+				}
+			}
+			return multiple?mres:null;
+		};
+
+		/**
+		 * Checks if the specified entity collides with others entities of the specified type.
+		 * @name me.game#collideType
+		 * @public
+		 * @function
+		 * @param {me.ObjectEntity} obj Object to be tested for collision
+		 * @param {String} type Entity type to be tested for collision
+		 * @param {Boolean} [multiple=false] check for multiple collision
+		 * @return {me.Vector2d} collision vector or an array of collision vector (multiple collision){@link me.Rect#collideVsAABB}
+		 */
+		api.collideType = function(objA, type, multiple) {
+			var res;
+			// make sure we have a boolean
+			multiple = multiple===true ? true : false;
+			if (multiple===true) {
+				var mres = [], r = 0;
+			} 
+			// this should be replace by a list of the 4 adjacent cell around the object requesting collision
+			for ( var i = gameObjects.length, obj; i--, obj = gameObjects[i];)//for (var i = objlist.length; i-- ;)
+			{
+				if (obj.inViewport && obj.visible && obj.collidable && (obj.type === type) && (obj!=objA))
 				{
 					res = obj.collisionBox.collideVsAABB.call(obj.collisionBox, objA.collisionBox);
 					if (res.x != 0 || res.y != 0) {
@@ -5570,6 +5612,56 @@ var me = me || {};
 					// returns the collision "vector"
 					return collision;
 
+				},
+				
+				/**
+				 * Checks if this entity collides with others entities.
+				 * @public
+				 * @function
+				 * @param {Boolean} [multiple=false] check for multiple collision
+				 * @return {me.Vector2d} collision vector or an array of collision vector (if multiple collision){@link me.Rect#collideVsAABB}
+				 * @example
+				 * // update player movement
+				 * this.updateMovement();
+				 *
+				 * // check for collision with other objects
+				 * res = this.collide();
+				 *
+				 * // check if we collide with an enemy :
+				 * if (res && (res.obj.type == me.game.ENEMY_OBJECT))
+				 * {
+				 *   if (res.x != 0)
+				 *   {
+				 *      // x axis
+				 *      if (res.x<0)
+				 *         console.log("x axis : left side !");
+				 *      else
+				 *         console.log("x axis : right side !");
+				 *   }
+				 *   else
+				 *   {
+				 *      // y axis
+				 *      if (res.y<0)
+				 *         console.log("y axis : top side !");
+				 *      else
+				 *         console.log("y axis : bottom side !");
+				 *   }
+				 * }
+				 */
+				collide : function(multiple) {
+					return me.game.collide(this, multiple || false);
+				},
+
+				/**
+				 * Checks if the specified entity collides with others entities of the specified type.
+				 * @public
+				 * @function
+				 * @param {String} type Entity type to be tested for collision
+				 * @param {Boolean} [multiple=false] check for multiple collision
+				 * @return {me.Vector2d} collision vector or an array of collision vector (multiple collision){@link me.Rect#collideVsAABB}
+				 */
+				collideType : function(type, multiple) {
+					return me.game.collideType(this, type, multiple || false);
 				},
 				
 				/**
@@ -12253,6 +12345,7 @@ var me = me || {};
 		 * @function
 		 * @param {me.plugin.Base} plugin Plugin to instiantiate and register
 		 * @param {String} name
+		 * @param {Object} [args] all extra parameters will be passed to the plugin constructor
 		 * @example
 		 * // register a new plugin
 		 * me.plugin.register(TestPlugin, "testPlugin");
@@ -12273,8 +12366,16 @@ var me = me || {};
 				throw ("melonJS: Plugin version mismatch, expected: "+ plugin.prototype.version +", got: " + me.version);
 			}
 			
+			// get extra arguments
+			var _args = []; 
+			if (arguments.length > 2) {
+				// store extra arguments if any
+				_args = Array.prototype.slice.call(arguments, 1);
+			}
+			
 			// try to instantiate the plugin
-			me.plugin[name] = new plugin();
+			_args[0] = plugin;
+			me.plugin[name] = new (plugin.bind.apply(plugin, _args))();
 			
 			// inheritance check
 			if (!(me.plugin[name] instanceof me.plugin.Base)) {

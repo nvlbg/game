@@ -132,7 +132,19 @@
 
 			this.animationspeed = me.sys.fps / 50;
 
-			var bullet = me.entityPool.newInstanceOf('Bullet', x, y, this.direction, 5, this.GUID);
+			var dir = new me.Vector2d();
+
+			if (this.direction === game.ENUM.DIRECTION.LEFT) {
+				dir.x = -1;
+			} else if (this.direction === game.ENUM.DIRECTION.RIGHT) {
+				dir.x = 1;
+			} if (this.direction === game.ENUM.DIRECTION.UP) {
+				dir.y = -1;
+			} else if (this.direction === game.ENUM.DIRECTION.DOWN) {
+				dir.y = 1;
+			}
+
+			var bullet = me.entityPool.newInstanceOf('Bullet', x, y, dir, 5, this.GUID);
 			me.game.add(bullet, 5);
 			me.game.sort();
 
