@@ -21,6 +21,7 @@
 			this.direction = direction;
 			this.recoil = recoil;
 			this.gravity = 0;
+			this.delta = new me.Vector2d(0, 0);
 			
 			this.setVelocity(speed, speed);
 			this.setFriction(friction, friction);
@@ -83,6 +84,39 @@
 			} else if(direction === game.ENUM.DIRECTION.DOWN) {
 				this.flipY(true);
 			}
+		},
+
+		updateHelper : function() { // used by Friend and Enemy, but not Player
+			if(this.isExploding) {
+				this.parent(this);
+				return true;
+			}
+
+			if(this.pressed & game.ENUM.PRESSED.LEFT) {
+				this.moveLeft();
+			} else if(this.pressed & game.ENUM.PRESSED.RIGHT) {
+				this.moveRight();
+			}
+
+			if(this.pressed & game.ENUM.PRESSED.UP) {
+				this.moveUp();
+			} else if(this.pressed & game.ENUM.PRESSED.DOWN) {
+				this.moveDown();
+			}
+
+			var updated = this.vel.x !== 0 || this.vel.y !== 0;
+
+			this.vel.add(this.delta);
+			this.delta.div(2);
+			this.updateMovement();
+
+			this.vel.x = this.vel.y = 0;
+			
+			if(updated) {
+				this.parent(this);
+				return true;
+			}
+			return false;
 		},
 
 		explode : function() {

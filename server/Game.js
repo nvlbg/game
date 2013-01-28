@@ -13,6 +13,7 @@ var Game = {
 	constants : null,
 
 	TYPE : null,
+	POSITION : null,
 	DIRECTION : null,
 	TEAM : null,
 	PRESSED : null,
@@ -52,8 +53,8 @@ var Game = {
 
 				player.socket.broadcast.emit(Game.TYPE.PLAYER_UPDATED, {
 					p : player.pressed,
-					// x : player.pos.x,
-					// y : player.pos.y,
+					x : player.delta.x,
+					y : player.delta.y,
 					
 					i : player.id
 				});
@@ -137,6 +138,10 @@ var Game = {
 
 		socket.on(Game.TYPE.INPUT, function(input) {
 			player.pressed = input[Game.TYPE.PRESSED];
+			var delta = new Vector2d(input[Game.POSITION.X], input[Game.POSITION.Y]);
+			delta.sub(player.pos);
+			console.log(delta);
+			player.delta = delta;
 			player.updated = true;
 		});
 
@@ -195,6 +200,7 @@ var Game = {
 		Game.constants = require('../shared/constants.js');
 		Game.config = require('./config.js');
 		Game.TYPE = Game.constants.TYPE;
+		Game.POSITION = Game.constants.POSITION;
 		Game.DIRECTION = Game.constants.DIRECTION;
 		Game.TEAM = Game.constants.TEAM;
 		Game.PRESSED = Game.constants.PRESSED;

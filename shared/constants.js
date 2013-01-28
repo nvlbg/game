@@ -17,6 +17,11 @@
 			SMARTPHONE_ACCEPT   : 13
 		},
 
+		POSITION : {
+			X : 0,
+			Y : 1
+		},
+
 		DIRECTION : {
 			UP    : 0,
 			DOWN  : 1,

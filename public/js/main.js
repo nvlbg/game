@@ -14,16 +14,42 @@
 		{ name : "maze",       type : "tmx",   src : "data/maps/maze.tmx"         }
 	];
 
-	window.game._dt = null;
-	window.game._dte = null;
-	window.game.local_time = null;
-	window.game.createTimer = function() {
-		setInterval(function() {
-			this._dt = new Date().getTime() - this._dte;
-			this._dte = new Date().getTime();
-			this.local_time += this._dt/1000.0;
-		}.bind(this), 4);
+	/*
+	// TODO: find another way to load JSON file
+	var tanks_data = new XMLHttpRequest();
+	tanks_data.onreadystatechange=function() {
+		if (tanks_data.readyState === 4) {
+			if (tanks_data.status === 200) {
+				window.game.tanks = JSON.parse(tanks_data.responseText);
+			}
+		}
 	};
+
+	tanks_data.open("GET", "data/sprites/tanks.json", true);
+	tanks_data.send(null);
+	*/
+
+	/*
+	me.Vector2d.prototype.draw = function(ctx) {
+		ctx.save();
+
+		ctx.fillStyle = 'red';
+		ctx.fillRect(this.x-2, this.y-2, 4, 4);
+
+		ctx.restore();
+	};
+
+	me.plugin.patch(debugPanel, 'draw', function(ctx) {
+		this.parent(ctx);
+		me.input.mouse.pos.draw(ctx);
+		
+		var playerPos = window.game.player.pos;
+		var viewportOffset = me.game.viewport.pos;
+
+		var pos = new me.Vector2d(playerPos.x - viewportOffset.x + 16, playerPos.y - viewportOffset.y + 16);
+		pos.draw(ctx);
+	});
+	*/
 
 	/**
 	called when document is loaded
@@ -34,10 +60,6 @@
 			window.alert("Sorry but your browser does not support html 5 canvas.");
 			return;
 		}
-
-		this.local_time = 0.016;
-		this._dt = this._dte = new Date().getTime();
-		this.createTimer();
 		
 		// initialize the "audio"
 		me.audio.init("mp3,ogg");
@@ -75,11 +97,13 @@
 		me.input.bindMouse(me.input.mouse.LEFT, me.input.KEY.SPACE);
 
 		// bind key events
+		/*
 		me.input.bindKey(me.input.KEY.W,    "eup"   );
 		me.input.bindKey(me.input.KEY.D,    "eright");
 		me.input.bindKey(me.input.KEY.S,    "edown" );
 		me.input.bindKey(me.input.KEY.A,    "eleft" );
 		me.input.bindKey(me.input.KEY.CTRL, "eshoot");
+		*/
 
 		// start the game 
 		me.state.change(me.state.PLAY);

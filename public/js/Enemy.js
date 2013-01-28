@@ -11,10 +11,11 @@
 		},
 
 		update : function() {
-			if(this.isExploding) {
+			return this.updateHelper();
+			/*if(this.isExploding) {
 				this.parent(this);
 				return true;
-			}
+			}*/
 
 			/*
 			if(this.pressed & game.ENUM.PRESSED.LEFT) {
@@ -44,7 +45,7 @@
 			}
 			*/
 		
-			if (this.currentInterpolation === null && this.interpolations.length > 0) {
+			/*if (this.currentInterpolation === null && this.interpolations.length > 0) {
 				this.currentInterpolation = new me.Vector2d(
 													this.pos.x - this.interpolations[0].x,
 													this.pos.y - this.interpolations[0].y
@@ -58,7 +59,7 @@
 					this.currentInterpolation = null;
 					this.vel.x = this.vel.y = 0;
 				}.bind(this), 50);
-			}
+			}*/
 
 			/*
 			// console.log('Enemy: ' + Array.isArray(this.interpolations) + ' ' + this.interpolations.length);
@@ -100,7 +101,7 @@
 			}
 			*/
 
-			this.updateMovement();
+			/*this.updateMovement();
 
 			var updated = this.vel.x !== 0 || this.vel.y !== 0;
 
@@ -110,7 +111,7 @@
 				this.parent(this);
 				return true;
 			}
-			return false;
+			return false;*/
 		},
 
 		createTween : function(xDuration, yDuration) { console.log('new tween');

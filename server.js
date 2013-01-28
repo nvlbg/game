@@ -44,7 +44,7 @@ app.use(function(req, res, next) {
 		ip_address = req.connection.remoteAddress;
 	}
 
-	if (ips.indexOf(ip_address) == -1) {
+	if (ips.indexOf(ip_address) === -1) {
 		console.log('Client connected: ' + ip_address);
 		ips.push(ip_address);
 	}

@@ -11,6 +11,8 @@ var Player = Rect.extend({
 		this.socket = socket;
 		this.team = team;
 
+		this.delta = new Vector2d(0, 0);
+
 		this.recoil = recoil;
 		this.accel = new Vector2d(speed, speed);
 		this.friction = new Vector2d(friction, friction);
@@ -64,6 +66,8 @@ var Player = Rect.extend({
 			this.moveDown();
 		}
 
+		this.vel.add(this.delta);
+		this.delta.div(2);
 		this.updateMovement();
 
 		this.vel.x = 0;

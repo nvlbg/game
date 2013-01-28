@@ -81,21 +81,21 @@
 
 			this.updateMovement();
 
-			/*
-			if(!this.smarthphoneConnected && this.pressed !== this.lastPressed) {
+			/*if(!this.smarthphoneConnected && this.pressed !== this.lastPressed) {
 				this.lastPressed = this.pressed;
 				
 				this.input_seq += 1;
 
 				var input = {};
-				input[game.ENUM.TYPE.PRESSED]         = this.pressed;
-				input[game.ENUM.TYPE.SEQUENCE_NUMBER] = this.input_seq;
-				input[game.ENUM.TYPE.LOCAL_TIME]      = window.game.local_time;
+				input[game.ENUM.TYPE.PRESSED]  = this.pressed;
+				input[game.ENUM.POSITION.X] = this.pos.x;
+				input[game.ENUM.POSITION.Y] = this.pos.y;
+				//input[game.ENUM.TYPE.SEQUENCE_NUMBER] = this.input_seq;
+				//input[game.ENUM.TYPE.LOCAL_TIME]      = window.game.local_time;
 
 				this.inputs.push(input);
 				this.socket.emit(game.ENUM.TYPE.INPUT, input);
-			}
-			*/
+			}*/
 
 			updated = updated || this.vel.x !== 0 || this.vel.y !== 0;
 
@@ -168,31 +168,15 @@
 			}
 
 			var dir = new me.Vector2d(
-							me.input.mouse.pos.x - this.pos.x - me.game.viewport.pos.x,
-							me.input.mouse.pos.y - this.pos.y - me.game.viewport.pos.y
+							me.input.mouse.pos.x - this.pos.x + me.game.viewport.pos.x - 16,
+							me.input.mouse.pos.y - this.pos.y + me.game.viewport.pos.y - 16
 						);
-
-			//if(document.getElementsByTagName('div').length === 4) {
-			//	document.body.removeChild(document.getElementsByTagName('div')[3]);
-			//}
-			/*var div = document.createElement('div');
-			div.style.width = '2px';
-			div.style.height = '2px';
-			div.style.webkitTransform = 'translate(' + me.input.mouse.pos.x + 'px,' + me.input.mouse.pos.y + 'px)';
-			div.style.background = 'red';
-			document.body.appendChild(div);
-			*/
 		
-			var ctx = document.getElementsByTagName('canvas')[0].getContext('2d');
-			ctx.fillRect(me.input.mouse.pos.x, me.input.mouse.pos.y, 20, 20);
-			this.draw(me.video.getScreenContext());
-
 			dir.normalize();
-			console.log(dir);
 
 			this.animationspeed = me.sys.fps / 50;
 
-			var bullet = me.entityPool.newInstanceOf('Bullet', this.pos.x, this.pos.y, dir, 5, this.GUID);
+			var bullet = me.entityPool.newInstanceOf('Bullet', this.pos.x + dir.x*16, this.pos.y + dir.y*16, dir, 5, this.GUID);
 			me.game.add(bullet, 5);
 			me.game.sort();
 

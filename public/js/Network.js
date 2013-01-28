@@ -84,6 +84,7 @@
 			// this.players[data.i].pos.x = data.x;
 			// this.players[data.i].pos.y = data.y;
 			this.players[data.i].pressed = data.p;
+			this.players[data.i].delta = new me.Vector2d(data.x, data.y);
 
 		},
 

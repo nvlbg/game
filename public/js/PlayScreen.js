@@ -12,6 +12,9 @@
 			var player = new game.Player(32, 32, 0, 0, 3, 0, 500);
 			me.game.add(player, 4);
 
+			window.game.player = player;
+			new window.debugPanel();
+
 			//var enemy = new game.EnemyBot(320, 320, 0, 0, 3, 0, 500);
 			//me.game.add(enemy, 4);
 
