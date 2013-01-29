@@ -1,7 +1,7 @@
 General
 =======
 
-This is a fast paced game using melonJS as engine. It is supposed to be a massive multiplayer but it is currently in development. Currently I have not came with an idea how to name the game, so if you thought of a good name, you can email me on nvl.bg.rules@gmail.com
+This is a fast paced game using melonJS as engine. It is supposed to be a massive multiplayer but it is currently in development. Currently I have not came with an idea how to name the game, so if you thought of a good name, please email me on nvl.bg.rules@gmail.com
 
 
 Server requirements
@@ -28,7 +28,7 @@ Here is what each option does:
 - MAP - the level that will be started. It must be saved in public/data/maps/
 - FPS - the frame rate on the server update loop. Default: 60
 - PORT - the port the server will be started
-- CORRECTION_TIME_STEP - in what interval should corrections be sent. Default: 3000
+- CORRECTION_TIME_STEP - in what interval should corrections be sent. Default: 3000 (currently, and most probably, this won't be used because I chose to use a different approach in dealing with networking)
 - FRIENDLY_FIRE - should friendly fire be on
 
 How to build with Grunt
