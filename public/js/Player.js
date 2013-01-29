@@ -11,8 +11,6 @@
 			this.socket = socket;
 			this.lastPressed = 0;
 			this.canShoot = true;
-			this.input_seq = 0;
-			this.inputs = [];
 			this.smarthphoneConnected = false;
 			this.pressed = 0;
 			this.type = me.game.FRIEND_OBJECT;
@@ -23,13 +21,13 @@
 		/**
 		called on each frame
 		*/
+		/*
 		update : function() {
 			if(this.isExploding) {
 				this.parent(this);
 				return true;
 			}
 
-			var updated = this.vel.x !== 0 || this.vel.y !== 0;
 			if (!this.smarthphoneConnected) {
 				this.pressed = 0;
 
@@ -81,27 +79,64 @@
 
 			this.updateMovement();
 
-			/*if(!this.smarthphoneConnected && this.pressed !== this.lastPressed) {
+			if(!this.smarthphoneConnected && this.pressed !== this.lastPressed) {
 				this.lastPressed = this.pressed;
 				
-				this.input_seq += 1;
+				var input = {
+					p: this.pressed,
+					x: this.pos.x,
+					y: this.pos.y
+				};
 
-				var input = {};
-				input[game.ENUM.TYPE.PRESSED]  = this.pressed;
-				input[game.ENUM.POSITION.X] = this.pos.x;
-				input[game.ENUM.POSITION.Y] = this.pos.y;
-				//input[game.ENUM.TYPE.SEQUENCE_NUMBER] = this.input_seq;
-				//input[game.ENUM.TYPE.LOCAL_TIME]      = window.game.local_time;
-
-				this.inputs.push(input);
 				this.socket.emit(game.ENUM.TYPE.INPUT, input);
-			}*/
+			}
 
-			updated = updated || this.vel.x !== 0 || this.vel.y !== 0;
+			var updated = this.vel.x !== 0 || this.vel.y !== 0;
+			this.vel.x = this.vel.y = 0;
 
-			this.vel.x = 0;
-			this.vel.y = 0;
+			if(updated) {
+				this.parent(this);
+				return true;
+			}
+			return false;
+		},
+		*/
+		update: function() {
+			if(this.isExploding) {
+				this.parent(this);
+				return true;
+			}
 
+			this.pressed = 0;
+			if(me.input.isKeyPressed("left")) {
+				this.moveLeft();
+			} else if (me.input.isKeyPressed("right")) {
+				this.moveRight();
+			}
+
+			if(me.input.isKeyPressed("up")) {
+				this.moveUp();
+			} else if (me.input.isKeyPressed("down")) {
+				this.moveDown();
+			}
+
+			if(this.pressed !== this.lastPressed) {
+				this.lastPressed = this.pressed;
+				
+				var input = {
+					p: this.pressed,
+					x: this.pos.x,
+					y: this.pos.y
+				};
+
+				this.socket.emit(game.ENUM.TYPE.INPUT, input);
+			}
+			
+			this.updateMovement();
+
+			var updated = this.vel.x !== 0 || this.vel.y !== 0;
+			this.vel.x = this.vel.y = 0;
+			
 			if(updated) {
 				this.parent(this);
 				return true;

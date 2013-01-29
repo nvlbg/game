@@ -1,0 +1,7 @@
+{
+	"MAP": "water_hole",
+	"FPS": 60,
+	"PORT": 8080,
+	"CORRECTION_TIME_STEP": 50,
+	"FRIENDLY_FIRE": false
+}

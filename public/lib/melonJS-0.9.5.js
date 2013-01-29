@@ -5152,8 +5152,10 @@ var me = me || {};
 					/**
 					 * Default gravity value of the entity<br>
 					 * default value : 0.98 (earth gravity)<br>
-					 * to be set to 0 for RPG, shooter, etc...
+					 * to be set to 0 for RPG, shooter, etc...<br>
+					 * Note: Gravity can also globally be defined through me.sys.gravity
 					 * @public
+					 * @see me.sys.gravity
 					 * @type Number
 					 * @name me.ObjectEntity#gravity
 					 */
@@ -6709,17 +6711,11 @@ var me = me || {};
 	 */
 
 	me.audio = (function() {
-		// hold public stuff in our singletong
+		// hold public stuff in our singleton
 		var obj = {};
 
 		// audio channel list
 		var audio_channels = {};
-
-		// supported Audio Format
-		var supportedFormat = ["m4a", "mp3", "ogg", "wav"];
-
-		// Request format by the app/game
-		var requestedFormat = null;
 
 		// Active (supported) audio extension
 		var activeAudioExt = -1;
@@ -6748,26 +6744,37 @@ var me = me || {};
 		 * ---------------------------------------------
 		 */
 
-		/*
-		 * ---
-		 * 
-		 * return the audio format extension supported by the browser ---
+		/**
+		 * @private
+		 * return the first audio format extension supported by the browser
 		 */
-
-		function getSupportedAudioFormat() {
-
+		function getSupportedAudioFormat(requestedFormat) {
 			var result = "";
-			var ext = "";
-			var rx = null;
-			var i = 0;
-			var len = supportedFormat.length;
+			var len = requestedFormat.length;
 
 			// check for sound support by the browser
 			if (me.sys.sound) {
+				var ext = "";
+				var i = 0;
+				// do a first loop and check for codec with
+				// the 'probably' canPlayType first
 				for (; i < len; i++) {
-					ext = supportedFormat[i];
-					rx = new RegExp(ext, "i");
-					if ((requestedFormat.search(rx) != -1) && obj.capabilities[ext]) {
+					ext = requestedFormat[i].toLowerCase().trim();
+					// check extension against detected capabilities
+					if (obj.capabilities[ext] && 
+						obj.capabilities[ext].canPlay && 
+						obj.capabilities[ext].canPlayType === 'probably') {
+						result = ext;
+						break;
+					}
+				}
+				// loop again and check for all the rest ('maybe')
+				i = 0;
+				for (; i < len; i++) {
+					ext = requestedFormat[i].toLowerCase().trim();
+					// check extension against detected capabilities
+					if (obj.capabilities[ext] && 
+						obj.capabilities[ext].canPlay) {
 						result = ext;
 						break;
 					}
@@ -6780,12 +6787,11 @@ var me = me || {};
 			}
 
 			return result;
-		}
+		};
 
-		/*
-		 * ---
-		 * 
-		 * return the specified sound ---
+		/**
+		 * @private
+		 * return the specified sound
 		 */
 
 		function get(sound_id) {
@@ -6803,15 +6809,11 @@ var me = me || {};
 			channels[0].pause();
 			channels[0].currentTime = reset_val;
 			return channels[0];
-		}
-		;
+		};
 
-		/*
-		 * ---
-		 * 
+		/**
+		 * @private
 		 * event listener callback on load error
-		 * 
-		 * ---
 		 */
 
 		function soundLoadError(sound_id) {
@@ -6838,12 +6840,9 @@ var me = me || {};
 			}
 		};
 
-		/*
-		 * ---
-		 * 
+		/**
+		 * @private
 		 * event listener callback when a sound is loaded
-		 * 
-		 * ---
 		 */
 
 		function soundLoaded(sound_id, sound_channel) {
@@ -6864,8 +6863,7 @@ var me = me || {};
 			if (load_cb) {
 				load_cb.call();
 			}
-		}
-		;
+		};
 
 		/**
 		 * play the specified sound
@@ -6879,11 +6877,13 @@ var me = me || {};
 		 *            [loop="false"] loop audio
 		 * @param {Function}
 		 *            [callback] callback function
-		 * @example // play the "cling" audio clip me.audio.play("cling"); //
-		 *          play & repeat the "engine" audio clip
-		 *          me.audio.play("engine", true); // play the "gameover_sfx"
-		 *          audio clip and call myFunc when finished
-		 *          me.audio.play("gameover_sfx", false, myFunc);
+		 * @example 
+		 * // play the "cling" audio clip 
+		 * me.audio.play("cling"); 
+		 * // play & repeat the "engine" audio clip
+		 * me.audio.play("engine", true); 
+		 * // play the "gameover_sfx" audio clip and call myFunc when finished
+		 * me.audio.play("gameover_sfx", false, myFunc);
 		 */
 
 		function _play_audio_enable(sound_id, loop, callback) {
@@ -6905,13 +6905,11 @@ var me = me || {};
 				}, false);
 			}
 
-		}
-		;
+		};
 
-		/*
-		 * ---
-		 * 
-		 * play_audio with simulated callback ---
+		/**
+		 * @private
+		 * play_audio with simulated callback
 		 */
 
 		function _play_audio_disable(sound_id, loop, callback) {
@@ -6923,21 +6921,34 @@ var me = me || {};
 		};
 
 		/*
-		 * ---------------------------------------------
-		 * 
+		 *---------------------------------------------
 		 * PUBLIC STUFF
-		 * 
-		 * ---------------------------------------------
+		 *---------------------------------------------
 		 */
 
 		// audio capabilities
 		obj.capabilities = {
-			mp3 : 'audio/mpeg',
-			ogg : 'audio/ogg; codecs="vorbis"',
-			m4a : 'audio/mp4; codecs="mp4a.40.2"',
-			wav : 'audio/wav; codecs="1"'
+			mp3: {
+				codec: 'audio/mpeg',
+				canPlay: false,
+				canPlayType: 'no'
+			},
+			ogg: {
+				codec: 'audio/ogg; codecs="vorbis"',
+				canPlay: false,
+				canPlayType: 'no'
+			},
+			m4a: {
+				codec: 'audio/mp4; codecs="mp4a.40.2"',
+				canPlay: false,
+				canPlayType: 'no'
+			},
+			wav: {
+				codec: 'audio/wav; codecs="1"',
+				canPlay: false,
+				canPlayType: 'no'
+			}
 		};	
-		
 		
 		/**
 		 * @private
@@ -6947,11 +6958,14 @@ var me = me || {};
 			var a = document.createElement('audio');
 			if (a.canPlayType) {
 				for (var c in obj.capabilities) {
-					var canPlay = a.canPlayType(obj.capabilities[c]);
+					var canPlayType = a.canPlayType(obj.capabilities[c].codec);
 					// convert the string to a boolean
-					obj.capabilities[c] = (canPlay !== "" && canPlay !== "no");
+					if (canPlayType !== "" && canPlayType !== "no") {
+						obj.capabilities[c].canPlay = true;
+						obj.capabilities[c].canPlayType = canPlayType;
+					}
 					// enable sound if any of the audio format is supported
-					me.sys.sound |= obj.capabilities[c]; 
+					me.sys.sound |= obj.capabilities[c].canPlay;					
 				}
 			}
 			
@@ -6970,39 +6984,35 @@ var me = me || {};
 		 * initialize the audio engine<br>
 		 * the melonJS loader will try to load audio files corresponding to the
 		 * browser supported audio format<br>
-		 * if not compatible audio format is found, audio will be disabled
+		 * if no compatible audio codecs are found, audio will be disabled
 		 * 
 		 * @name me.audio#init
 		 * @public
 		 * @function
 		 * @param {String}
-		 *            audioFormat audio format provided ("mp3, ogg, wav")
-		 * @example // initialize the "sound engine", giving "mp3" and "ogg" as
-		 *          available audio format me.audio.init("mp3,ogg"); // i.e. on
-		 *          Safari, the loader will load all audio.mp3 files, // on
-		 *          Opera the loader will however load audio.ogg files
+		 *          audioFormat audio format provided ("mp3, ogg, m4a, wav")
+		 * @example 
+		 * // initialize the "sound engine", giving "mp3" and "ogg" as desired audio format 
+		 * // i.e. on Safari, the loader will load all audio.mp3 files, 
+		 * // on Opera the loader will however load audio.ogg files
+		 * me.audio.init("mp3,ogg"); 
 		 */
 		obj.init = function(audioFormat) {
 			if (!me.initialized) {
 				throw "melonJS: me.audio.init() called before engine initialization.";
 			}
 			// if no param is given to init we use mp3 by default
-			requestedFormat = new String(audioFormat?audioFormat:"mp3");
+			audioFormat = new String(audioFormat?audioFormat:"mp3");
+			// convert it into an array
+			audioFormat = audioFormat.split(',');
 			// detect the prefered audio format
-			activeAudioExt = getSupportedAudioFormat();
+			activeAudioExt = getSupportedAudioFormat(audioFormat);
 			
 			// enable/disable sound
 			obj.play = obj.isAudioEnable() ? _play_audio_enable : _play_audio_disable;
 
 			return obj.isAudioEnable();
 		};
-
-		/*
-		 * ---
-		 * 
-		 * 
-		 * ---
-		 */
 
 		/**
 		 * set call back when a sound (and instances) is/are loaded
@@ -7098,9 +7108,9 @@ var me = me || {};
 		 * @name me.audio#stop
 		 * @public
 		 * @function
-		 * @param {String}
-		 *            sound_id audio clip id
-		 * @example me.audio.stop("cling");
+		 * @param {String} sound_id audio clip id
+		 * @example 
+		 * me.audio.stop("cling");
 		 */
 		obj.stop = function(sound_id) {
 			if (sound_enable) {
@@ -7121,9 +7131,9 @@ var me = me || {};
 		 * @name me.audio#pause
 		 * @public
 		 * @function
-		 * @param {String}
-		 *            sound_id audio clip id
-		 * @example me.audio.pause("cling");
+		 * @param {String} sound_id audio clip id
+		 * @example 
+		 * me.audio.pause("cling");
 		 */
 		obj.pause = function(sound_id) {
 			if (sound_enable) {
@@ -7143,9 +7153,9 @@ var me = me || {};
 		 * @name me.audio#playTrack
 		 * @public
 		 * @function
-		 * @param {String}
-		 *            sound_id audio track id
-		 * @example me.audio.playTrack("awesome_music");
+		 * @param {String} sound_id audio track id
+		 * @example 
+		 * me.audio.playTrack("awesome_music");
 		 */
 		obj.playTrack = function(sound_id) {
 			if (sound_enable) {
@@ -7170,8 +7180,11 @@ var me = me || {};
 		 * @name me.audio#stopTrack
 		 * @public
 		 * @function
-		 * @example // play a awesome music me.audio.playTrack("awesome_music"); //
-		 *          stop the current music me.audio.stopTrack();
+		 * @example 
+		 * // play a awesome music 
+		 * me.audio.playTrack("awesome_music"); 
+		 * // stop the current music 
+		 * me.audio.stopTrack();
 		 */
 		obj.stopTrack = function() {
 			if (sound_enable && current_track) {
@@ -7187,7 +7200,8 @@ var me = me || {};
 		 * @name me.audio#pauseTrack
 		 * @public
 		 * @function
-		 * @example me.audio.pauseTrack();
+		 * @example 
+		 * me.audio.pauseTrack();
 		 */
 		obj.pauseTrack = function() {
 			if (sound_enable && current_track) {
@@ -7201,11 +7215,14 @@ var me = me || {};
 		 * @name me.audio#resumeTrack
 		 * @public
 		 * @function
-		 * @param {String}
-		 *            sound_id audio track id
-		 * @example // play a awesome music me.audio.playTrack("awesome_music"); //
-		 *          pause the audio track me.audio.pauseTrack(); // resume the
-		 *          music me.audio.resumeTrack();
+		 * @param {String} sound_id audio track id
+		 * @example 
+		 * // play an awesome music 
+		 * me.audio.playTrack("awesome_music");
+		 * // pause the audio track 
+		 * me.audio.pauseTrack();
+		 * // resume the music 
+		 * me.audio.resumeTrack();
 		 */
 		obj.resumeTrack = function() {
 			if (sound_enable && current_track) {
@@ -7221,7 +7238,8 @@ var me = me || {};
 		 * @function
 		 * @param {String} sound_id audio track id
 		 * @return {boolean} true if unloaded
-		 * @example me.audio.unload("awesome_music");
+		 * @example 
+		 * me.audio.unload("awesome_music");
 		 */
 		obj.unload = function(sound_id) {
 			sound_id = sound_id.toLowerCase();
@@ -7246,7 +7264,8 @@ var me = me || {};
 		 * @name me.audio#unloadAll
 		 * @public
 		 * @function
-		 * @example me.audio.unloadAll();
+		 * @example 
+		 * me.audio.unloadAll();
 		 */
 		obj.unloadAll = function() {
 			for (var sound_id in audio_channels) {
@@ -10130,10 +10149,39 @@ var me = me || {};
 	 * @param {int}    height      layer height in pixels
 	 * @param {String} image       image name (as defined in the asset list)
 	 * @param {int}    z           z position
-	 * @param {float}  [ratio=0]   scrolling ratio to be applied (apply by multiplying the viewport delta position by the defined ratio)
+	 * @param {float}  [ratio=1.0]   scrolling ratio to be applied
 	 */
 	 me.ImageLayer = Object.extend({
-		// constructor
+		
+		/**
+		 * Define if and how an Image Layer should be repeated.<br>
+		 * By default, an Image Layer is repeated both vertically and horizontally.<br>
+		 * Property values : <br>
+		 * * 'repeat' - The background image will be repeated both vertically and horizontally. (default) <br>
+		 * * 'repeat-x' - The background image will be repeated only horizontally.<br>
+		 * * 'repeat-y' - The background image will be repeated only vertically.<br>
+		 * * 'no-repeat' - The background-image will not be repeated.<br>
+		 * @public
+		 * @type String
+		 * @name me.ImageLayer#repeat
+		 */
+		//repeat: 'repeat', (define through getter/setter
+		
+		/**
+		 * Define the image scrolling ratio<br>
+		 * Scrolling speed is defined by multiplying the viewport delta position (e.g. followed entity) by the specified ratio<br>
+		 * Default value : 1.0 <br>
+		 * @public
+		 * @type float
+		 * @name me.ImageLayer#ratio
+		 */
+		ratio: 1.0,
+	 
+		/**
+		 * constructor
+		 * @private
+		 * @function
+		 */
 		init: function(name, width, height, imagesrc, z, ratio) {
 			// layer name
 			this.name = name;
@@ -10151,7 +10199,7 @@ var me = me || {};
 			this.z = z;
 			
 			// if ratio !=0 scrolling image
-			this.ratio = ratio || 1;
+			this.ratio = ratio || 1.0;
 			
 			// last position of the viewport
 			this.lastpos = game.viewport.pos.clone();
@@ -10168,8 +10216,42 @@ var me = me || {};
 			// default opacity
 			this.opacity = 1.0;
 			
-			// ?
+			// Image Layer is considered as a floating object
 			this.floating = true;
+			
+			// default value for repeat
+			this._repeat = 'repeat';
+			
+			this.repeatX = true;
+			this.repeatY = true;
+			
+			Object.defineProperty(this, "repeat", {
+				get : function get() {
+					return this._repeat;
+				},
+				set : function set(val) {
+					this._repeat = val;
+					switch (this._repeat) {
+						case "no-repeat" :
+							this.repeatX = false;
+							this.repeatY = false;
+							break;
+						case "repeat-x" :
+							this.repeatX = true;
+							this.repeatY = false;
+							break;
+						case "repeat-y" :
+							this.repeatX = false;
+							this.repeatY = true;
+							break;
+						default : // "repeat"
+							this.repeatX = true;
+							this.repeatY = true;
+							break;
+					}
+				}
+			});
+
 			
 		},
 		
@@ -10256,6 +10338,7 @@ var me = me || {};
 								  sw,		 sh);			//dw, dh
 			}
 			// parallax / scrolling image
+			// todo ; broken with dirtyRect enabled
 			else {
 				var sx = ~~this.offset.x;
 				var sy = ~~this.offset.y;
@@ -10263,8 +10346,8 @@ var me = me || {};
 				var dx = 0;
 				var dy = 0;				
 				
-				var sw = Math.min(this.imagewidth - ~~this.offset.x, this.width);
-				var sh = Math.min(this.imageheight - ~~this.offset.y, this.height);
+				var sw = Math.min(this.imagewidth - sx, this.width);
+				var sh = Math.min(this.imageheight - sy, this.height);
 				  
 				do {
 					do {
@@ -10277,9 +10360,9 @@ var me = me || {};
 						sy = 0;
 						dy += sh;
 						sh = Math.min(this.imageheight, this.height - dy);
-					} while( dy < this.height);
+					} while( this.repeatY && (dy < this.height));
 					dx += sw;
-					if (dx >= this.width ) {
+					if (!this.repeatX || (dx >= this.width) ) {
 						// done ("end" of the viewport)
 						break;
 					}
@@ -10615,8 +10698,8 @@ var me = me || {};
 			if (compression == '')
 				compression = null;
 
-			// create a canvas where to draw our layer
-			if (this.visible) {
+			// if not a collision layer, create a canvas where to draw our layer
+			if (!this.isCollisionMap) {
 				// set the right renderer
 				switch (this.orientation)
 				{
@@ -10646,13 +10729,11 @@ var me = me || {};
 				
 			}
 
-			if (this.visible || this.isCollisionMap) {
-				// initialize the layer lookup table (only in case of collision map)
-				this.initArray();
+			// initialize the layer data array
+			this.initArray();
 
-				// populate our level with some data
-				this.fillArray(xmldata, encoding, compression);
-			}
+			// populate our level with some data
+			this.fillArray(xmldata, encoding, compression);
 		},
 		
 		/**
@@ -11086,8 +11167,6 @@ var me = me || {};
 
 			// to automatically increment z index
 			var zOrder = 0;
-			// default layer scrolling ratio
-			var lratio = 0.25; // 1/4 
 
 			// init the parser
 			me.TMXParser.parseFromString(this.xmlMap, this.isJSON);
@@ -11182,53 +11261,13 @@ var me = me || {};
 					break;
 				}
 				
-				
 				// get the layer(s) information
 				case me.TMX_TAG_LAYER: {
-					// try to identify specific layer type based on the naming convention
-					var layer_name = me.TMXParser.getStringAttribute(xmlElements.item(i), me.TMX_TAG_NAME);
-				
-					// keep this for now for backward-compatibility
-					if (layer_name.toLowerCase().contains(me.LevelConstants.PARALLAX_MAP)) {
-						
-						
-						// extract layer information
-						var ilw = me.TMXParser.getIntAttribute(xmlElements.item(i), me.TMX_TAG_WIDTH);
-						var ilh = me.TMXParser.getIntAttribute(xmlElements.item(i), me.TMX_TAG_HEIGHT);
-						
-						// get the layer properties
-						var properties = {};
-						me.TMXUtils.setTMXProperties(properties, xmlElements.item(i));
-
-						// cherck if a ratio property is defined
-						if (properties.ratio) {
-							lratio = properties.ratio;
-						}
-						
-						// create the layer				
-						var ilayer = new me.ImageLayer(layer_name, ilw * this.tilewidth, ilh * this.tileheight, properties.imagesrc, zOrder++, lratio );
-						
-						// apply default TMX properties
-						ilayer.visible = (me.TMXParser.getIntAttribute(xmlElements.item(i), me.TMX_TAG_VISIBLE, 1) == 1);
-						ilayer.opacity = me.TMXParser.getFloatAttribute(xmlElements.item(i), me.TMX_TAG_OPACITY, 1.0);
-						
-						// apply other user defined properties
-						me.TMXUtils.mergeProperties(ilayer, properties, false);
-												
-						// default increment for next layer
-						lratio += lratio * lratio;
-
-						// add the new layer
-						this.mapLayers.push(ilayer);
-					}
-					else {
-					  // regular layer or collision layer
-					  this.mapLayers.push(new me.TMXLayer(xmlElements.item(i), this.tilewidth, this.tileheight, this.orientation, this.tilesets, zOrder++));
-				   }
-				   break;
+					// regular layer or collision layer
+					this.mapLayers.push(new me.TMXLayer(xmlElements.item(i), this.tilewidth, this.tileheight, this.orientation, this.tilesets, zOrder++));
+					break;
 				}
 				
-
 				// get the object groups information
 				case me.TMX_TAG_OBJECTGROUP: {
 				   var name = me.TMXParser.getStringAttribute(xmlElements.item(i), me.TMX_TAG_NAME);

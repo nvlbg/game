@@ -1,8 +1,9 @@
 require('./Util.js');
 
-var Player = require('./Player.js'),
-	World = require('./World.js'),
-	Vector2d = require('./Vector2d.js');
+var Player = require('./Player.js');
+var World = require('./World.js');
+var Vector2d = require('./Vector2d.js');
+var config = require('./config.json');
 
 var Game = {
 	players : {},
@@ -10,21 +11,21 @@ var Game = {
 
 	world : null,
 	timer : null,
-	constants : null,
 
 	TYPE : null,
 	POSITION : null,
 	DIRECTION : null,
 	TEAM : null,
 	PRESSED : null,
-	FRIENDLY_FIRE : false,
 
 	blue  : 0,
 	green : 0,
 
+	/*
 	_dt : null,
 	_dte : null,
 	local_time : null,
+	*/
 
 	authenticateSmathphone : function(socket, playerID) {
 		if (!Game.players[playerID]) {
@@ -53,8 +54,8 @@ var Game = {
 
 				player.socket.broadcast.emit(Game.TYPE.PLAYER_UPDATED, {
 					p : player.pressed,
-					x : player.delta.x,
-					y : player.delta.y,
+					x : player.pos.x,
+					y : player.pos.y,
 					
 					i : player.id
 				});
@@ -64,6 +65,7 @@ var Game = {
 		}
 	},
 
+	/*
 	correctionUpdate : function () {
 		var player, correction;
 		for(var i in Game.players) {
@@ -80,6 +82,7 @@ var Game = {
 			player.socket.broadcast.emit(Game.TYPE.PLAYER_CORRECTION, correction);
 		}
 	},
+	*/
 
 	addNewPlayer : function (socket) {
 		var team;
@@ -102,11 +105,13 @@ var Game = {
 		}
 
 		var data = {
-			f : Game.FRIENDLY_FIRE,
 			x : player.pos.x,
 			y : player.pos.y,
 			d : player.direction,
 			t : player.team,
+			
+			l : config.MAP,
+			f : config.FRIENDLY_FIRE,
 			p : []
 		};
 
@@ -114,10 +119,10 @@ var Game = {
 			data.p.push({
 				x : Game.players[i].pos.x,
 				y : Game.players[i].pos.y,
-				p : Game.players[i].pressed,
 				d : Game.players[i].direction,
 				t : Game.players[i].team,
 
+				p : Game.players[i].pressed,
 				i : Game.players[i].id
 			});
 		}
@@ -127,7 +132,6 @@ var Game = {
 		socket.broadcast.emit(Game.TYPE.NEW_PLAYER, {
 			x : player.pos.x,
 			y : player.pos.y,
-			p : player.pressed,
 			d : player.direction,
 			t : player.team,
 
@@ -136,11 +140,10 @@ var Game = {
 
 		Game.players[player.id] = player;
 
-		socket.on(Game.TYPE.INPUT, function(input) {
-			player.pressed = input[Game.TYPE.PRESSED];
-			var delta = new Vector2d(input[Game.POSITION.X], input[Game.POSITION.Y]);
+		socket.on(Game.TYPE.INPUT, function(data) {
+			player.pressed = data.p;
+			var delta = new Vector2d(data.x, data.y);
 			delta.sub(player.pos);
-			console.log(delta);
 			player.delta = delta;
 			player.updated = true;
 		});
@@ -183,6 +186,7 @@ var Game = {
 		return null;
 	},
 
+	/*
 	createTimer : function() {
 		setInterval(function() {
 			this._dt = new Date().getTime() - this._dte;
@@ -190,30 +194,29 @@ var Game = {
 			this.local_time += this._dt/1000.0;
 		}.bind(this), 4);
 	},
+	*/
 
 	init : function () {
-		this.local_time = 0.016;
-		this._dt = this._dte = new Date().getTime();
+		// this.local_time = 0.016;
+		// this._dt = this._dte = new Date().getTime();
 
-		this.createTimer();
+		// this.createTimer();
 
-		Game.constants = require('../shared/constants.js');
-		Game.config = require('./config.js');
-		Game.TYPE = Game.constants.TYPE;
-		Game.POSITION = Game.constants.POSITION;
-		Game.DIRECTION = Game.constants.DIRECTION;
-		Game.TEAM = Game.constants.TEAM;
-		Game.PRESSED = Game.constants.PRESSED;
-		Game.FRIENDLY_FIRE = Game.constants.FRIENDLY_FIRE;
+		var constants = require('../shared/constants.js');
+
+		Game.TYPE = constants.TYPE;
+		Game.POSITION = constants.POSITION;
+		Game.DIRECTION = constants.DIRECTION;
+		Game.TEAM = constants.TEAM;
+		Game.PRESSED = constants.PRESSED;
 		
-		Game.world = new World(require('./../public/data/maps/' + Game.config.MAP + '.json'));
+		Game.world = new World(require('./../public/data/maps/' + config.MAP + '.json'));
 
 		Game.timer = require('./timer.js');
-		
-		if(Game.timer.init()) {
-			setInterval(Game.update,           1000 / Game.config.FPS          );
-			setInterval(Game.correctionUpdate, Game.config.CORRECTION_TIME_STEP);
-		}
+		Game.timer.init();
+
+		setInterval(Game.update,           1000 / config.FPS          );
+		// setInterval(Game.correctionUpdate, config.CORRECTION_TIME_STEP);
 	}
 
 };

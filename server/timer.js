@@ -1,4 +1,4 @@
-var fps = require('./config.js').FPS;
+var fps = require('./config.json').FPS;
 var timer = (function() {
 	// hold public stuff in our api
 	var api = {};
@@ -46,8 +46,6 @@ var timer = (function() {
 		// reset delta counting variables
 		framedelta = 0;
 		framecount = 0;
-
-		return true;
 	};
 
 	/**

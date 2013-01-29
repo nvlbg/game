@@ -4,6 +4,7 @@ var Vector2d = require('./Vector2d.js');
 var Rect = require('./Rect.js');
 
 var Player = Rect.extend({
+	// constructor
 	init : function(pos, dir, recoil, speed, friction, team, socket, id) {
 		this.parent(pos, 32, 32);
 
@@ -30,13 +31,6 @@ var Player = Rect.extend({
 		}
 
 		this.id = id;
-	},
-
-	smartphone : null,
-	smartphoneConnected : false,
-	connectSmartphone : function (smartphone) {
-		this.smartphone = smartphone;
-		this.socket.emit(Game.TYPE.SMARTPHONE_REQUEST);
 	},
 
 	answerSmartphone : function (answer) {
@@ -66,12 +60,12 @@ var Player = Rect.extend({
 			this.moveDown();
 		}
 
-		this.vel.add(this.delta);
 		this.delta.div(2);
+		this.vel.add(this.delta);
+
 		this.updateMovement();
 
-		this.vel.x = 0;
-		this.vel.y = 0;
+		this.vel.x = this.vel.y = 0;
 	},
 
 	moveLeft : function() {
@@ -129,10 +123,8 @@ var Player = Rect.extend({
 			console.log((new Date().getTime()) + ": I'm colliding with x: " + collision.x);
 		}
 		
-		var x = this.pos.x, y = this.pos.y;
-		
+		var pos = this.pos.clone();
 		this.pos.add(this.vel);
-		
 		collision = Game.collide(this);
 		
 		if(collision && collision.obj instanceof Player) {
@@ -145,8 +137,9 @@ var Player = Rect.extend({
 				this.vel.x = 0;
 			}
 			
-			this.pos.x = x;
-			this.pos.y = y;
+			pos.add(this.vel);
+			this.pos.x = pos.x;
+			this.pos.y = pos.y;
 		}
 	},
 	
@@ -176,6 +169,13 @@ var Player = Rect.extend({
 
 	onCollision : function(res, obj) {
 
+	},
+
+	smartphone : null,
+	smartphoneConnected : false,
+	connectSmartphone : function (smartphone) {
+		this.smartphone = smartphone;
+		this.socket.emit(Game.TYPE.SMARTPHONE_REQUEST);
 	}
 });
 

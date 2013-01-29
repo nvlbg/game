@@ -1,5 +1,4 @@
 require('./Util.js');
-var constants = require('../shared/constants.js');
 
 var Vector2d = require('./Vector2d.js');
 var Rect = require('./Rect.js');
@@ -15,19 +14,19 @@ var World = Object.extend({
 	realheight : 0,
 
 	init : function (map_json) {
-		this.width = parseInt(map_json['width'], 10);
-		this.height = parseInt(map_json['height'], 10);
-		this.tilewidth = parseInt(map_json['tilewidth'], 10);
-		this.tileheight = parseInt(map_json['tileheight'], 10);
+		this.width = parseInt(map_json.width, 10);
+		this.height = parseInt(map_json.height, 10);
+		this.tilewidth = parseInt(map_json.tilewidth, 10);
+		this.tileheight = parseInt(map_json.tileheight, 10);
 		this.realwidth = this.width * this.tilewidth;
 		this.realheight = this.height * this.tileheight;
 
 		this.collision_data = new Array (this.width);
 
 		var x, y, i, len, firstgid = 0, layer = null;
-		for (i = 0, len = map_json['tilesets'].length; i < len; i++) {
-			if (map_json['tilesets'][i]['name'].toLowerCase().contains('metatiles')) {
-				firstgid = map_json['tilesets'][i]['firstgid'];
+		for (i = 0, len = map_json.tilesets.length; i < len; i++) {
+			if (map_json.tilesets[i].name.toLowerCase().contains('metatiles')) {
+				firstgid = map_json.tilesets[i].firstgid;
 				break;
 			}
 		}
@@ -35,9 +34,9 @@ var World = Object.extend({
 			throw "No metatiles found";
 		}
 
-		for (i = 0, len = map_json['layers'].length; i < len; i++) {
-			if (map_json['layers'][i]['name'].toLowerCase().contains('collision')) {
-				layer = map_json['layers'][i]['data'];
+		for (i = 0, len = map_json.layers.length; i < len; i++) {
+			if (map_json.layers[i].name.toLowerCase().contains('collision')) {
+				layer = map_json.layers[i].data;
 				break;
 			}
 		}
@@ -52,18 +51,19 @@ var World = Object.extend({
 				this.collision_data[x][y] = n === 0 ? 0 : (n + 1) - firstgid;
 			}
 		}
+	},
 
-		/* print collision_data (for debugging)
+	// for debugging purposes
+	printCollisionData : function() {
 		var s = '';
-		for(x = 0; x < this.collision_data.length; x++) {
+		for(var x = 0; x < this.collision_data.length; x++) {
 			s = '[';
-			for(y = 0; y < this.collision_data[x].length; y++) {
+			for(var y = 0; y < this.collision_data[x].length; y++) {
 				s += this.collision_data[x][y] + ',';
 			}
 			s += ']';
 			console.log(s);
 		}
-		*/
 	},
 
 	checkCollision : function (obj, pv) {

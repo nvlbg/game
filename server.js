@@ -4,35 +4,11 @@ var express = require('express'),
 	server = http.createServer(app),
 	io = require('socket.io').listen(server),
 
-	config = require('./server/config.js'),
+	config = require('./server/config.json'),
 	constants = require('./shared/constants.js');
 
 global.Game = require('./server/Game.js');
 global.Game.init();
-
-/*
-// serve requests
-app.get('/', function(req, res) {
-	res.sendfile(__dirname + '/public/index.html');
-});
-
-app.get('/favicon.ico', function(req, res) {
-	res.writeHead(200, {'Content-Type': 'image/x-icon'} );
-	res.end();
-});
-
-app.get('/shared/*', function(req, res) {
-	res.sendfile(__dirname + '/shared/' + req.params[0]);
-});
-
-app.get('/smartphones/*', function(req, res) {
-	res.sendfile(__dirname + '/smartphones/' + req.params[0]);
-});
-
-app.get('*', function(req, res) {
-	res.sendfile(__dirname + '/public/' + req.params[0]);
-});
-*/
 
 var ips = [];
 app.use(function(req, res, next) {
@@ -68,10 +44,12 @@ server.listen(config.PORT);
 console.log('Server started at 127.0.0.1:' + config.PORT);
 
 io.sockets.on('connection', function (socket) {
+	// player client connected
 	socket.on(constants.TYPE.SPAWN_REQUEST, function() {
 		global.Game.addNewPlayer(socket);
 	});
 
+	// smartphone client conneted
 	socket.on(constants.TYPE.SMARTPHONE_CONNECT, function(playerID) {
 		global.Game.authenticateSmathphone(socket, playerID);
 	});

@@ -12,5 +12,6 @@ I have other ideas with what to improve the game, but I'll focus on them after I
 - add some music and SFX
 - create in game menus (I think of using impress.js for that)
 - login via twitter/facebook
+- only use connect instead of express for serving static files
 
 Of course, you will be added to the list of contributors if you help. If you have some ideas or problems, please email me at nvl.bg.rules@gmail.com

@@ -86,9 +86,9 @@
 			}
 		},
 
-		updateHelper : function() { // used by Friend and Enemy, but not Player
+		// used by Friend and Enemy, but not Player
+		updateHelper : function() {
 			if(this.isExploding) {
-				this.parent(this);
 				return true;
 			}
 
@@ -104,19 +104,17 @@
 				this.moveDown();
 			}
 
-			var updated = this.vel.x !== 0 || this.vel.y !== 0;
+			if (this.delta.x > 0.1 || this.delta.y > 0.1) {
+				this.delta.div(2);
+				this.vel.add(this.delta);
+			}
 
-			this.vel.add(this.delta);
-			this.delta.div(2);
 			this.updateMovement();
 
+			var updated = this.vel.x !== 0 || this.vel.y !== 0;
 			this.vel.x = this.vel.y = 0;
-			
-			if(updated) {
-				this.parent(this);
-				return true;
-			}
-			return false;
+
+			return updated;
 		},
 
 		explode : function() {
@@ -133,31 +131,6 @@
 			});
 		},
 
-		fixDirection : function() {
-			var currentAnimation = "move";
-			if(this.direction === game.ENUM.DIRECTION.UP || this.direction === game.ENUM.DIRECTION.DOWN) {
-				this.updateColRect(4, 24, 1, 29);
-				currentAnimation += "Forward";
-			} else if(this.direction === game.ENUM.DIRECTION.LEFT || this.direction === game.ENUM.DIRECTION.RIGHT) {
-				this.updateColRect(2, 29, 4, 24);
-				currentAnimation += "Sideward";
-			} else {
-				throw "unknown direction \"" + this.direction + "\"";
-			}
-
-			this.setCurrentAnimation(currentAnimation);
-
-			if(this.direction === game.ENUM.DIRECTION.LEFT) {
-				this.flipX(true);
-			} else if(this.direction === game.ENUM.DIRECTION.RIGHT) {
-				this.flipX(false);
-			} else if(this.direction === game.ENUM.DIRECTION.UP) {
-				this.flipY(false);
-			} else if(this.direction === game.ENUM.DIRECTION.DOWN) {
-				this.flipY(true);
-			}
-		},
-
 		updateMovement : function() {
 			this.computeVelocity(this.vel);
 
@@ -171,7 +144,7 @@
 				this.vel.x = 0;
 			}
 
-			var x = this.pos.x, y = this.pos.y;
+			var pos = this.pos.clone();
 			this.pos.add(this.vel);
 			collision = me.game.collide(this);
 
@@ -184,8 +157,9 @@
 					this.vel.x = 0;
 				}
 
-				this.pos.x = x;
-				this.pos.y = y;
+				pos.add(this.vel);
+				this.pos.x = pos.x;
+				this.pos.y = pos.y;
 			}
 		},
 

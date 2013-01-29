@@ -38,6 +38,9 @@
 		},
 
 		onSpawn : function(data) {
+			me.levelDirector.loadLevel(data.l);
+			me.game.collisionMap.tileset.type.WATER = 'water';
+			
 			me.gamestat.add("team", data.t);
 			me.gamestat.add("friendly_fire", data.f);
 
@@ -67,25 +70,24 @@
 				p = me.entityPool.newInstanceOf('Enemy', data.x, data.y, data.d, 0, 3, 0);
 			}
 
-			p.pressed = data.p;
 			me.game.add(p, 4);
 			this.players[data.i] = p;
 			me.game.sort();
 		},
 
 		onPlayerUpdate : function(data) {
-			if (!data.i) {
+			console.log(data);
+			if (data.i === undefined) {
 				this.player.pos.x = data.x;
 				this.player.pos.y = data.y;
 				this.player.pressed = data.p;
 				return;
 			}
-
-			// this.players[data.i].pos.x = data.x;
-			// this.players[data.i].pos.y = data.y;
 			this.players[data.i].pressed = data.p;
-			this.players[data.i].delta = new me.Vector2d(data.x, data.y);
-
+			
+			var delta = new me.Vector2d(data.x, data.y);
+			delta.sub(this.players[data.i].pos);
+			this.players[data.i].delta = delta;
 		},
 
 		onCorrection : function(data) {
