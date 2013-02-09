@@ -9,11 +9,17 @@
 			//this.lastVel = new me.Vector2d(0, 0);
 			this.shootSpeed = shootSpeed;
 			this.socket = socket;
-			this.lastPressed = 0;
 			this.canShoot = true;
 			this.smarthphoneConnected = false;
+
+			this.correction = null;
+			this.inputs = [];
+			this.input_seq = 0;
+
+			this.delta = null;
+
+			this.lastPressed = 0;
 			this.pressed = 0;
-			this.type = me.game.FRIEND_OBJECT;
 			
 			me.game.viewport.follow(this.pos, me.game.viewport.AXIS.BOTH);
 		},
@@ -120,6 +126,7 @@
 				this.moveDown();
 			}
 
+			/*
 			if(this.pressed !== this.lastPressed) {
 				this.lastPressed = this.pressed;
 				
@@ -131,8 +138,33 @@
 
 				this.socket.emit(game.ENUM.TYPE.INPUT, input);
 			}
-			
+			*/
+		
+			if (this.delta !== null) {
+				if (this.delta.x > 0.1 || this.delta.y > 0.1) {
+					this.delta.div(2);
+					this.vel.add(this.delta);
+				} else {
+					this.delta = null;
+				}
+			}
+		
+			if(this.pressed > 0) {
+				//TODO: no local time in input
+				var input = {
+					s: this.input_seq,
+					p: this.pressed
+				};
+
+				this.socket.emit(game.ENUM.TYPE.UPDATE, input);
+
+				this.input_seq += 1;
+				this.inputs.push(input);
+			}
+
 			this.updateMovement();
+			
+			this.applyClientSidePrediction();
 
 			var updated = this.vel.x !== 0 || this.vel.y !== 0;
 			this.vel.x = this.vel.y = 0;
@@ -144,10 +176,50 @@
 			return false;
 		},
 
+		applyClientSidePrediction: function() {
+			if(this.correction !== null) {
+				this.pos.x = this.correction.x;
+				this.pos.y = this.correction.y;
+
+				var i, len;
+
+				// discard all processed inputs by server
+				for (i = 0, len = this.inputs.length; i < len; i++) {
+					if (this.inputs[i].s === this.correction.last_seq) {
+						this.inputs.splice(0, i + 1);
+						break;
+					}
+				}
+				
+				var currentPos = this.pos.clone();
+				for (i = 0, len = this.inputs.length; i < len; i++) {
+					this.vel.x = this.vel.y = 0;
+					var pressed = this.inputs[i].pressed;
+
+					if(pressed & game.ENUM.PRESSED.LEFT) {
+						this.moveLeft();
+					} else if(pressed & game.ENUM.PRESSED.RIGHT) {
+						this.moveRight();
+					}
+
+					if(pressed & game.ENUM.PRESSED.UP) {
+						this.moveUp();
+					} else if(pressed & game.ENUM.PRESSED.DOWN) {
+						this.moveDown();
+					}
+
+					this.updateMovement();
+				}
+
+				this.delta = currentPos.sub(this.pos);
+				console.log(currentPos, this.pos, this.pos.sub(currentPos));
+				this.pos = currentPos;
+
+				this.correction = null;
+			}
+		},
+
 		shoot : function() {
-			// if(this.isCurrentAnimation("shootForward") || this.isCurrentAnimation("shootSideward")) {
-				// return false;
-			// }
 			if(this.canShoot) {
 				this.canShoot = false;
 				setTimeout(function() {

@@ -7,6 +7,7 @@
 	me.sys.pauseOnBlur = false;
 	me.sys.useNativeAnimFrame = true;
 	me.sys.interpolation = true;
+	// me.sys.preRender = true;
 	me.sys.fps = 60;
 
 	// add custom types

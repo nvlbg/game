@@ -30,7 +30,7 @@
 			this.isExploding = false;
 
 			this.setCurrentAnimation("sideward");
-			this.updateColRect(14, 5, 12, 8);
+			this.updateColRect(14, 6, 12, 6);
 
 			this.angle = Math.atan2(direction.y, direction.x);
 
@@ -39,13 +39,10 @@
 			// me.debug.renderCollisionMap = true;
 
 			this.speed = speed || 5;
-			this.direction = new me.Vector2d(
-									direction.x * this.speed,
-									direction.y * this.speed
-								);
+			this.direction = direction;
 			// console.log(this.direction);
-			this.vel.x = this.direction.x;
-			this.vel.y = this.direction.y;
+			this.vel.x = this.direction.x * this.speed;
+			this.vel.y = this.direction.y * this.speed;
 		},
 
 		update : function() {

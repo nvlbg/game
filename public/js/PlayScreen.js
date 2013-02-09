@@ -2,7 +2,7 @@
 
 	window.game.PlayScreen = me.ScreenObject.extend({
 		onResetEvent : function() {
-			var network = new game.Network();
+			game.network = new game.Network();
 			new window.debugPanel();
 			
 			//me.gamestat.add("team", game.ENUM.TEAM.GREEN);

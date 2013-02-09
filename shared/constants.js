@@ -14,7 +14,9 @@
 			LOCAL_TIME          : 10,
 			SMARTPHONE_CONNECT  : 11,
 			SMARTPHONE_REQUEST  : 12,
-			SMARTPHONE_ACCEPT   : 13
+			SMARTPHONE_ACCEPT   : 13,
+			UPDATE              : 14,
+			PING                : 15
 		},
 
 		POSITION : {

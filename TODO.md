@@ -4,6 +4,7 @@ Currently, I am focused in finished the following issues before releasing versio
 - server side collision detection might be not working as expected
 - better networking
 - cleaning up the game API
+- should send corrections for each client ONLY if he needs it
 - think of a game name. Here are some examples I thought of or have been suggested to me - "Army of Tanks", "BomberTank", "Tank.NET"
 
 I have other ideas with what to improve the game, but I'll focus on them after I finish these objectives. If you have the knowledge and want to help me, you can focus on these problems, or you can do any of these that I'm not paying attention yet:

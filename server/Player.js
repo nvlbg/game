@@ -21,6 +21,10 @@ var Player = Rect.extend({
 		this.vel = new Vector2d(0, 0);
 		this.pressed = 0;
 		this.direction = dir;
+
+		this.oldPos = this.pos.clone();
+		this.inputs = [];
+		this.last_input_seq = 0;
 		
 		if(dir === Game.DIRECTION.UP || dir === Game.DIRECTION.DOWN) {
 			this.updateColRect(24, 29);
@@ -48,6 +52,35 @@ var Player = Rect.extend({
 	},
 
 	update : function() {
+		if (this.inputs.length > 0) {
+			this.oldPos = this.pos.clone();
+	
+			for (var i = 0, len = this.inputs.length; i < len; i++) {
+				var pressed = this.inputs[i].pressed;
+
+				if(pressed & Game.PRESSED.LEFT) {
+					this.moveLeft();
+				} else if(pressed & Game.PRESSED.RIGHT) {
+					this.moveRight();
+				}
+
+				if(pressed & Game.PRESSED.UP) {
+					this.moveUp();
+				} else if(pressed & Game.PRESSED.DOWN) {
+					this.moveDown();
+				}
+
+				this.updateMovement();
+				this.vel.x = this.vel.y = 0;
+			}
+
+			this.last_input_seq = this.inputs[this.inputs.length - 1].input_seq;
+
+			this.inputs = [];
+		}
+
+
+		/*
 		if(this.pressed & Game.PRESSED.LEFT) {
 			this.moveLeft();
 		} else if(this.pressed & Game.PRESSED.RIGHT) {
@@ -66,6 +99,7 @@ var Player = Rect.extend({
 		this.updateMovement();
 
 		this.vel.x = this.vel.y = 0;
+		*/
 	},
 
 	moveLeft : function() {

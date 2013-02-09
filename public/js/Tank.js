@@ -84,9 +84,13 @@
 			} else if(direction === game.ENUM.DIRECTION.DOWN) {
 				this.flipY(true);
 			}
+
+			this.updates = [];
+			this.lastProcessedSeq = -1;
 		},
 
 		// used by Friend and Enemy, but not Player
+		/*
 		updateHelper : function() {
 			if(this.isExploding) {
 				return true;
@@ -107,6 +111,73 @@
 			if (this.delta.x > 0.1 || this.delta.y > 0.1) {
 				this.delta.div(2);
 				this.vel.add(this.delta);
+			}
+
+			this.updateMovement();
+
+			var updated = this.vel.x !== 0 || this.vel.y !== 0;
+			this.vel.x = this.vel.y = 0;
+
+			return updated;
+		},
+		*/
+		
+		updateHelper : function() {
+			if(this.isExploding) {
+				return true;
+			}
+
+			if (this.updates.length > 0) {
+				if(this.updates.length >= ( 60*game.network.buffer_size )) {
+					this.updates.splice(0,1);
+				}
+
+				var current_time = game.network.client_time;
+				var count = this.updates.length - 1;
+
+				var target = null;
+				var previous = null;
+
+				var point, nextPoint;
+				for(var i = 0; i < count; i++) {
+					point = this.updates[i];
+					nextPoint = this.updates[i+1];
+
+					//TODO: figure out why is this exception thrown
+					if(current_time > point.t && current_time < nextPoint.t) {
+						target = nextPoint;
+						previous = point;
+						break;
+					}
+				}
+
+				if(!target) {
+					target = this.updates[0];
+					previous = this.updates[0];
+				}
+
+				var difference = target.t - current_time;
+				var max_difference = target.t - previous.t;
+				var time_point = difference/max_difference;
+
+				if( isNaN(time_point) || time_point === Number.MIN_VALUE || time_point === Number.MAX_VALUE) {
+					time_point = 0;
+				}
+
+				this.vel.x = (target.x - previous.x) * time_point;
+				this.vel.y = (target.y - previous.y) * time_point;
+
+				// var latest_server_data = this.updates[ this.updates.length-1 ];
+				// var pos = new me.Vector2d(latest_server_data.x, latest_server_data.y);
+
+				// var target_pos = new me.Vector2d(target.x, target.y);
+				// var past_pos = new me.Vector2d(previous.x, previous.y);
+
+				// this.ghosts.server_pos_other.pos = this.pos(other_server_pos);
+				// this.ghosts.pos_other.pos = this.v_lerp(other_past_pos, other_target_pos, time_point);
+
+				// this.pos = this.v_lerp( this.pos, this.v_lerp(past_pos, target_pos, time_point), me.timer.tick*game.network.client_smooth);
+
 			}
 
 			this.updateMovement();
@@ -220,6 +291,31 @@
 
 				this.flipY(true);
 				this.direction = game.ENUM.DIRECTION.DOWN;
+			}
+		},
+
+		setDirection : function(dir) {
+			this.direction = dir;
+
+			var currentAnimation = "move";
+			if(this.direction === game.ENUM.DIRECTION.UP || this.direction === game.ENUM.DIRECTION.DOWN) {
+				this.updateColRect(4, 24, 1, 29);
+				currentAnimation += "Forward";
+			} else if(this.direction === game.ENUM.DIRECTION.LEFT || this.direction === game.ENUM.DIRECTION.RIGHT) {
+				this.updateColRect(2, 29, 4, 24);
+				currentAnimation += "Sideward";
+			}
+
+			this.setCurrentAnimation(currentAnimation);
+
+			if(this.direction === game.ENUM.DIRECTION.LEFT) {
+				this.flipX(true);
+			} else if(this.direction === game.ENUM.DIRECTION.RIGHT) {
+				this.flipX(false);
+			} else if(this.direction === game.ENUM.DIRECTION.UP) {
+				this.flipY(false);
+			} else if(this.direction === game.ENUM.DIRECTION.DOWN) {
+				this.flipY(true);
 			}
 		}
 	});

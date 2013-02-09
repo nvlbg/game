@@ -21,11 +21,9 @@ var Game = {
 	blue  : 0,
 	green : 0,
 
-	/*
 	_dt : null,
 	_dte : null,
 	local_time : null,
-	*/
 
 	authenticateSmathphone : function(socket, playerID) {
 		if (!Game.players[playerID]) {
@@ -43,6 +41,7 @@ var Game = {
 			player = Game.players[i];
 			player.update();
 
+			/*
 			if(player.updated) {
 				if (player.smartphoneConnected) {
 					player.socket.emit(Game.TYPE.PLAYER_UPDATED, {
@@ -62,27 +61,36 @@ var Game = {
 
 				player.updated = false;
 			}
+			*/
 		}
 	},
 
-	/*
 	correctionUpdate : function () {
-		var player, correction;
-		for(var i in Game.players) {
+		var i, player, correction = {}, isEmpty = true;
+		for(i in Game.players) {
 			player = Game.players[i];
 			
-			correction = {
-				x : player.pos.x,
-				y : player.pos.y
-			};
+			if (!player.oldPos.equals(player.pos)) {
+				correction[player.id] = {
+					x: player.pos.x,
+					y: player.pos.y,
+					s: player.last_input_seq
+				};
 
-			player.socket.emit(Game.TYPE.CORRECTION, correction);
-
-			correction.i = player.id;
-			player.socket.broadcast.emit(Game.TYPE.PLAYER_CORRECTION, correction);
+				player.oldPos = player.pos.clone();
+				isEmpty = false;
+			}
 		}
+
+		if(!isEmpty) {
+			correction.t = Game.local_time;
+			for(i in Game.players) {
+				Game.players[i].socket.emit(Game.TYPE.CORRECTION, correction);
+			}
+			console.log(correction);
+		}
+
 	},
-	*/
 
 	addNewPlayer : function (socket) {
 		var team;
@@ -109,6 +117,7 @@ var Game = {
 			y : player.pos.y,
 			d : player.direction,
 			t : player.team,
+			i : player.id,
 			
 			l : config.MAP,
 			f : config.FRIENDLY_FIRE,
@@ -121,9 +130,9 @@ var Game = {
 				y : Game.players[i].pos.y,
 				d : Game.players[i].direction,
 				t : Game.players[i].team,
+				i : Game.players[i].id,
 
-				p : Game.players[i].pressed,
-				i : Game.players[i].id
+				p : Game.players[i].pressed
 			});
 		}
 
@@ -146,6 +155,17 @@ var Game = {
 			delta.sub(player.pos);
 			player.delta = delta;
 			player.updated = true;
+		});
+
+		socket.on(Game.TYPE.UPDATE, function(data) {
+			player.inputs.push({
+				input_seq: data.s,
+				pressed: data.p
+			});
+		});
+
+		socket.on(Game.TYPE.PING, function(data) {
+			socket.emit(Game.TYPE.PING, data);
 		});
 
 		socket.on(Game.TYPE.SMARTPHONE_ACCEPT, player.answerSmartphone.bind(player));
@@ -186,7 +206,6 @@ var Game = {
 		return null;
 	},
 
-	/*
 	createTimer : function() {
 		setInterval(function() {
 			this._dt = new Date().getTime() - this._dte;
@@ -194,13 +213,11 @@ var Game = {
 			this.local_time += this._dt/1000.0;
 		}.bind(this), 4);
 	},
-	*/
 
 	init : function () {
-		// this.local_time = 0.016;
-		// this._dt = this._dte = new Date().getTime();
-
-		// this.createTimer();
+		this.local_time = 0.016;
+		this._dt = this._dte = new Date().getTime();
+		this.createTimer();
 
 		var constants = require('../shared/constants.js');
 
@@ -216,7 +233,7 @@ var Game = {
 		Game.timer.init();
 
 		setInterval(Game.update,           1000 / config.FPS          );
-		// setInterval(Game.correctionUpdate, config.CORRECTION_TIME_STEP);
+		setInterval(Game.correctionUpdate, config.CORRECTION_TIME_STEP);
 	}
 
 };

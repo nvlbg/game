@@ -28,7 +28,7 @@ Here is what each option does:
 - MAP - the level that will be started. It must be saved in public/data/maps/
 - FPS - the frame rate on the server update loop. Default: 60
 - PORT - the port the server will be started
-- CORRECTION_TIME_STEP - in what interval should corrections be sent. Default: 3000 (currently, and most probably, this won't be used because I chose to use a different approach in dealing with networking)
+- CORRECTION_TIME_STEP - in what interval should corrections be sent. Default: 50
 - FRIENDLY_FIRE - should friendly fire be on
 
 How to build with Grunt
