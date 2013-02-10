@@ -3,7 +3,7 @@ require('./Util.js');
 var Vector2d = require('./Vector2d.js');
 var Rect = require('./Rect.js');
 var config = require('./config.json');
-
+/*
 var Bullet = Rect.extend({
 	// constructor
 	init : function(pos, angle, speed, ownerID, team) {
@@ -75,3 +75,4 @@ var Bullet = Rect.extend({
 });
 
 module.exports = Bullet;
+*/

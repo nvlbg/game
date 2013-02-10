@@ -16,7 +16,7 @@
 			this.inputs = [];
 			this.input_seq = 0;
 
-			this.delta = null;
+			this.delta = new me.Vector2d(0, 0);
 
 			this.lastPressed = 0;
 			this.pressed = 0;
@@ -140,17 +140,8 @@
 			}
 			*/
 		
-			if (this.delta !== null) {
-				if (this.delta.x > 0.1 || this.delta.y > 0.1) {
-					this.delta.div(2);
-					this.vel.add(this.delta);
-				} else {
-					this.delta = null;
-				}
-			}
-		
 			if(this.pressed > 0) {
-				//TODO: no local time in input
+				//TODO: no local time in input (but maybe not needed?)
 				var input = {
 					s: this.input_seq,
 					p: this.pressed
@@ -162,9 +153,14 @@
 				this.inputs.push(input);
 			}
 
+			if (this.delta.x > 0.1 || this.delta.y > 0.1) {
+				//TODO: maybe the delta should be added to the vel
+				this.delta.div(2);
+				this.pos.add(this.delta);
+			}
+
 			this.updateMovement();
-			
-			this.applyClientSidePrediction();
+			this.applyClientSideAdjustment();
 
 			var updated = this.vel.x !== 0 || this.vel.y !== 0;
 			this.vel.x = this.vel.y = 0;
@@ -176,22 +172,23 @@
 			return false;
 		},
 
-		applyClientSidePrediction: function() {
+		applyClientSideAdjustment: function() {
 			if(this.correction !== null) {
+				var currentPos = this.pos.clone();
+
 				this.pos.x = this.correction.x;
 				this.pos.y = this.correction.y;
 
 				var i, len;
-
 				// discard all processed inputs by server
 				for (i = 0, len = this.inputs.length; i < len; i++) {
-					if (this.inputs[i].s === this.correction.last_seq) {
+					if (this.inputs[i].s === this.correction.s) {
 						this.inputs.splice(0, i + 1);
 						break;
 					}
 				}
-				
-				var currentPos = this.pos.clone();
+
+				// re-process the moves that the server hasn't recieved/processed yet
 				for (i = 0, len = this.inputs.length; i < len; i++) {
 					this.vel.x = this.vel.y = 0;
 					var pressed = this.inputs[i].pressed;
@@ -211,9 +208,15 @@
 					this.updateMovement();
 				}
 
-				this.delta = currentPos.sub(this.pos);
-				console.log(currentPos, this.pos, this.pos.sub(currentPos));
-				this.pos = currentPos;
+				// compute a delta with the difference between client-side predicted pos
+				// and our new predicted pos (after the correction we recieved)
+				// each frame we will add half of that delta to our pos, so it will smoothly
+				// be corrected after few frames
+				this.delta = this.pos.clone();
+				this.delta.sub(currentPos);
+
+				this.pos.x = currentPos.x;
+				this.pos.y = currentPos.y;
 
 				this.correction = null;
 			}

@@ -136,7 +136,7 @@
 				this.server_updates.splice(0,1);
 			}
 
-			console.log(data);
+			// console.log(data);
 			for (var i in data) {
 				if (i === 't') {
 					continue;
