@@ -23,7 +23,7 @@ var Game = {
 
 	_dt : null,
 	_dte : null,
-	local_time : null,
+	local_time : 0,
 
 	authenticateSmathphone : function(socket, playerID) {
 		if (!Game.players[playerID]) {
@@ -84,10 +84,11 @@ var Game = {
 
 		if(!isEmpty) {
 			correction.t = Game.local_time;
+			console.log(correction);
+			
 			for(i in Game.players) {
 				Game.players[i].socket.emit(Game.TYPE.CORRECTION, correction);
 			}
-			console.log(correction);
 		}
 
 	},

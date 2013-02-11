@@ -17,6 +17,7 @@
 			this.input_seq = 0;
 
 			this.delta = new me.Vector2d(0, 0);
+			this.deltaFrames = 0;
 
 			this.lastPressed = 0;
 			this.pressed = 0;
@@ -154,10 +155,17 @@
 			}
 
 			if (this.delta.x > 0.1 || this.delta.y > 0.1) {
-				//TODO: maybe the delta should be added to the vel
 				this.delta.div(2);
 				this.pos.add(this.delta);
 			}
+			
+			/*
+			// TODO: choose (or add option to switch) between this and the aproach above
+			if (this.deltaFrames > 0) {
+				this.deltaFrames -= 1;
+				this.pos.add(this.delta);
+			}
+			*/
 
 			this.updateMovement();
 			this.applyClientSideAdjustment();
@@ -191,7 +199,7 @@
 				// re-process the moves that the server hasn't recieved/processed yet
 				for (i = 0, len = this.inputs.length; i < len; i++) {
 					this.vel.x = this.vel.y = 0;
-					var pressed = this.inputs[i].pressed;
+					var pressed = this.inputs[i].p;
 
 					if(pressed & game.ENUM.PRESSED.LEFT) {
 						this.moveLeft();

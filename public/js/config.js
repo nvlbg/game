@@ -1,6 +1,7 @@
 (function() {
 	window.game = {};
 
+	//TODO: load json via AJAX instead
 	window.game.ENUM = window.ENUM;
 
 	// configuring system variables

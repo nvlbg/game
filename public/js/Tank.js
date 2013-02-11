@@ -143,7 +143,6 @@
 					point = this.updates[i];
 					nextPoint = this.updates[i+1];
 
-					//TODO: figure out why is this exception thrown
 					if(current_time > point.t && current_time < nextPoint.t) {
 						target = nextPoint;
 						previous = point;
@@ -156,7 +155,7 @@
 					previous = this.updates[0];
 				}
 
-				var difference = target.t - current_time;
+				var difference = current_time - previous.t;
 				var max_difference = target.t - previous.t;
 				var time_point = difference/max_difference;
 
@@ -164,8 +163,8 @@
 					time_point = 0;
 				}
 
-				this.vel.x = (target.x - previous.x) * time_point;
-				this.vel.y = (target.y - previous.y) * time_point;
+				this.vel.x = (target.x - previous.x); // * time_point;
+				this.vel.y = (target.y - previous.y); // * time_point;
 
 				// var latest_server_data = this.updates[ this.updates.length-1 ];
 				// var pos = new me.Vector2d(latest_server_data.x, latest_server_data.y);

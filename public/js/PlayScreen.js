@@ -2,8 +2,9 @@
 
 	window.game.PlayScreen = me.ScreenObject.extend({
 		onResetEvent : function() {
-			game.network = new game.Network();
+			window.game.network = new game.Network();
 			new window.debugPanel();
+			new window.game.debug();
 			
 			//me.gamestat.add("team", game.ENUM.TEAM.GREEN);
 			//me.gamestat.add("friendly_fire", true);
