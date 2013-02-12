@@ -168,9 +168,8 @@
 			*/
 
 			this.updateMovement();
-			this.applyClientSideAdjustment();
-
-			var updated = this.vel.x !== 0 || this.vel.y !== 0;
+			var updated = this.applyClientSideAdjustment();
+			updated = updated || this.vel.x !== 0 || this.vel.y !== 0;
 			this.vel.x = this.vel.y = 0;
 			
 			if(updated) {
@@ -227,7 +226,9 @@
 				this.pos.y = currentPos.y;
 
 				this.correction = null;
+				return true;
 			}
+			return false;
 		},
 
 		shoot : function() {

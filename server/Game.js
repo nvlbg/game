@@ -66,18 +66,19 @@ var Game = {
 	},
 
 	correctionUpdate : function () {
+		//TODO: last_input_seq should be send only to your player and not to others
 		var i, player, correction = {}, isEmpty = true;
 		for(i in Game.players) {
 			player = Game.players[i];
 			
-			if (!player.oldPos.equals(player.pos)) {
+			if (!player.lastSendPos.equals(player.pos)) {
 				correction[player.id] = {
 					x: player.pos.x,
 					y: player.pos.y,
 					s: player.last_input_seq
 				};
 
-				player.oldPos = player.pos.clone();
+				player.lastSendPos = player.pos.clone();
 				isEmpty = false;
 			}
 		}

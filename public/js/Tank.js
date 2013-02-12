@@ -68,10 +68,10 @@
 			var currentAnimation = "move";
 
 			if(direction === game.ENUM.DIRECTION.UP || direction === game.ENUM.DIRECTION.DOWN) {
-				this.updateColRect(4, 24, 1, 29);
+				//this.updateColRect(4, 24, 1, 29);
 				currentAnimation += "Forward";
 			} else if(direction === game.ENUM.DIRECTION.LEFT || direction === game.ENUM.DIRECTION.RIGHT) {
-				this.updateColRect(2, 29, 4, 24);
+				//this.updateColRect(2, 29, 4, 24);
 				currentAnimation += "Sideward";
 			} else {
 				throw "unknown direction \"" + direction + "\"";
@@ -151,32 +151,24 @@
 				}
 
 				if(!target) {
-					target = this.updates[0];
-					previous = this.updates[0];
+					target = this.updates[ this.updates.length - 1 ];
+					previous = this.updates[ this.updates.length - 1 ];
 				}
 
-				var difference = current_time - previous.t;
-				var max_difference = target.t - previous.t;
-				var time_point = difference/max_difference;
+				var pos = new me.Vector2d(previous.x, previous.y);
+				var time_point = (current_time - previous.t) / (target.t - previous.t);
 
 				if( isNaN(time_point) || time_point === Number.MIN_VALUE || time_point === Number.MAX_VALUE) {
 					time_point = 0;
 				}
 
-				this.vel.x = (target.x - previous.x); // * time_point;
-				this.vel.y = (target.y - previous.y); // * time_point;
+				pos.x += (target.x - previous.x) * time_point;
+				pos.y += (target.y - previous.y) * time_point;
 
-				// var latest_server_data = this.updates[ this.updates.length-1 ];
-				// var pos = new me.Vector2d(latest_server_data.x, latest_server_data.y);
+				this.vel.x = pos.x - this.pos.x;
+				this.vel.y = pos.y - this.pos.y;
 
-				// var target_pos = new me.Vector2d(target.x, target.y);
-				// var past_pos = new me.Vector2d(previous.x, previous.y);
-
-				// this.ghosts.server_pos_other.pos = this.pos(other_server_pos);
-				// this.ghosts.pos_other.pos = this.v_lerp(other_past_pos, other_target_pos, time_point);
-
-				// this.pos = this.v_lerp( this.pos, this.v_lerp(past_pos, target_pos, time_point), me.timer.tick*game.network.client_smooth);
-
+				this.setDirection(target.d);
 			}
 
 			this.updateMovement();
@@ -239,7 +231,7 @@
 
 			if(this.direction !== game.ENUM.DIRECTION.LEFT) {
 				if(this.direction !== game.ENUM.DIRECTION.RIGHT) {
-					this.updateColRect(2, 29, 4, 24);
+					//this.updateColRect(2, 29, 4, 24);
 					this.setCurrentAnimation("moveSideward");
 				}
 
@@ -254,7 +246,7 @@
 
 			if(this.direction !== game.ENUM.DIRECTION.RIGHT) {
 				if(this.direction !== game.ENUM.DIRECTION.LEFT) {
-					this.updateColRect(2, 29, 4, 24);
+					//this.updateColRect(2, 29, 4, 24);
 					this.setCurrentAnimation("moveSideward");
 				}
 
@@ -269,7 +261,7 @@
 
 			if(this.direction !== game.ENUM.DIRECTION.UP) {
 				if(this.direction !== game.ENUM.DIRECTION.DOWN) {
-					this.updateColRect(4, 24, 1, 29);
+					//this.updateColRect(4, 24, 1, 29);
 					this.setCurrentAnimation("moveForward");
 				}
 
@@ -284,7 +276,7 @@
 
 			if(this.direction !== game.ENUM.DIRECTION.DOWN) {
 				if(this.direction !== game.ENUM.DIRECTION.UP) {
-					this.updateColRect(4, 24, 1, 29);
+					//this.updateColRect(4, 24, 1, 29);
 					this.setCurrentAnimation("moveForward");
 				}
 
@@ -298,10 +290,10 @@
 
 			var currentAnimation = "move";
 			if(this.direction === game.ENUM.DIRECTION.UP || this.direction === game.ENUM.DIRECTION.DOWN) {
-				this.updateColRect(4, 24, 1, 29);
+				//this.updateColRect(4, 24, 1, 29);
 				currentAnimation += "Forward";
 			} else if(this.direction === game.ENUM.DIRECTION.LEFT || this.direction === game.ENUM.DIRECTION.RIGHT) {
-				this.updateColRect(2, 29, 4, 24);
+				//this.updateColRect(2, 29, 4, 24);
 				currentAnimation += "Sideward";
 			}
 

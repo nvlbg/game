@@ -19,7 +19,6 @@
 		last_ping_time: 0.001,
 		client_time: 0.01,
 		server_time: 0.01,
-		server_updates: [],
 
 		// constructor
 		init : function() {
@@ -159,13 +158,7 @@
 		onCorrection : function(data) {
 			this.server_time = data.t;
 			this.client_time = this.server_time - (this.net_offset/1000);
-			//this.server_updates.push(data);
 
-			//if(this.server_updates.length >= ( 60*this.buffer_size )) {
-			//	this.server_updates.splice(0,1);
-			//}
-
-			// console.log(data);
 			for (var i in data) {
 				if (i === 't') {
 					continue;
@@ -194,17 +187,19 @@
 						}
 					}
 
+					/*
 					// naive approach
 					this.players[i].setDirection(direction);
 					this.players[i].pos.x = data[i].x;
 					this.players[i].pos.y = data[i].y;
+					*/
+
+					console.log(data[i].x, data[i].y);
 				
-					/*
 					// non-naive approach
 					data[i].t = data.t;
 					data[i].d = direction;
 					this.players[i].updates.push(data[i]);
-					*/
 				}
 			}
 		},

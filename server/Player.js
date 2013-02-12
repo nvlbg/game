@@ -22,17 +22,17 @@ var Player = Rect.extend({
 		this.pressed = 0;
 		this.direction = dir;
 
-		this.oldPos = this.pos.clone();
+		this.lastSendPos = new Vector2d(0,0);
 		this.inputs = [];
 		this.last_input_seq = 0;
-		
+		/*
 		if(dir === Game.DIRECTION.UP || dir === Game.DIRECTION.DOWN) {
 			this.updateColRect(24, 29);
 		} else if(dir === Game.DIRECTION.LEFT || dir === Game.DIRECTION.RIGHT) {
 			this.updateColRect(29, 24);
 		} else {
 			throw "unknown direction \"" + dir + "\"";
-		}
+		}*/
 
 		this.id = id;
 	},
@@ -53,8 +53,6 @@ var Player = Rect.extend({
 
 	update : function() {
 		if (this.inputs.length > 0) {
-			this.oldPos = this.pos.clone();
-	
 			for (var i = 0, len = this.inputs.length; i < len; i++) {
 				var pressed = this.inputs[i].pressed;
 
@@ -107,7 +105,7 @@ var Player = Rect.extend({
 		this.vel.y = 0;
 
 		if(this.direction !== Game.DIRECTION.LEFT) {
-			this.updateColRect(29, 24);
+			//this.updateColRect(29, 24);
 			this.direction = Game.DIRECTION.LEFT;
 		}
 	},
@@ -117,7 +115,7 @@ var Player = Rect.extend({
 		this.vel.y = 0;
 
 		if(this.direction !== Game.DIRECTION.RIGHT) {
-			this.updateColRect(29, 24);
+			//this.updateColRect(29, 24);
 			this.direction = Game.DIRECTION.RIGHT;
 		}
 	},
@@ -127,7 +125,7 @@ var Player = Rect.extend({
 		this.vel.y -= this.accel.y * Game.timer.tick;
 
 		if(this.direction !== Game.DIRECTION.UP) {
-			this.updateColRect(24, 29);
+			//this.updateColRect(24, 29);
 			this.direction = Game.DIRECTION.UP;
 		}
 	},
@@ -137,7 +135,7 @@ var Player = Rect.extend({
 		this.vel.y += this.accel.y * Game.timer.tick;
 
 		if(this.direction !== Game.DIRECTION.DOWN) {
-			this.updateColRect(24, 29);
+			//this.updateColRect(24, 29);
 			this.direction = Game.DIRECTION.DOWN;
 		}
 	},
@@ -175,6 +173,7 @@ var Player = Rect.extend({
 			this.pos.x = pos.x;
 			this.pos.y = pos.y;
 		}
+
 	},
 	
 	computeVelocity : function(vel) {
