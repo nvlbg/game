@@ -121,12 +121,7 @@
 			return updated;
 		},
 		*/
-		
-		updateHelper : function() {
-			if(this.isExploding) {
-				return true;
-			}
-
+		applyClientSideInterpolation: function() {
 			if (this.updates.length > 0) {
 				if(this.updates.length >= ( 60*game.network.buffer_size )) {
 					this.updates.splice(0,1);
@@ -175,8 +170,20 @@
 
 			var updated = this.vel.x !== 0 || this.vel.y !== 0;
 			this.vel.x = this.vel.y = 0;
-
 			return updated;
+		},
+		
+		updateHelper: function() {
+			if(this.isExploding) {
+				return true;
+			}
+
+			if ( this.applyClientSideInterpolation() ) {
+				this.parent(this);
+				return true;
+			}
+
+			return false;
 		},
 
 		explode : function() {

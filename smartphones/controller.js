@@ -163,6 +163,8 @@
 		axisCtx.stroke();
 		axisCtx.closePath();
 
+		direction = 0;
+
 		x = y = 100;
 	}, false);
 
@@ -180,7 +182,7 @@
 	// prevent scrolling
 	document.body.addEventListener("touchmove", preventDefault, false);
 
-	var socket = window.io.connect(), lastPressed = 0, input_seq = 0, input = {}, playerID;
+	var socket = window.io.connect(), input_seq = 0, input = {s:0,p:0}, playerID;
 	playerID = window.prompt("Please, enter your player ID", "");
 
 	socket.emit(window.ENUM.TYPE.SMARTPHONE_CONNECT, playerID);
@@ -189,17 +191,14 @@
 			window.alert("Sorry, the user declined to be you.");
 		} else {
 			setInterval(function() {
-				if (lastPressed !== direction) {
-					lastPressed = direction;
+				if (direction > 0) {
+					input.s = input_seq;
+					input.p = direction;
 
+					socket.emit(window.ENUM.TYPE.UPDATE, input);
 					input_seq += 1;
-					input[window.ENUM.TYPE.PRESSED] = direction;
-					input[window.ENUM.TYPE.SEQUENCE_NUMBER] = input_seq;
-					input[window.ENUM.TYPE.LOCAL_TIME] = 0;
-
-					socket.emit(window.ENUM.TYPE.INPUT, input);
 				}
-			}, 1000 / 30);
+			}, 1000 / 60);
 		}
 	});
 })();

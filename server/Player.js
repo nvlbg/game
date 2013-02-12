@@ -42,9 +42,11 @@ var Player = Rect.extend({
 
 		if ( answer === true ) {
 			this.smartphoneConnected = true;
-			this.smartphone.on(Game.TYPE.INPUT, function(input) {
-				this.pressed = input[Game.TYPE.PRESSED];
-				this.updated = true;
+			this.smartphone.on(Game.TYPE.UPDATE, function(data) {
+				this.inputs.push({
+					input_seq: data.s,
+					pressed: data.p
+				});
 			}.bind(this));
 		} else {
 			this.smartphone = null;

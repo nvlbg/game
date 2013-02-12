@@ -164,7 +164,7 @@
 					continue;
 				}
 
-				if (this.players[i] === this.player) {
+				if (this.players[i] === this.player && !this.player.smarthphoneConnected) {
 					//TODO: maybe client side prediction should happen (or be called) here
 					//so there won't be check for correction every frame
 					this.player.correction = data[i];
@@ -187,16 +187,6 @@
 						}
 					}
 
-					/*
-					// naive approach
-					this.players[i].setDirection(direction);
-					this.players[i].pos.x = data[i].x;
-					this.players[i].pos.y = data[i].y;
-					*/
-
-					console.log(data[i].x, data[i].y);
-				
-					// non-naive approach
 					data[i].t = data.t;
 					data[i].d = direction;
 					this.players[i].updates.push(data[i]);

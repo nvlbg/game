@@ -114,62 +114,54 @@
 				return true;
 			}
 
-			this.pressed = 0;
-			if(me.input.isKeyPressed("left")) {
-				this.moveLeft();
-			} else if (me.input.isKeyPressed("right")) {
-				this.moveRight();
-			}
+			var updated = false;
 
-			if(me.input.isKeyPressed("up")) {
-				this.moveUp();
-			} else if (me.input.isKeyPressed("down")) {
-				this.moveDown();
-			}
+			if (this.smarthphoneConnected) {
+				updated = this.applyClientSideInterpolation();
+			} else {
+				this.pressed = 0;
+				if(me.input.isKeyPressed("left")) {
+					this.moveLeft();
+				} else if (me.input.isKeyPressed("right")) {
+					this.moveRight();
+				}
 
-			/*
-			if(this.pressed !== this.lastPressed) {
-				this.lastPressed = this.pressed;
+				if(me.input.isKeyPressed("up")) {
+					this.moveUp();
+				} else if (me.input.isKeyPressed("down")) {
+					this.moveDown();
+				}
+
+				if(this.pressed > 0) {
+					var input = {
+						s: this.input_seq,
+						p: this.pressed
+					};
+
+					this.socket.emit(game.ENUM.TYPE.UPDATE, input);
+
+					this.input_seq += 1;
+					this.inputs.push(input);
+				}
+
+				if (this.delta.x > 0.1 || this.delta.y > 0.1) {
+					this.delta.div(2);
+					this.pos.add(this.delta);
+				}
 				
-				var input = {
-					p: this.pressed,
-					x: this.pos.x,
-					y: this.pos.y
-				};
+				/*
+				// TODO: choose (or add option to switch) between this and the aproach above
+				if (this.deltaFrames > 0) {
+					this.deltaFrames -= 1;
+					this.pos.add(this.delta);
+				}
+				*/
 
-				this.socket.emit(game.ENUM.TYPE.INPUT, input);
+				this.updateMovement();
+				updated = this.applyClientSideAdjustment();
+				updated = updated || this.vel.x !== 0 || this.vel.y !== 0;
 			}
-			*/
 		
-			if(this.pressed > 0) {
-				//TODO: no local time in input (but maybe not needed?)
-				var input = {
-					s: this.input_seq,
-					p: this.pressed
-				};
-
-				this.socket.emit(game.ENUM.TYPE.UPDATE, input);
-
-				this.input_seq += 1;
-				this.inputs.push(input);
-			}
-
-			if (this.delta.x > 0.1 || this.delta.y > 0.1) {
-				this.delta.div(2);
-				this.pos.add(this.delta);
-			}
-			
-			/*
-			// TODO: choose (or add option to switch) between this and the aproach above
-			if (this.deltaFrames > 0) {
-				this.deltaFrames -= 1;
-				this.pos.add(this.delta);
-			}
-			*/
-
-			this.updateMovement();
-			var updated = this.applyClientSideAdjustment();
-			updated = updated || this.vel.x !== 0 || this.vel.y !== 0;
 			this.vel.x = this.vel.y = 0;
 			
 			if(updated) {
