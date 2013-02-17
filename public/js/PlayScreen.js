@@ -1,9 +1,10 @@
 (function() {
 
 	window.game.PlayScreen = me.ScreenObject.extend({
+		stats: null,
 		onResetEvent : function() {
 			window.game.network = new game.Network();
-			window.game.melonDebugPanel = new window.debugPanel();
+			// window.game.melonDebugPanel = new window.debugPanel();
 			// window.game.debugPanel = new window.game.debug();
 			
 			//me.gamestat.add("team", game.ENUM.TEAM.GREEN);
@@ -18,10 +19,22 @@
 			//me.game.add(enemy, 4);
 
 			//me.game.sort();
+			
+			this.stats = new Stats();
+			this.stats.setMode(0); // 0: fps, 1: ms
+
+			// Align top-left
+			this.stats.domElement.style.position = 'absolute';
+			this.stats.domElement.style.left = '0px';
+			this.stats.domElement.style.top = '0px';
+
+			document.body.appendChild( this.stats.domElement );
 		},
 
-		onDestroyEvent : function() {
-			
+		onUpdateFrame : function() {
+			this.stats.begin();
+			this.parent();
+			this.stats.end();
 		}
 	});
 

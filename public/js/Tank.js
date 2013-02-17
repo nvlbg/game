@@ -22,6 +22,8 @@
 			this.recoil = recoil;
 			this.gravity = 0;
 			this.delta = new me.Vector2d(0, 0);
+
+			this.needsUpdate = false;
 			
 			this.setVelocity(speed, speed);
 			this.setFriction(friction, friction);
@@ -29,36 +31,44 @@
 			if(enemy) {
 				if(me.gamestat.getItemValue("team") === game.ENUM.TEAM.GREEN) {
 					this.addAnimation("idleForward", [17]);
-					this.addAnimation("moveForward", [17,16,15,14,13,12,11,10]);
-					this.addAnimation("shootForward", [17,18,19,18,17]);
+					this.addAnimation("moveForward", [17,16,15,14,13,12,11,10], me.sys.fps / 10);
+					this.addAnimation("shootForward", [17,18,19,18,17], me.sys.fps / 50);
 					this.addAnimation("idleSideward", [37]);
-					this.addAnimation("moveSideward", [37,36,35,34,33,32,31,30]);
-					this.addAnimation("shootSideward", [37,38,39,38,37]);
+					this.addAnimation("moveSideward", [37,36,35,34,33,32,31,30], me.sys.fps / 10);
+					this.addAnimation("shootSideward", [37,38,39,38,37], me.sys.fps / 50);
+
+					this.team = game.ENUM.TEAM.BLUE;
 				} else if(me.gamestat.getItemValue("team") === game.ENUM.TEAM.BLUE) {
 					this.addAnimation("idleForward", [7]);
-					this.addAnimation("moveForward", [7,6,5,4,3,2,1,0]);
-					this.addAnimation("shootForward", [7,8,9,8,7]);
+					this.addAnimation("moveForward", [7,6,5,4,3,2,1,0], me.sys.fps / 10);
+					this.addAnimation("shootForward", [7,8,9,8,7], me.sys.fps / 50);
 					this.addAnimation("idleSideward", [27]);
-					this.addAnimation("moveSideward", [27,26,25,24,23,22,21,20]);
-					this.addAnimation("shootSideward", [27,28,29,28,27]);
+					this.addAnimation("moveSideward", [27,26,25,24,23,22,21,20], me.sys.fps / 10);
+					this.addAnimation("shootSideward", [27,28,29,28,27], me.sys.fps / 50);
+
+					this.team = game.ENUM.TEAM.GREEN;
 				} else {
 					throw "unknown team \"" + me.gamestat.getItemValue("team") + "\"";
 				}
 			} else {
 				if(me.gamestat.getItemValue("team") === game.ENUM.TEAM.GREEN) {
 					this.addAnimation("idleForward", [7]);
-					this.addAnimation("moveForward", [7,6,5,4,3,2,1,0]);
-					this.addAnimation("shootForward", [7,8,9,8,7]);
+					this.addAnimation("moveForward", [7,6,5,4,3,2,1,0], me.sys.fps / 10);
+					this.addAnimation("shootForward", [7,8,9,8,7], me.sys.fps / 50);
 					this.addAnimation("idleSideward", [27]);
-					this.addAnimation("moveSideward", [27,26,25,24,23,22,21,20]);
-					this.addAnimation("shootSideward", [27,28,29,28,27]);
+					this.addAnimation("moveSideward", [27,26,25,24,23,22,21,20], me.sys.fps / 10);
+					this.addAnimation("shootSideward", [27,28,29,28,27], me.sys.fps / 50);
+
+					this.team = game.ENUM.TEAM.GREEN;
 				} else if(me.gamestat.getItemValue("team") === game.ENUM.TEAM.BLUE) {
 					this.addAnimation("idleForward", [17]);
-					this.addAnimation("moveForward", [17,16,15,14,13,12,11,10]);
-					this.addAnimation("shootForward", [17,18,19,18,17]);
+					this.addAnimation("moveForward", [17,16,15,14,13,12,11,10], me.sys.fps / 10);
+					this.addAnimation("shootForward", [17,18,19,18,17], me.sys.fps / 50);
 					this.addAnimation("idleSideward", [37]);
-					this.addAnimation("moveSideward", [37,36,35,34,33,32,31,30]);
-					this.addAnimation("shootSideward", [37,38,39,38,37]);
+					this.addAnimation("moveSideward", [37,36,35,34,33,32,31,30], me.sys.fps / 10);
+					this.addAnimation("shootSideward", [37,38,39,38,37], me.sys.fps / 50);
+
+					this.team = game.ENUM.TEAM.BLUE;
 				} else {
 					throw "unknown team \"" + me.gamestat.getItemValue("team") + "\"";
 				}
@@ -89,44 +99,8 @@
 			this.lastProcessedSeq = -1;
 		},
 
-		// used by Friend and Enemy, but not Player
-		/*
-		updateHelper : function() {
-			if(this.isExploding) {
-				return true;
-			}
-
-			if(this.pressed & game.ENUM.PRESSED.LEFT) {
-				this.moveLeft();
-			} else if(this.pressed & game.ENUM.PRESSED.RIGHT) {
-				this.moveRight();
-			}
-
-			if(this.pressed & game.ENUM.PRESSED.UP) {
-				this.moveUp();
-			} else if(this.pressed & game.ENUM.PRESSED.DOWN) {
-				this.moveDown();
-			}
-
-			if (this.delta.x > 0.1 || this.delta.y > 0.1) {
-				this.delta.div(2);
-				this.vel.add(this.delta);
-			}
-
-			this.updateMovement();
-
-			var updated = this.vel.x !== 0 || this.vel.y !== 0;
-			this.vel.x = this.vel.y = 0;
-
-			return updated;
-		},
-		*/
 		applyClientSideInterpolation: function() {
 			if (this.updates.length > 0) {
-				if(this.updates.length >= ( 60*game.network.buffer_size )) {
-					this.updates.splice(0,1);
-				}
-
 				var current_time = game.network.client_time;
 				var count = this.updates.length - 1;
 
@@ -139,6 +113,7 @@
 					nextPoint = this.updates[i+1];
 
 					if(current_time > point.t && current_time < nextPoint.t) {
+						this.updates.splice(0, i-1);
 						target = nextPoint;
 						previous = point;
 						break;
@@ -146,14 +121,18 @@
 				}
 
 				if(!target) {
-					target = this.updates[ this.updates.length - 1 ];
-					previous = this.updates[ this.updates.length - 1 ];
+					if (current_time > this.updates[ this.updates.length - 1 ].t) {
+						target = previous = this.updates[ this.updates.length - 1 ];
+						this.updates.length = 0;
+					} else {
+						target = previous = this.updates[0];
+					}
 				}
 
 				var pos = new me.Vector2d(previous.x, previous.y);
 				var time_point = (current_time - previous.t) / (target.t - previous.t);
 
-				if( isNaN(time_point) || time_point === Number.MIN_VALUE || time_point === Number.MAX_VALUE) {
+				if( isNaN(time_point) || time_point === Infinity || time_point === -Infinity) {
 					time_point = 0;
 				}
 
@@ -164,22 +143,38 @@
 				this.vel.y = pos.y - this.pos.y;
 
 				this.setDirection(target.d);
+
+				// this.updateMovement();
+				this.computeVelocity(this.vel);
+				this.pos.add(this.vel);
+
+				var updated = this.vel.x !== 0 || this.vel.y !== 0;
+				this.vel.x = this.vel.y = 0;
+				return updated;
 			}
 
-			this.updateMovement();
-
-			var updated = this.vel.x !== 0 || this.vel.y !== 0;
-			this.vel.x = this.vel.y = 0;
-			return updated;
+			return false;
 		},
 		
 		updateHelper: function() {
+
 			if(this.isExploding) {
+				this.parent(this);
 				return true;
+			}
+
+			if(!this.visible) {
+				return false;
 			}
 
 			if ( this.applyClientSideInterpolation() ) {
 				this.parent(this);
+				return true;
+			}
+			
+			if (this.needsUpdate) {
+				this.parent(this);
+				this.needsUpdate = false;
 				return true;
 			}
 
@@ -188,16 +183,24 @@
 
 		explode : function() {
 			this.isExploding = true;
-			this.collidable = false;
 
 			this.setCurrentAnimation("explode", function() {
+				this.collidable = false;
+				this.visible = false;
 				this.isExploding = false;
-				// me.game.remove(this);
-				
-				this.collidable = true;
-				this.pos.x = Number.prototype.random(32, 320);
-				this.pos.y = Number.prototype.random(32, 320);
+
+				if (this.direction === game.ENUM.DIRECTION.LEFT || this.direction === game.ENUM.DIRECTION.RIGHT) {
+					this.setCurrentAnimation("idleSideward");
+				} else if (this.direction === game.ENUM.DIRECTION.DOWN || this.direction === game.ENUM.DIRECTION.UP) {
+					this.setCurrentAnimation("idleForward");
+				}
 			});
+		},
+
+		respawn : function() {
+			this.visible = true;
+			this.collidable = true;
+			this.needsUpdate = true;
 		},
 
 		updateMovement : function() {
@@ -215,6 +218,8 @@
 
 			var pos = this.pos.clone();
 			this.pos.add(this.vel);
+
+			/*
 			collision = me.game.collide(this);
 
 			if(collision && collision.obj instanceof game.Tank) {
@@ -230,89 +235,63 @@
 				this.pos.x = pos.x;
 				this.pos.y = pos.y;
 			}
+			*/
 		},
 
 		moveLeft : function() {
 			this.vel.x -= this.accel.x * me.timer.tick;
 			this.vel.y = 0;
 
-			if(this.direction !== game.ENUM.DIRECTION.LEFT) {
-				if(this.direction !== game.ENUM.DIRECTION.RIGHT) {
-					//this.updateColRect(2, 29, 4, 24);
-					this.setCurrentAnimation("moveSideward");
-				}
-
-				this.flipX(true);
-				this.direction = game.ENUM.DIRECTION.LEFT;
-			}
+			this.setDirection(game.ENUM.DIRECTION.LEFT);
 		},
 
 		moveRight : function() {
 			this.vel.x += this.accel.x * me.timer.tick;
 			this.vel.y = 0;
 
-			if(this.direction !== game.ENUM.DIRECTION.RIGHT) {
-				if(this.direction !== game.ENUM.DIRECTION.LEFT) {
-					//this.updateColRect(2, 29, 4, 24);
-					this.setCurrentAnimation("moveSideward");
-				}
-
-				this.flipX(false);
-				this.direction = game.ENUM.DIRECTION.RIGHT;
-			}
+			this.setDirection(game.ENUM.DIRECTION.RIGHT);
 		},
 
 		moveUp : function() {
 			this.vel.x = 0;
 			this.vel.y -= this.accel.y * me.timer.tick;
 
-			if(this.direction !== game.ENUM.DIRECTION.UP) {
-				if(this.direction !== game.ENUM.DIRECTION.DOWN) {
-					//this.updateColRect(4, 24, 1, 29);
-					this.setCurrentAnimation("moveForward");
-				}
-
-				this.flipY(false);
-				this.direction = game.ENUM.DIRECTION.UP;
-			}
+			this.setDirection(game.ENUM.DIRECTION.UP);
 		},
 
 		moveDown : function() {
 			this.vel.x = 0;
 			this.vel.y += this.accel.y * me.timer.tick;
 
-			if(this.direction !== game.ENUM.DIRECTION.DOWN) {
-				if(this.direction !== game.ENUM.DIRECTION.UP) {
-					//this.updateColRect(4, 24, 1, 29);
-					this.setCurrentAnimation("moveForward");
-				}
-
-				this.flipY(true);
-				this.direction = game.ENUM.DIRECTION.DOWN;
-			}
+			this.setDirection(game.ENUM.DIRECTION.DOWN);
 		},
 
 		setDirection : function(dir) {
+			if (this.direction === dir) {
+				return;
+			}
+
+			this.needsUpdate = true;
 			this.direction = dir;
 
-			var currentAnimation = "move";
-			if(this.direction === game.ENUM.DIRECTION.UP || this.direction === game.ENUM.DIRECTION.DOWN) {
+			var currentAnimation;
+			if(dir === game.ENUM.DIRECTION.UP || dir === game.ENUM.DIRECTION.DOWN) {
 				//this.updateColRect(4, 24, 1, 29);
-				currentAnimation += "Forward";
-			} else if(this.direction === game.ENUM.DIRECTION.LEFT || this.direction === game.ENUM.DIRECTION.RIGHT) {
+				currentAnimation = "moveForward";
+			} else if(dir === game.ENUM.DIRECTION.LEFT || dir === game.ENUM.DIRECTION.RIGHT) {
 				//this.updateColRect(2, 29, 4, 24);
-				currentAnimation += "Sideward";
+				currentAnimation = "moveSideward";
 			}
 
 			this.setCurrentAnimation(currentAnimation);
 
-			if(this.direction === game.ENUM.DIRECTION.LEFT) {
+			if(dir === game.ENUM.DIRECTION.LEFT) {
 				this.flipX(true);
-			} else if(this.direction === game.ENUM.DIRECTION.RIGHT) {
+			} else if(dir === game.ENUM.DIRECTION.RIGHT) {
 				this.flipX(false);
-			} else if(this.direction === game.ENUM.DIRECTION.UP) {
+			} else if(dir === game.ENUM.DIRECTION.UP) {
 				this.flipY(false);
-			} else if(this.direction === game.ENUM.DIRECTION.DOWN) {
+			} else if(dir === game.ENUM.DIRECTION.DOWN) {
 				this.flipY(true);
 			}
 		}

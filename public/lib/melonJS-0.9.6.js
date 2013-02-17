@@ -1,6 +1,6 @@
 /**
  * @license MelonJS Game Engine
- * Copyright (C) 2012, Olivier BIOT
+ * Copyright (C) 2011 - 2013, Olivier BIOT
  * http://www.melonjs.org
  *
  * melonJS is licensed under the MIT License.
@@ -27,7 +27,7 @@ var me = me || {};
 		// settings & configuration
 		// library name & version
 		mod : "melonJS",
-		version : "0.9.5",
+		version : "0.9.6",
 		nocache : '',
 
 		// Public Object (To be completed)
@@ -186,7 +186,7 @@ var me = me || {};
 		 * @public
 		 * @function
 		 * @param {String} first First version string to compare
-		 * @param {String} [second="0.9.5"] Second version string to compare 
+		 * @param {String} [second="0.9.6"] Second version string to compare 
 		 * @return {Integer} comparison result <br>&lt; 0 : first &lt; second <br>0 : first == second <br>&gt; 0 : first &gt; second
 		 * @example
 		 * if (me.sys.checkVersion("0.9.5") > 0) {
@@ -738,27 +738,15 @@ var me = me || {};
 			tmxDoc : null,
 			isJSON : false,
 
-			// parse a TMX/TSX from a string (xmlhttpObj.responseText)
+			// parse a TMX XML file (and soon a JSON one)
 			parseFromString : function(data, isJSON) {
 				this.isJSON = isJSON || false;
 				
 				if (this.isJSON) {
+					// this won't work for now!
 					this.tmxDoc = JSON.parse(data);
-					// this won't work !
 				} else {
-					// get a reference to the requested corresponding xml file
-					if ($.DOMParser) {
-						var parser = new DOMParser();
-						this.tmxDoc = parser.parseFromString(data, "text/xml");
-					} else // Internet Explorer (untested!)
-					{
-						this.tmxDoc = new ActiveXObject("Microsoft.XMLDOM");
-						this.tmxDoc.async = "false";
-						this.tmxDoc.loadXML(data);
-					}
-					if (this.tmxDoc == null) {
-						console.log("tmx/tsx " + this.tmxDoc + " not found!");
-					}
+					this.tmxDoc = data;
 				}
 			},
 
@@ -1105,7 +1093,7 @@ var me = me || {};
 		/**
 		 * a reference to the game collision Map
 		 * @public
-		 * @type me.TiledLayer
+		 * @type me.TMXLayer
 		 * @name me.game#collisionMap
 		 */
 		api.collisionMap = null;
@@ -1116,6 +1104,14 @@ var me = me || {};
 		 * @name me.game#currentLevel
 		 */
 		api.currentLevel = null;
+
+		/**
+		 * default layer renderer
+		 * @private
+		 * @type me.TMXRenderer
+		 * @name me.game#renderer
+		 */		
+		api.renderer = null;
 
 		// FIX ME : put this somewhere else
 		api.NO_OBJECT = 0;
@@ -1480,7 +1476,7 @@ var me = me || {};
 				me.entityPool.freeInstance(obj);
 			} else {
 				// make it invisible (this is bad...)
-				obj.visible = false
+				obj.visible = false;
 				// else wait the end of the current loop
 				/** @private */
 				pendingRemove = (function (obj) {
@@ -2416,7 +2412,7 @@ var me = me || {};
 })(window);
 /*
  * MelonJS Game Engine
- * Copyright (C) 2012, Olivier BIOT
+ * Copyright (C) 2011 - 2013, Olivier BIOT
  * http://www.melonjs.org
  *
  */
@@ -2548,30 +2544,13 @@ var me = me || {};
 		var resourceCount = 0;
 		var loadCount = 0;
 		var timerId = 0;
-		// keep track of how much TMX file we are loading
-		var tmxCount = 0;
-
 
 		/**
 		 * check the loading status
 		 * @private
 		 */
 		function checkLoadStatus() {
-			// remove tmxCount from the total resource to be loaded
-			// as we will after load each TMX into the level director
-			if (loadCount == (resourceCount - tmxCount)) {
-
-				// add all TMX level into the level Director
-				for ( var tmxObj in tmxList) {
-					if (tmxList[tmxObj].isTMX) {
-						// load the level into the levelDirector
-						if (me.levelDirector.addTMXLevel(tmxObj)) {
-							//progress notification
-							obj.onResourceLoaded();
-						}
-					}
-				}
-
+			if (loadCount == resourceCount) {
 				// wait 1/2s and execute callback (cheap workaround to ensure everything is loaded)
 				if (obj.onload) {
 					// make sure we clear the timer
@@ -2581,8 +2560,6 @@ var me = me || {};
 						obj.onload();
 						me.event.publish(me.event.LOADER_COMPLETE);
 					}, 300);
-					// reset tmxcount for next time
-					tmxCount = 0;
 				} else
 					console.error("no load callback defined");
 			} else {
@@ -2633,13 +2610,25 @@ var me = me || {};
 					// status = 0 when file protocol is used, or cross-domain origin,
 					// (With Chrome use "--allow-file-access-from-files --disable-web-security")
 					if ((xmlhttp.status==200) || ((xmlhttp.status==0) && xmlhttp.responseText)){
+						var result = null;
+						// ie9 does not fully implement the responseXML
+						if (me.sys.ua.contains('msie') || !xmlhttp.responseXML) {
+							// manually create the XML DOM
+							result = (new DOMParser()).parseFromString(xmlhttp.responseText, 'text/xml');
+						} else {
+							result = xmlhttp.responseXML;
+						}
 						// get the TMX content
 						tmxList[tmxData.name] = {
-							data: xmlhttp.responseText,
+							data: result,
 							isTMX: (tmxData.type === "tmx"),
 							// Sore the data format ('tmx', 'json')
 							type : me.utils.getFileExtension(tmxData.src).toLowerCase()
 						};
+						// add the tmx to the levelDirector
+						if (tmxData.type === "tmx") {
+							me.levelDirector.addTMXLevel(tmxData.name);
+						}
 						// fire the callback
 						onload();
 					} else {
@@ -2647,11 +2636,8 @@ var me = me || {};
 					}
 				}
 			};
-			
 			// send the request
 			xmlhttp.send(null);
-			
-			
 		};
 			
 		/**
@@ -2817,11 +2803,7 @@ var me = me || {};
 
 				case "tmx":
 					preloadTMX.call(this, res, onload, onerror);
-					// increase the resourceCount by 1
-					// allowing to add the loading of level in the 
-					// levelDirector as part of the loading progress
-					tmxCount += 1;
-					return 2;
+					return 1;
 
 				case "tsx":
 					preloadTMX.call(this, res, onload, onerror);
@@ -3026,7 +3008,7 @@ var me = me || {};
 })(window);
 /*
  * MelonJS Game Engine
- * Copyright (C) 2012, Olivier BIOT
+ * Copyright (C) 2011 - 2013, Olivier BIOT
  * http://www.melonjs.org
  *
  */
@@ -3289,8 +3271,17 @@ var me = me || {};
 		 * @param {me.Vector2d} v
 		 * @return {Number}
 		 */			
-		 distance : function(v) {
+		distance : function(v) {
 			return Math.sqrt((this.x - v.x) * (this.x - v.x) + (this.y - v.y) * (this.y - v.y));
+		},
+		
+		/**
+		 * return the angle between this vector and the passed one
+		 * @param {me.Vector2d} v
+		 * @return {Number} angle in radians
+		 */			
+		angle : function(v) {
+			return Math.atan2((v.y - this.y), (v.x - this.x));
 		},
 
 		/**
@@ -3717,7 +3708,7 @@ var me = me || {};
 })(window);
 /*
  * MelonJS Game Engine
- * Copyright (C) 2012, Olivier BIOT
+ * Copyright (C) 2011 - 2013, Olivier BIOT
  * http://www.melonjs.org
  *
  */
@@ -3780,7 +3771,7 @@ var me = me || {};
 })(window);
 /*
  * MelonJS Game Engine
- * Copyright (C) 2012, Olivier BIOT
+ * Copyright (C) 2011 - 2013, Olivier BIOT
  * http://www.melonjs.org
  *
  */
@@ -4206,7 +4197,7 @@ var me = me || {};
 })(window);
 /*
  * MelonJS Game Engine
- * Copyright (C) 2012, Olivier BIOT
+ * Copyright (C) 2011 - 2013, Olivier BIOT
  * http://www.melonjs.org
  *
  */
@@ -4640,6 +4631,7 @@ var me = me || {};
 		 * <img src="spritesheet_grid.png"/>
 		 * @param {String} name animation id
 		 * @param {Int[]} index list of sprite index defining the animaton
+		 * @param {Int} [speed=@see me.AnimationSheet.animationspeed], cycling speed for animation in fps (lower is faster).
 		 * @example
 		 * // walking animatin
 		 * this.addAnimation ("walk", [0,1,2,3,4,5]);
@@ -4647,13 +4639,16 @@ var me = me || {};
 		 * this.addAnimation ("eat", [6,6]);
 		 * // rolling animatin
 		 * this.addAnimation ("roll", [7,8,9,10]);
+		 * // slower animation
+		 * this.addAnimation ("roll", [7,8,9,10], 10);
 		 */
-		addAnimation : function(name, frame) {
+		addAnimation : function(name, frame, animationspeed) {
 			this.anim[name] = {
 				name : name,
 				frame : [],
 				idx : 0,
-				length : 0
+				length : 0,
+				animationspeed: animationspeed || this.animationspeed
 			};
 
 			if (frame == null) {
@@ -4686,9 +4681,13 @@ var me = me || {};
 		 **/
 
 		setCurrentAnimation : function(name, resetAnim) {
-			this.current = this.anim[name];
-			this.resetAnim = resetAnim || null;
-			this.setAnimationFrame(this.current.idx); // or 0 ?
+			if (this.anim[name]) {
+				this.current = this.anim[name];
+				this.resetAnim = resetAnim || null;
+				this.setAnimationFrame(this.current.idx); // or 0 ?
+			} else {
+				throw "melonJS: animation id '" + name + "' not defined";
+			}
 		},
 
 		/**
@@ -4715,6 +4714,14 @@ var me = me || {};
 			this.current.idx = (idx || 0) % this.current.length;
 			this.offset = this.current.frame[this.current.idx];
 		},
+		
+		/**
+		 * return the current animation frame index.
+		 * @param {int} index
+		 */
+		getCurrentAnimationFrame : function() {
+			return this.current.idx;
+		},
 
 		/**
 		 * update the animation<br>
@@ -4725,7 +4732,7 @@ var me = me || {};
 			// call the parent function
 			this.parent();
 			// update animation if necessary
-			if (this.visible && !this.animationpause && (this.fpscount++ > this.animationspeed)) {
+			if (this.visible && !this.animationpause && (this.fpscount++ > this.current.animationspeed)) {
 				this.setAnimationFrame(++this.current.idx);
 				this.fpscount = 0;
 
@@ -4752,7 +4759,7 @@ var me = me || {};
 })(window);
 /*
  * MelonJS Game Engine
- * Copyright (C) 2012, Olivier BIOT
+ * Copyright (C) 2011 - 2013, Olivier BIOT
  * http://www.melonjs.org
  *
  */
@@ -5421,13 +5428,56 @@ var me = me || {};
 				 * @param {me.ObjectEntity} entity Entity
 				 * @return {float} distance
 				 */
-				distanceTo: function(o)
+				distanceTo: function(e)
 				{
-					// the Vector object also implements the same function, but
-					// we have to use here the center of both object
-					var dx = (this.pos.x + this.hWidth)  - (o.pos.x + o.hWidth);
-					var dy = (this.pos.y + this.hHeight) - (o.pos.y + o.hHeight);
+					// the me.Vector2d object also implements the same function, but
+					// we have to use here the center of both entities
+					var dx = (this.pos.x + this.hWidth)  - (e.pos.x + e.hWidth);
+					var dy = (this.pos.y + this.hHeight) - (e.pos.y + e.hHeight);
 					return Math.sqrt(dx*dx+dy*dy);
+				},
+				
+				/**
+				 * return the distance to the specified point
+				 * @param {me.Vector2d} vector vector
+				 * @return {float} distance
+				 */
+				distanceToPoint: function(v)
+				{
+					// the me.Vector2d object also implements the same function, but
+					// we have to use here the center of both entities
+					var dx = (this.pos.x + this.hWidth)  - (v.x);
+					var dy = (this.pos.y + this.hHeight) - (v.y);
+					return Math.sqrt(dx*dx+dy*dy);
+				},
+				
+				/**
+				 * return the angle to the specified entity
+				 * @param {me.ObjectEntity} entity Entity
+				 * @return {Number} angle in radians
+				 */
+				angleTo: function(e)
+				{
+					// the me.Vector2d object also implements the same function, but
+					// we have to use here the center of both entities
+					var ax = (e.pos.x + e.hWidth) - (this.pos.x + this.hWidth);
+					var ay = (e.pos.y + e.hHeight) - (this.pos.y + this.hHeight);
+					return Math.atan2(ay, ax);
+				},
+				
+				
+				/**
+				 * return the angle to the specified point
+				 * @param {me.Vector2d} vector vector
+				 * @return {Number} angle in radians
+				 */
+				angleToPoint: function(v)
+				{
+					// the me.Vector2d object also implements the same function, but
+					// we have to use here the center of both entities
+					var ax = (v.x) - (this.pos.x + this.hWidth);
+					var ay = (v.y) - (this.pos.y + this.hHeight);
+					return Math.atan2(ay, ax);
 				},
 
 
@@ -5911,7 +5961,7 @@ var me = me || {};
 })(window);
 /*
  * MelonJS Game Engine
- * Copyright (C) 2012, Olivier BIOT
+ * Copyright (C) 2011 - 2013, Olivier BIOT
  * http://www.melonjs.org
  *
  * Font / Bitmap font
@@ -5934,7 +5984,7 @@ var me = me || {};
 	 * @param {String} font
 	 * @param {int} size
 	 * @param {String} color
-	 * @param {String} [align="top"]
+	 * @param {String} [align="left"] horizontal alignement
 	 */
 	me.Font = Object.extend(
 	/** @scope me.Font.prototype */
@@ -5978,7 +6028,7 @@ var me = me || {};
 		 * @param {String} font
 		 * @param {int} size/{String} size + suffix (px, em, pt)
 		 * @param {String} color
-		 * @param {String} [align="top"]
+		 * @param {String} [align="left"] horizontal alignement
 		 * @example
 		 * font.set("Arial", 20, "white");
 		 * font.set("Arial", "1.5em", "white");
@@ -5995,7 +6045,7 @@ var me = me || {};
 			}
 			this.font = size + " " + font_names.join(",");;
 			this.color = color;
-			this.align = align || "top";
+			this.align = align || "left";
 		},
 
 		/**
@@ -6016,7 +6066,7 @@ var me = me || {};
 			// draw the text
 			context.font = this.font;
 			context.fillStyle = this.color;
-			context.textBaseline = this.align;
+			context.textAlign = this.align;
 			var dim = context.measureText(text);
 			dim.height = this.height;
 
@@ -6034,7 +6084,7 @@ var me = me || {};
 			// draw the text
 			context.font = this.font;
 			context.fillStyle = this.color;
-			context.textBaseline = this.align;
+			context.textAlign = this.align;
 			context.fillText(text, ~~x, ~~y);
 		}
 	});
@@ -6189,7 +6239,7 @@ var me = me || {};
 })(window);
 /*
  * MelonJS Game Engine
- * Copyright (C) 2012, Olivier BIOT
+ * Copyright (C) 2011 - 2013, Olivier BIOT
  * http://www.melonjs.org
  *
  */
@@ -6318,7 +6368,7 @@ var me = me || {};
 })(window);
 /*
  * MelonJS Game Engine
- * Copyright (C) 2012, Olivier BIOT
+ * Copyright (C) 2011 - 2013, Olivier BIOT
  * http://www.melonjs.org
  *
  *
@@ -6685,7 +6735,7 @@ var me = me || {};
 })(window);
 /*
  * MelonJS Game Engine
- * Copyright (C) 2012, Olivier BIOT
+ * Copyright (C) 2011 - 2013, Olivier BIOT
  * http://www.melonjs.org
  *
  * Audio Mngt Objects
@@ -6695,13 +6745,6 @@ var me = me || {};
 
 (function($) {
 
-	/*
-	 * -----------------------------------------------------
-	 * 
-	 * a audio class singleton to manage the game fx & music
-	 * -----------------------------------------------------
-	 */
-
 	/**
 	 * There is no constructor function for me.audio.
 	 * 
@@ -6709,12 +6752,18 @@ var me = me || {};
 	 * @memberOf me
 	 * @constructor Should not be called by the user.
 	 */
-
 	me.audio = (function() {
+
+		/*
+		 * ---------------------------------------------
+		 * PRIVATE STUFF
+		 * ---------------------------------------------
+		 */
+
 		// hold public stuff in our singleton
 		var obj = {};
 
-		// audio channel list
+ 		// audio channel list
 		var audio_channels = {};
 
 		// Active (supported) audio extension
@@ -6735,15 +6784,13 @@ var me = me || {};
 
 		// a retry counter
 		var retry_counter = 0;
-
-		/*
-		 * ---------------------------------------------
-		 * 
-		 * PRIVATE STUFF
-		 * 
-		 * ---------------------------------------------
-		 */
-
+		
+		// global volume setting
+		var settings = {
+			volume : 1.0,
+			muted : false
+		}
+		 
 		/**
 		 * @private
 		 * return the first audio format extension supported by the browser
@@ -6873,10 +6920,12 @@ var me = me || {};
 		 * @function
 		 * @param {String}
 		 *            sound_id audio clip id
-		 * @param {String}
+		 * @param {Boolean}
 		 *            [loop="false"] loop audio
 		 * @param {Function}
 		 *            [callback] callback function
+		 * @param {Number}
+		 * 			  [volume=1.0] Float specifying volume (0.0 - 1.0 values accepted).
 		 * @example 
 		 * // play the "cling" audio clip 
 		 * me.audio.play("cling"); 
@@ -6884,13 +6933,16 @@ var me = me || {};
 		 * me.audio.play("engine", true); 
 		 * // play the "gameover_sfx" audio clip and call myFunc when finished
 		 * me.audio.play("gameover_sfx", false, myFunc);
+		 * // play the "gameover_sfx" audio clip with a lower volume level
+		 * me.audio.play("gameover_sfx", false, null, 0.5);
 		 */
 
-		function _play_audio_enable(sound_id, loop, callback) {
-			// console.log("play!!");
+		function _play_audio_enable(sound_id, loop, callback, volume) {
 			var soundclip = get(sound_id.toLowerCase());
-
+	
 			soundclip.loop = loop || false;
+			soundclip.volume = volume ? parseFloat(volume).clamp(0.0,1.0) : settings.volume;
+			soundclip.muted = settings.muted;
 			soundclip.play();
 
 			// set a callback if defined
@@ -6903,7 +6955,8 @@ var me = me || {};
 					// execute a callback if required
 					callback();
 				}, false);
-			}
+			}			
+			return soundclip;
 
 		};
 
@@ -6918,6 +6971,7 @@ var me = me || {};
 				// SoundMngr._play_cb = callback;
 				setTimeout(callback, 2000); // 2 sec as default timer ?
 			}
+			return null;
 		};
 
 		/*
@@ -7065,8 +7119,11 @@ var me = me || {};
 		 * @function
 		 */
 		obj.disable = function() {
-			sound_enable = false;
+			// stop the current track 
+			me.audio.stopTrack();
+			// disable sound
 			obj.play = _play_audio_disable;
+			sound_enable = false;
 		};
 
 		/**
@@ -7154,23 +7211,13 @@ var me = me || {};
 		 * @public
 		 * @function
 		 * @param {String} sound_id audio track id
+		 * @param {Number} [volume=default] Float specifying volume (0.0 - 1.0 values accepted).
 		 * @example 
 		 * me.audio.playTrack("awesome_music");
 		 */
-		obj.playTrack = function(sound_id) {
-			if (sound_enable) {
-				if (current_track != null)
-					obj.stopTrack();
-
-				sound_id = sound_id.toLowerCase();
-				current_track = get(sound_id);
-
-				if (current_track) {
-					current_track_id = sound_id;
-					current_track.loop = true;
-					current_track.play();
-				}
-			}
+		obj.playTrack = function(sound_id, volume) {
+			current_track = me.audio.play(sound_id, true, null, volume);
+			current_track_id = sound_id.toLowerCase();
 		};
 
 		/**
@@ -7194,6 +7241,94 @@ var me = me || {};
 			}
 		};
 
+		/**
+		 * set the default global volume
+		 * @name me.audio#setVolume
+		 * @public
+		 * @function
+		 * @param {Number} volume Float specifying volume (0.0 - 1.0 values accepted).
+		 */
+		obj.setVolume = function(volume) {
+			if (volume) {
+				settings.volume = parseFloat(volume).clamp(0.0,1.0);
+			}
+		};
+
+		/**
+		 * get the default global volume
+		 * @name me.audio#getVolume
+		 * @public
+		 * @function
+		 * @returns {Number} current volume value in Float [0.0 - 1.0] .
+		 */
+		obj.getVolume = function() {
+			return settings.volume;
+		};
+		
+		/**
+		 * mute the specified sound
+		 * @name me.audio#mute
+		 * @public
+		 * @function
+		 * @param {String} sound_id audio clip id
+		 */
+		obj.mute = function(sound_id, mute) {
+			// if not defined : true
+			mute = (mute === undefined)?true:!!mute;
+			var channels = audio_channels[sound_id.toLowerCase()];
+			for ( var i = 0, soundclip; soundclip = channels[i++];) {
+				soundclip.muted = mute;
+			}
+		},
+
+		/**
+		 * unmute the specified sound
+		 * @name me.audio#unmute
+		 * @public
+		 * @function
+		 * @param {String} sound_id audio clip id
+		 */
+		obj.unmute = function(sound_id) {
+			obj.mute(sound_id, false);
+		},
+
+		/**
+		 * mute all audio 
+		 * @name me.audio#muteAll
+		 * @public
+		 * @function
+		 */
+		obj.muteAll = function() {
+			settings.muted = true;
+			for (var sound_id in audio_channels) {
+				obj.mute(sound_id, settings.muted);
+			}
+		};
+		
+		/**
+		 * unmute all audio 
+		 * @name me.audio#unmuteAll
+		 * @public
+		 * @function
+		 */
+		obj.unmuteAll = function() {
+			settings.muted = false;
+			for (var sound_id in audio_channels) {
+				obj.mute(sound_id, settings.muted);
+			}
+		};
+		
+		/**
+		 * returns the current track Id
+		 * @name me.audio#getCurrentTrack
+		 * @public
+		 * @function
+		 * @return {String} audio track id
+		 */
+		obj.getCurrentTrack = function() {
+			return current_track_id;
+		};
+		
 		/**
 		 * pause the current audio track
 		 * 
@@ -7284,7 +7419,7 @@ var me = me || {};
 })(window);
 /*
  * MelonJS Game Engine
- * Copyright (C) 2012, Olivier BIOT
+ * Copyright (C) 2011 - 2013, Olivier BIOT
  * http://www.melonjs.org
  *
  */
@@ -7685,8 +7820,8 @@ var me = me || {};
 			if (auto_scale) {
 				// get the parent container max size
 				var parent = me.video.getScreenCanvas().parentNode;
-				var max_width = parent.offsetWidth || window.innerWidth;
-				var max_height = parent.offsetHeight || window.innerHeight;
+				var max_width = parent.width || window.innerWidth;
+				var max_height = parent.height || window.innerHeight;
 				
 				if (deferResizeId) {
 					// cancel any previous pending resize
@@ -7902,7 +8037,7 @@ var me = me || {};
 })(window);
 /*
  * MelonJS Game Engine
- * Copyright (C) 2012, Olivier BIOT
+ * Copyright (C) 2011 - 2013, Olivier BIOT
  * http://www.melonjs.org
  *
  */
@@ -8646,7 +8781,7 @@ var me = me || {};
 })(window);
 /*
  * MelonJS Game Engine
- * Copyright (C) 2012, Olivier BIOT
+ * Copyright (C) 2011 - 2013, Olivier BIOT
  * http://www.melonjs.org
  *
  */
@@ -8764,8 +8899,15 @@ var me = me || {};
 		api.decodeBase64AsArray = function(input, bytes) {
 			bytes = bytes || 1;
 
-			var dec = Base64.decode(input), ar = [], i, j, len;
-
+			var dec = Base64.decode(input), i, j, len;
+			
+			// use a typed array if supported
+			if (typeof window.Uint32Array === 'function') {
+				var ar = new Uint32Array(dec.length / bytes);
+			} else {
+				var ar = [];
+			}
+			
 			for (i = 0, len = dec.length / bytes; i < len; i++) {
 				ar[i] = 0;
 				for (j = bytes - 1; j >= 0; --j) {
@@ -8901,7 +9043,7 @@ var me = me || {};
 })(window);
 /*
  * MelonJS Game Engine
- * Copyright (C) 2012, Olivier BIOT
+ * Copyright (C) 2011 - 2013, Olivier BIOT
  * http://www.melonjs.org
  *
  */
@@ -9109,7 +9251,7 @@ var me = me || {};
 })(window);
 /*
  * MelonJS Game Engine
- * Copyright (C) 2012, Olivier BIOT
+ * Copyright (C) 2011 - 2013, Olivier BIOT
  * http://www.melonjs.org
  *
  * Tile QT 0.7.x format
@@ -9174,7 +9316,7 @@ var me = me || {};
 })(window);
 /*
  * MelonJS Game Engine
- * Copyright (C) 2012, Olivier BIOT
+ * Copyright (C) 2011 - 2013, Olivier BIOT
  * http://www.melonjs.org
  *
  * Tile QT 0.7.x format
@@ -9249,7 +9391,7 @@ var me = me || {};
 })(window);
 /*
  * MelonJS Game Engine
- * Copyright (C) 2012, Olivier BIOT
+ * Copyright (C) 2011 - 2013, Olivier BIOT
  * http://www.melonjs.org
  *
  * Tile QT 0.7.x format
@@ -9386,7 +9528,7 @@ var me = me || {};
 })(window);
 /*
  * MelonJS Game Engine
- * Copyright (C) 2012, Olivier BIOT
+ * Copyright (C) 2011 - 2013, Olivier BIOT
  * http://www.melonjs.org
  *
  * Tile QT 0.7.x format
@@ -9477,133 +9619,14 @@ var me = me || {};
 
 		}
 	});
-
-	/**
-	 * a Tile Set Object
-	 * @class
-	 * @memberOf me
-	 * @constructor
-	 */
-	me.Tileset = Object.extend({
-		// constructor
-		init: function (name, tilewidth, tileheight, spacing, margin, imagesrc) {
-			this.name = name;
-			this.tilewidth = tilewidth;
-			this.tileheight = tileheight;
-			this.spacing = spacing;
-			this.margin = margin;
-			this.image = (imagesrc) ? me.loader.getImage(me.utils.getBasename(imagesrc)) : null;
-			
-			if (!this.image) {
-				console.log("melonJS: '" + imagesrc + "' file for tileset '" + this.name + "' not found!");
-			}
-			
-			
-			// tile types
-			this.type = {
-				SOLID : "solid",
-				PLATFORM : "platform",
-				L_SLOPE : "lslope",
-				R_SLOPE : "rslope",
-				LADDER : "ladder",
-				BREAKABLE : "breakable"
-			};
-
-			// tile properties
-			// (collidable, etc..)
-			this.TileProperties = [];
-			
-			// a cache for offset value
-			this.tileXOffset = [];
-			this.tileYOffset = [];
-
-			// number of tiles per horizontal line 
-			if (this.image) {
-				this.hTileCount = ~~((this.image.width - this.margin) / (this.tilewidth + this.spacing));
-				this.vTileCount = ~~((this.image.height - this.margin) / (this.tileheight + this.spacing));
-			}
-		},
-		
-		// return the list of property for a tile
-		getPropertyList: function() {
-			return {
-				// collectable tiles
-				//isCollectable	: false,
-				// collidable tiles
-				isCollidable : false,
-				isSolid : false,
-				isPlatform : false,
-				isSlope : false,
-				isLeftSlope : false,
-				isRightSlope : false,
-				isLadder : false,
-				isBreakable : false
-			};
-		},
-		
-		// e.g. getTileProperty (gid)	
-		/**
-		 * return the properties of the specified tile <br>
-		 * the function will return an object with the following boolean value :<br>
-		 * - isCollidable<br>
-		 * - isSolid<br>
-		 * - isPlatform<br>
-		 * - isSlope <br>
-		 * - isLeftSlope<br>
-		 * - isRightSlope<br>
-		 * - isLadder<br>
-		 * - isBreakable<br>
-		 * @name me.Tileset#getTileProperties
-		 * @public
-		 * @function
-		 * @param {Integer} tileId 
-		 * @return {Object}
-		 */
-		getTileProperties: function(tileId) {
-			return this.TileProperties[tileId];
-		},
-		
-		//return collidable status of the specifiled tile
-
-		isTileCollidable : function(tileId) {
-			return this.TileProperties[tileId].isCollidable;
-		},
-
-		/*
-		//return collectable status of the specifiled tile
-		isTileCollectable : function (tileId) {
-			return this.TileProperties[tileId].isCollectable;
-		},
-		 */
-		
-		// return the x offset of the specified tile in the tileset image
-		getTileOffsetX : function(tileId) {
-			if (this.tileXOffset[tileId] == null) {
-				this.tileXOffset[tileId] = this.margin + (this.spacing + this.tilewidth)  * (tileId % this.hTileCount);
-			}
-			return this.tileXOffset[tileId];
-		},
-		
-		// return the y offset of the specified tile in the tileset image
-		getTileOffsetY : function(tileId) {
-			if (this.tileYOffset[tileId] == null) {
-				this.tileYOffset[tileId] = this.margin + (this.spacing + this.tileheight)	* ~~(tileId / this.hTileCount);
-			}
-			return this.tileYOffset[tileId];
-		}
-
-	});
-	
-
 	
     /**
 	 * a TMX Tile Set Object
 	 * @class
-	 * @extends me.Tileset
 	 * @memberOf me
 	 * @constructor
 	 */
-	me.TMXTileset = me.Tileset.extend({
+	me.TMXTileset = Object.extend({
 		
 		// constructor
 		init: function (xmltileset) {
@@ -9626,13 +9649,36 @@ var me = me || {};
 				me.TMXParser.parseFromString(xmltileset);
 				xmltileset = me.TMXParser.getFirstElementByTagName("tileset");
 			}
+			
+			this.name = me.TMXParser.getStringAttribute(xmltileset, me.TMX_TAG_NAME);
+			this.tilewidth = me.TMXParser.getIntAttribute(xmltileset, me.TMX_TAG_TILEWIDTH);
+			this.tileheight = me.TMXParser.getIntAttribute(xmltileset, me.TMX_TAG_TILEHEIGHT);
+			this.spacing = me.TMXParser.getIntAttribute(xmltileset, me.TMX_TAG_SPACING, 0);
+			this.margin = me.TMXParser.getIntAttribute(xmltileset, me.TMX_TAG_MARGIN, 0);
+			var imagesrc = xmltileset.getElementsByTagName(me.TMX_TAG_IMAGE)[0].getAttribute(me.TMX_TAG_SOURCE);
+			this.image = (imagesrc) ? me.loader.getImage(me.utils.getBasename(imagesrc)) : null;
+			
+			// tile types
+			this.type = {
+				SOLID : "solid",
+				PLATFORM : "platform",
+				L_SLOPE : "lslope",
+				R_SLOPE : "rslope",
+				LADDER : "ladder",
+				BREAKABLE : "breakable"
+			};
 
-			this.parent(me.TMXParser.getStringAttribute(xmltileset, me.TMX_TAG_NAME),
-						me.TMXParser.getIntAttribute(xmltileset, me.TMX_TAG_TILEWIDTH),
-						me.TMXParser.getIntAttribute(xmltileset, me.TMX_TAG_TILEHEIGHT),
-						me.TMXParser.getIntAttribute(xmltileset, me.TMX_TAG_SPACING, 0), 
-						me.TMXParser.getIntAttribute(xmltileset, me.TMX_TAG_MARGIN, 0), 
-						xmltileset.getElementsByTagName(me.TMX_TAG_IMAGE)[0].getAttribute(me.TMX_TAG_SOURCE));
+			// tile properties
+			// (collidable, etc..)
+			this.TileProperties = [];
+						
+			if (!this.image) {
+				console.log("melonJS: '" + imagesrc + "' file for tileset '" + this.name + "' not found!");
+			} else {
+				// number of tiles per horizontal line 
+				this.hTileCount = ~~((this.image.width - this.margin) / (this.tilewidth + this.spacing));
+				this.vTileCount = ~~((this.image.height - this.margin) / (this.tileheight + this.spacing));
+			}
 			
 			// compute the last gid value in the tileset
 			this.lastgid = this.firstgid + ( ((this.hTileCount * this.vTileCount) - 1) || 0);
@@ -9700,6 +9746,71 @@ var me = me || {};
 			this.drawTile(image, 0, 0, tmxTile);
 			return image.canvas;
 		},
+		
+		// e.g. getTileProperty (gid)	
+		/**
+		 * return the properties of the specified tile <br>
+		 * the function will return an object with the following boolean value :<br>
+		 * - isCollidable<br>
+		 * - isSolid<br>
+		 * - isPlatform<br>
+		 * - isSlope <br>
+		 * - isLeftSlope<br>
+		 * - isRightSlope<br>
+		 * - isLadder<br>
+		 * - isBreakable<br>
+		 * @name me.TMXTileset#getTileProperties
+		 * @public
+		 * @function
+		 * @param {Integer} tileId 
+		 * @return {Object}
+		 */
+		getTileProperties: function(tileId) {
+			return this.TileProperties[tileId];
+		},
+		
+		//return collidable status of the specifiled tile
+		isTileCollidable : function(tileId) {
+			return this.TileProperties[tileId].isCollidable;
+		},
+
+		/*
+		//return collectable status of the specifiled tile
+		isTileCollectable : function (tileId) {
+			return this.TileProperties[tileId].isCollectable;
+		},
+		 */
+		
+		/**
+		 * return the x offset of the specified tile in the tileset image
+		 * @private
+		 */	
+		getTileOffsetX : (function() {
+			var cache = [];
+			return function (tileId) {
+				var cached = cache[tileId];
+				if (cached === undefined) {
+					return (cache[tileId] = this.margin + (this.spacing + this.tilewidth)  * (tileId % this.hTileCount));
+				}
+				return cached;
+			};
+		}()),
+		
+		
+		/**
+		 * return the y offset of the specified tile in the tileset image
+		 * @private
+		 */
+		getTileOffsetY : (function() {
+			var cache = [];
+			return function (tileId) {
+				var cached = cache[tileId];
+				if (cached === undefined) {
+					return (cache[tileId] = this.margin + (this.spacing + this.tileheight)	* ~~(tileId / this.hTileCount));
+				}
+				return cached;
+			};
+		}()),
 
 		// draw the x,y tile
 		drawTile : function(context, dx, dy, tmxTile) {
@@ -9820,7 +9931,7 @@ var me = me || {};
 })(window);
 /*
  * MelonJS Game Engine
- * Copyright (C) 2012, Olivier BIOT
+ * Copyright (C) 2011 - 2013, Olivier BIOT
  * http://www.melonjs.org
  *
  * Tile QT 0.7.x format
@@ -9845,6 +9956,19 @@ var me = me || {};
 			this.tilewidth = tilewidth;
 			this.tileheight = tileheight;
 		},
+		
+		/** 
+		 * return true if the renderer can render the specified layer
+		 * @private
+		 */
+		canRender : function(layer) {
+			return ((layer.orientation === 'orthogonal') &&
+					(this.width === layer.width) && 
+					(this.height === layer.height) &&
+					(this.tilewidth === layer.tilewidth) &&
+					(this.tileheight === layer.tileheight));
+		},
+		
 		/**
 		 * return the tile position corresponding to the specified pixel
 		 * @private
@@ -9930,6 +10054,20 @@ var me = me || {};
 			this.ratio = this.tilewidth / this.tileheight;
 			this.originX = this.height * this.hTilewidth;
 		},
+		
+		
+		/** 
+		 * return true if the renderer can render the specified layer
+		 * @private
+		 */
+		canRender : function(layer) {
+			return ((layer.orientation === 'isometric') &&
+					(this.width === layer.width) && 
+					(this.height === layer.height) &&
+					(this.tilewidth === layer.tilewidth) &&
+					(this.tileheight === layer.tileheight));
+		},
+		
 		/**
 		 * return the tile position corresponding to the specified pixel
 		 * @private
@@ -10052,7 +10190,7 @@ var me = me || {};
 })(window);
 /*
  * MelonJS Game Engine
- * Copyright (C) 2012, Olivier BIOT
+ * Copyright (C) 2011 - 2013, Olivier BIOT
  * http://www.melonjs.org
  *
  */
@@ -10439,32 +10577,30 @@ var me = me || {};
 			return res;
 		}
 	});
-	
+
 	/**
-	 * a generic tile based layer object
+	 * a TMX Tile Layer Object
+	 * Tile QT 0.7.x format
 	 * @class
 	 * @memberOf me
 	 * @constructor
 	 */
-	me.TiledLayer = Object.extend({
+	me.TMXLayer = Object.extend({
 		// constructor
-		init: function(w, h, tw, th, tilesets, z) {
-			this.width = w;
-			this.height = h;
+		init: function(layer, tilewidth, tileheight, orientation, tilesets, zOrder) {
+
+			this.width = me.TMXParser.getIntAttribute(layer, me.TMX_TAG_WIDTH);
+			this.height = me.TMXParser.getIntAttribute(layer, me.TMX_TAG_HEIGHT);
 			// tile width & height
-			this.tilewidth  = tw;
-			this.tileheight = th;
+			this.tilewidth  = tilewidth;
+			this.tileheight = tileheight;
 			
 			// layer "real" size
 			this.realwidth = this.width * this.tilewidth;
 			this.realheight = this.height * this.tileheight;
 
 			// for displaying order
-			this.z = z;
-
-			this.name = null;
-			this.visible = false;
-			this.opacity = 1.0;
+			this.z = zOrder;
 
 			// data array
 			this.layerData = null;
@@ -10473,13 +10609,85 @@ var me = me || {};
 			 * The Layer corresponding Tilesets
 			 * @public
 			 * @type me.TMXTilesetGroup
-			 * @name me.TiledLayer#tilesets
+			 * @name me.TMXLayer#tilesets
 			 */
 			this.tilesets = tilesets;
 
 			// the default tileset
 			this.tileset = tilesets?this.tilesets.getTilesetByIndex(0):null;
+			
+			// additional TMX flags
+			this.orientation = orientation;
+			this.name = me.TMXParser.getStringAttribute(layer, me.TMX_TAG_NAME);
+			this.visible = (me.TMXParser.getIntAttribute(layer, me.TMX_TAG_VISIBLE, 1) == 1);
+			this.opacity = me.TMXParser.getFloatAttribute(layer, me.TMX_TAG_OPACITY, 1.0).clamp(0.0, 1.0);
+				
+			// check if we have any user-defined properties 
+			me.TMXUtils.setTMXProperties(this, layer);
+			
+			// check for the correct rendering method
+			if (this.preRender === undefined) {
+				this.preRender = me.sys.preRender;
+			}
+			
+			// detect if the layer is a collision map
+			this.isCollisionMap = (this.name.toLowerCase().contains(me.LevelConstants.COLLISION_MAP));
+			if (this.isCollisionMap && !me.debug.renderCollisionMap) {
+				// force the layer as invisible
+				this.visible = false;
+			}
+
+			// store the data information
+			var xmldata = layer.getElementsByTagName(me.TMX_TAG_DATA)[0];
+			var encoding = me.TMXParser.getStringAttribute(xmldata, me.TMX_TAG_ENCODING, null);
+			var compression = me.TMXParser.getStringAttribute(xmldata, me.TMX_TAG_COMPRESSION, null);
+
+			// make sure this is not happening
+			if (encoding == '')
+				encoding = null;
+			if (compression == '')
+				compression = null;
+
+			// associate a renderer to the layer (if not a collision layer)
+			if (!this.isCollisionMap) {
+				if (!me.game.renderer.canRender(this)) {
+					// set a new layer specific renderer
+					switch (this.orientation) {
+						case "orthogonal": {
+						  this.renderer = new me.TMXOrthogonalRenderer(this.width, this.height, this.tilewidth, this.tileheight);
+						  break;
+						}
+						case "isometric": {
+						  this.renderer = new me.TMXIsometricRenderer(this.width, this.height , this.tilewidth, this.tileheight);
+						  break;
+						}
+						// if none found, throw an exception
+						default : {
+							throw "melonJS: " + this.orientation + " type TMX Tile Map not supported!";
+						}
+					} 
+				} else {
+					// use the default one
+					this.renderer = me.game.renderer;
+				}
+			}
+				
+			// if pre-rendering method is use, create the offline canvas
+			if (this.preRender) {
+				this.layerCanvas = me.video.createCanvas(this.width	* this.tilewidth, this.height * this.tileheight);
+				this.layerSurface = this.layerCanvas.getContext('2d');
+					
+				// set alpha value for this layer
+				this.layerSurface.globalAlpha = this.opacity;
+			}	
+
+			// initialize the layer data array
+			this.initArray();
+
+			// populate our level with some data
+			this.fillArray(xmldata, encoding, compression);
 		},
+		
 		
 		/**
 		 * reset function
@@ -10488,11 +10696,18 @@ var me = me || {};
 		 */
 		reset : function() {
 			// clear all allocated objects
+			if (this.preRender) {
+				this.layerCanvas = null;
+				this.layerSurface = null;
+			}
+			this.renderer = null;
+			// clear all allocated objects
 			this.layerData = null;
 			this.tileset = null;
 			this.tilesets = null;
-		},
 
+		},
+		
 		/**
 		 * Create all required arrays
 		 * @private
@@ -10507,28 +10722,86 @@ var me = me || {};
 				}
 			}
 		},
-
+		
 		/**
-		 * get the layer alpha channel value<br>
-		 * @return current opacity value between 0 and 1
+		 * Build the tiled layer
+		 * @private
 		 */
-		getOpacity : function() {
-			return this.opacity;
-		},
+		fillArray : function(xmldata, encoding, compression) {
+			// check if data is compressed
+			switch (compression) {	 
+				// no compression
+				case null: {
+					// decode data based on encoding type
+					switch (encoding) {
+						// XML encoding
+						case null: {
+							var data = xmldata.getElementsByTagName(me.TMX_TAG_TILE);
+							break;
+						}
+						// CSV encoding
+						case me.TMX_TAG_CSV:
+						// Base 64 encoding
+						case me.TMX_TAG_ATTR_BASE64: {
+							// Merge all childNodes[].nodeValue into a single one
+							var nodeValue = '';
+							for ( var i = 0, len = xmldata.childNodes.length; i < len; i++) {
+								nodeValue += xmldata.childNodes[i].nodeValue;
+							}
+							// and then decode them
+							if (encoding == me.TMX_TAG_ATTR_BASE64)
+								var data = me.utils.decodeBase64AsArray(nodeValue, 4);
+							else
+								var data = me.utils.decodeCSV(nodeValue, this.width);
 
-		/**
-		 * set the layer alpha channel value<br>
-		 * @param {alpha} alpha opacity value between 0 and 1
-		 */
-		setOpacity : function(alpha) {
-			if (alpha) {
-				this.opacity = alpha.clamp(0.0, 1.0);
+							// ensure nodeValue is deallocated
+							nodeValue = null;
+							break;
+						}
+						  
+						default:
+							throw "melonJS: TMX Tile Map " + encoding + " encoding not supported!";
+							break;
+					}
+					break;
+				}
+					
+				default:
+					throw "melonJS: " + compression+ " compressed TMX Tile Map not supported!";
+					break;
 			}
+
+			var idx = 0;
+			// set everything
+			for ( var y = 0 ; y <this.height; y++) {
+				for ( var x = 0; x <this.width; x++) {
+					// get the value of the gid
+					var gid = (encoding == null) ? me.TMXParser.getIntAttribute(data[idx++], me.TMX_TAG_GID) : data[idx++];
+					// fill the array										
+					if (gid !== 0) {
+						// create a new tile object
+						var tmxTile = new me.Tile(x, y, this.tilewidth, this.tileheight, gid);
+						// set the tile in the data array
+						this.layerData[x][y] = tmxTile;
+						// switch to the right tileset
+						if (!this.tileset.contains(tmxTile.tileId)) {
+							this.tileset = this.tilesets.getTilesetByGid(tmxTile.tileId);
+						}
+					   	// draw the corresponding tile
+						if (this.visible && this.preRender) {
+							this.renderer.drawTile(this.layerSurface, x, y, tmxTile, this.tileset);
+						}
+					}
+				}
+			}
+
+			// make sure data is deallocated :)
+			data = null;
 		},
 
 		/**
 		 * Return the TileId of the Tile at the specified position
-		 * @name me.TiledLayer#getTileId
+		 * @name me.TMXLayer#getTileId
 		 * @public
 		 * @function
 		 * @param {Integer} x x coordinate in pixel 
@@ -10542,7 +10815,7 @@ var me = me || {};
 		
 		/**
 		 * Return the Tile object at the specified position
-		 * @name me.TiledLayer#getTile
+		 * @name me.TMXLayer#getTile
 		 * @public
 		 * @function
 		 * @param {Integer} x x coordinate in pixel 
@@ -10555,7 +10828,7 @@ var me = me || {};
 
 		/**
 		 * Create a new Tile at the specified position
-		 * @name me.TiledLayer#setTile
+		 * @name me.TMXLayer#setTile
 		 * @public
 		 * @function
 		 * @param {Integer} x x coordinate in tile 
@@ -10565,20 +10838,48 @@ var me = me || {};
 		setTile : function(x, y, tileId) {
 			this.layerData[x][y] = new me.Tile(x, y, this.tilewidth, this.tileheight, tileId);
 		},
-
+		
 		/**
 		 * clear the tile at the specified position
-		 * @name me.TiledLayer#clearTile
+		 * @name me.TMXLayer#clearTile
 		 * @public
 		 * @function
-		 * @param {Integer} x x coordinate in tile 
-		 * @param {Integer} y y coordinate in tile 
+		 * @param {Integer} x x position 
+		 * @param {Integer} y y position 
 		 */
 		clearTile : function(x, y) {
 			// clearing tile
 			this.layerData[x][y] = null;
+			// erase the corresponding area in the canvas
+			if (this.visible && this.preRender) {
+				this.layerSurface.clearRect(x * this.tilewidth,	y * this.tileheight, this.tilewidth, this.tileheight);
+			}
+		},
+		
+		/**
+		 * get the layer alpha channel value
+		 * @name me.TMXLayer#getOpacity
+		 * @return current opacity value between 0 and 1
+		 */
+		getOpacity : function() {
+			return this.opacity;
 		},
 
+		/**
+		 * set the layer alpha channel value
+		 * @name me.TMXLayer#setOpacity
+		 * @param {alpha} alpha opacity value between 0 and 1
+		 */
+		setOpacity : function(alpha) {
+			if (alpha) {
+				this.opacity = alpha.clamp(0.0, 1.0);
+				// if pre-rendering is used, update opacity on the hidden canvas context
+				if (this.preRender) {
+					this.layerSurface.globalAlpha = this.opacity;
+				}
+			}
+		},
+		
 		/**
 		 * check for collision
 		 * obj - obj
@@ -10637,230 +10938,15 @@ var me = me || {};
 			// return the collide object
 			return res;
 		},
-
+		
 		/**
 		 * a dummy update function
 		 * @private
 		 */
 		update : function() {
 			return false;
-		}
-	});
-	
-	/**
-	 * a TMX Tile Map Object
-	 * Tile QT 0.7.x format
-	 * @class
-	 * @extends me.TiledLayer
-	 * @memberOf me
-	 * @constructor
-	 */
-	me.TMXLayer = me.TiledLayer.extend({
-		// constructor
-		init: function(layer, tilewidth, tileheight, orientation, tilesets, zOrder) {
-			// call the parent
-			this.parent(me.TMXParser.getIntAttribute(layer, me.TMX_TAG_WIDTH), 
-						me.TMXParser.getIntAttribute(layer, me.TMX_TAG_HEIGHT),
-						tilewidth, 
-						tileheight,
-						// tilesets should exist here !
-						tilesets, 
-						zOrder);
-						
-			// additional TMX flags
-			this.orientation = orientation;
-			this.name = me.TMXParser.getStringAttribute(layer, me.TMX_TAG_NAME);
-			this.visible = (me.TMXParser.getIntAttribute(layer, me.TMX_TAG_VISIBLE, 1) == 1);
-			this.opacity = me.TMXParser.getFloatAttribute(layer, me.TMX_TAG_OPACITY, 1.0).clamp(0.0, 1.0);
-				
-			// check if we have any user-defined properties 
-			me.TMXUtils.setTMXProperties(this, layer);
-			
-			// check for the correct rendering method
-			if (this.preRender === undefined)
-				this.preRender = me.sys.preRender
-				
-			// detect if the layer is a collision map
-			this.isCollisionMap = (this.name.toLowerCase().contains(me.LevelConstants.COLLISION_MAP));
-			if (this.isCollisionMap && !me.debug.renderCollisionMap) {
-				// force the layer as invisible
-				this.visible = false;
-			}
-
-			// store the data information
-			var xmldata = layer.getElementsByTagName(me.TMX_TAG_DATA)[0];
-			var encoding = me.TMXParser.getStringAttribute(xmldata, me.TMX_TAG_ENCODING, null);
-			var compression = me.TMXParser.getStringAttribute(xmldata, me.TMX_TAG_COMPRESSION, null);
-
-			// make sure this is not happening
-			if (encoding == '')
-				encoding = null;
-			if (compression == '')
-				compression = null;
-
-			// if not a collision layer, create a canvas where to draw our layer
-			if (!this.isCollisionMap) {
-				// set the right renderer
-				switch (this.orientation)
-				{
-					case "orthogonal": {
-					  this.renderer = new me.TMXOrthogonalRenderer(this.width, this.height, this.tilewidth, this.tileheight);
-					  break;
-					}
-					case "isometric": {
-					  this.renderer = new me.TMXIsometricRenderer(this.width, this.height , this.tilewidth, this.tileheight);
-					  break;
-					}
-			
-					// if none found, throw an exception
-					default : {
-						throw "melonJS: " + this.orientation + " type TMX Tile Map not supported!";
-					}
-				}
-				
-				// if pre-rendering method is use, create the offline canvas
-				if (this.preRender) {
-					this.layerCanvas = me.video.createCanvas(this.width	* this.tilewidth, this.height * this.tileheight);
-					this.layerSurface = this.layerCanvas.getContext('2d');
-					
-					// set alpha value for this layer
-					this.layerSurface.globalAlpha = this.opacity;
-				}
-				
-			}
-
-			// initialize the layer data array
-			this.initArray();
-
-			// populate our level with some data
-			this.fillArray(xmldata, encoding, compression);
 		},
 		
-		/**
-		 * reset function
-		 * @private
-		 * @function
-		 */
-		reset : function() {
-			// clear all allocated objects
-			if (this.preRender) {
-				this.layerCanvas = null;
-				this.layerSurface = null;
-			}
-			this.renderer = null;
-			// call the parent reset function
-			this.parent();
-		},
-		
-		/**
-		 * Build the tiled layer
-		 * @private
-		 */
-		fillArray : function(xmldata, encoding, compression) {
-			// check if data is compressed
-			switch (compression) {
-			 
-			 // no compression
-			 case null: {
-				// decode data based on encoding type
-				switch (encoding) {
-				// XML encoding
-				   case null: {
-					  var data = xmldata.getElementsByTagName(me.TMX_TAG_TILE);
-					  break;
-				   }
-				   // CSV encoding
-				   case me.TMX_TAG_CSV:
-					  // Base 64 encoding
-				   case me.TMX_TAG_ATTR_BASE64: {
-					  // Merge all childNodes[].nodeValue into a single one
-					  var nodeValue = '';
-					  for ( var i = 0, len = xmldata.childNodes.length; i < len; i++) {
-						 nodeValue += xmldata.childNodes[i].nodeValue;
-					  }
-					  // and then decode them
-					  if (encoding == me.TMX_TAG_ATTR_BASE64)
-						 var data = me.utils.decodeBase64AsArray(nodeValue, 4);
-					  else
-						 var data = me.utils.decodeCSV(nodeValue, this.width);
-
-					  // ensure nodeValue is deallocated
-					  nodeValue = null;
-					  break;
-				   }
-					  
-				   default:
-					  throw "melonJS: TMX Tile Map " + encoding + " encoding not supported!";
-					  break;
-				}
-				
-			 break;
-			 }
-				
-			 default:
-				throw "melonJS: " + compression+ " compressed TMX Tile Map not supported!";
-				break;
-			}
-
-			var idx = 0;
-			// set everything
-			for ( var y = 0 ; y <this.height; y++) {
-				for ( var x = 0; x <this.width; x++) {
-					// get the value of the gid
-					var gid = (encoding == null) ? me.TMXParser.getIntAttribute(data[idx++], me.TMX_TAG_GID) : data[idx++];
-					// fill the array										
-					if (gid !== 0) {
-						// create a new tile object
-						var tmxTile = new me.Tile(x, y, this.tilewidth, this.tileheight, gid);
-						// set the tile in the data array
-						this.layerData[x][y] = tmxTile;
-						// switch to the right tileset
-						if (!this.tileset.contains(tmxTile.tileId)) {
-							this.tileset = this.tilesets.getTilesetByGid(tmxTile.tileId);
-						}
-					   	// draw the corresponding tile
-						if (this.visible && this.preRender) {
-							this.renderer.drawTile(this.layerSurface, x, y, tmxTile, this.tileset);
-						}
-					}
-				}
-			}
-
-			// make sure data is deallocated :)
-			data = null;
-		},
-
-		/**
-		 * clear the tile at the specified position
-		 * @name me.TMXLayer#clearTile
-		 * @public
-		 * @function
-		 * @param {Integer} x x position 
-		 * @param {Integer} y y position 
-		 */
-		clearTile : function(x, y) {
-			// call the parent function
-			this.parent(x, y);
-			// erase the corresponding area in the canvas
-			if (this.visible && this.preRender) {
-				this.layerSurface.clearRect(x * this.tilewidth,	y * this.tileheight, this.tilewidth, this.tileheight);
-			}
-		},
-
-		/**
-		 * set the layer alpha channel value<br>
-		 * @param {alpha} alpha opacity value between 0 and 1
-		 */
-		setOpacity : function(alpha) {
-			// set opacity through parent function
-			this.parent(alpha);
-
-			// if pre-rendering is used, update opacity on the hidden canvas context
-			if (this.preRender) {
-				this.layerSurface.globalAlpha = this.opacity;
-			}
-		},
-
 		/**
 		 * draw a tileset layer
 		 * @private
@@ -10905,7 +10991,7 @@ var me = me || {};
 })(window, me.game);
 /*
  * MelonJS Game Engine
- * Copyright (C) 2012, Olivier BIOT
+ * Copyright (C) 2011 - 2013, Olivier BIOT
  * http://www.melonjs.org
  *
  * Tile QT 0.7.x format
@@ -10914,17 +11000,17 @@ var me = me || {};
  */
 
 (function($) {
-	
-	
+		
 	/**
-	 * a basic level object skeleton
+	 * a TMX Tile Map Object
+	 * Tile QT 0.7.x format
 	 * @class
 	 * @memberOf me
 	 * @constructor
 	 */
-	me.TileMap = Object.extend({
+	me.TMXTileMap = Object.extend({
 		// constructor
-		init: function(x, y) {
+		init: function(tmxfile, x, y) {
 			// map default position
 			this.pos = new me.Vector2d(x, y);
 						
@@ -10935,7 +11021,7 @@ var me = me || {};
 			 * name of the tilemap
 			 * @public
 			 * @type String
-			 * @name me.TileMap#name
+			 * @name me.TMXTileMap#name
 			 */
 			this.name = null;
 			
@@ -10943,7 +11029,7 @@ var me = me || {};
 			 * width of the tilemap in Tile
 			 * @public
 			 * @type Int
-			 * @name me.TileMap#width
+			 * @name me.TMXTileMap#width
 			 */
 			this.width = 0;
 			
@@ -10951,7 +11037,7 @@ var me = me || {};
 			 * height of the tilemap in Tile
 			 * @public
 			 * @type Int
-			 * @name me.TileMap#height
+			 * @name me.TMXTileMap#height
 			 */
 			this.height = 0;
 
@@ -10959,7 +11045,7 @@ var me = me || {};
 			 * width of the tilemap in pixels
 			 * @public
 			 * @type Int
-			 * @name me.TileMap#realwidth
+			 * @name me.TMXTileMap#realwidth
 			 */
 			this.realwidth = -1;
 			
@@ -10967,7 +11053,7 @@ var me = me || {};
 			 * height of the tilemap in pixels
 			 * @public
 			 * @type Int
-			 * @name me.TileMap#realheight
+			 * @name me.TMXTileMap#realheight
 			 */
 			this.realheight = -1;
 
@@ -10975,7 +11061,7 @@ var me = me || {};
 			 * Tile width
 			 * @public
 			 * @type Int
-			 * @name me.TileMap#tilewidth
+			 * @name me.TMXTileMap#tilewidth
 			 */
 			this.tilewidth = 0;
 
@@ -10983,7 +11069,7 @@ var me = me || {};
 			 * Tile height
 			 * @public
 			 * @type Int
-			 * @name me.TileMap#tileheight
+			 * @name me.TMXTileMap#tileheight
 			 */
 			this.tileheight = 0;
 
@@ -10998,122 +11084,6 @@ var me = me || {};
 
 			// loading flag
 			this.initialized = false;
-			
-		},
-
-		/**
-		 * a dummy update function
-		 * @private
-		 */
-		reset : function() {
-			this.tilesets = null;
-			this.mapLayers.length = 0;
-			this.objectGroups.length = 0;
-			this.pos.set(0,0);
-			this.initialized = false;
-		},
-
-		/**
-		 * return the specified object group
-		 * @private	
-		 */
-		getObjectGroupByName : function(name) {
-			var objectGroup = null;
-
-            		// normalize name
-            		name = name.trim().toLowerCase();
-            		for ( var i = this.objectGroups.length; i--;) {
-                		if (this.objectGroups[i].name.toLowerCase().contains(name)) {
-                    			objectGroup = this.objectGroups[i];
-                    			break;
-                		}
-            		};
-
-			return objectGroup;
-		},
-
-		/**
-		 * return all the object group
-		 * @private		
-		 */
-		getObjectGroups : function() {
-			return this.objectGroups;
-		},
-		
-		/**
-		 * return all the existing layers
-		 * @name me.TileMap#getLayers
-		 * @public
-		 * @function
-		 * @return {me.TiledLayer[]} Array of Layers
-		 */
-		getLayers : function() {
-			return this.mapLayers;
-		},
-
-		/**
-		 * return the specified layer object
-		 * @name me.TileMap#getLayerByName
-		 * @public
-		 * @function
-		 * @param {String} name Layer Name 
-		 * @return {me.TiledLayer} Layer Object
-		 */
-		getLayerByName : function(name) {
-			var layer = null;
-
-			// normalize name
-			name = name.trim().toLowerCase();
-			for ( var i = this.mapLayers.length; i--;) {
-				if (this.mapLayers[i].name.toLowerCase().contains(name)) {
-					layer = this.mapLayers[i];
-					break;
-				}
-			};
-
-			// return a fake collision layer if not found
-			if ((name.toLowerCase().contains(me.LevelConstants.COLLISION_MAP)) && (layer == null)) {
-				layer = new CollisionTiledLayer(me.game.currentLevel.realwidth,	me.game.currentLevel.realheight);
-			}
-
-			return layer;
-		},
-
-		/**
-		 * clear the tile at the specified position from all layers
-		 * @name me.TileMap#clearTile
-		 * @public
-		 * @function
-		 * @param {Integer} x x position 
-		 * @param {Integer} y y position 
-		 */
-		clearTile : function(x, y) {
-			// add all layers
-			for ( var i = this.mapLayers.length; i--;) {
-				// that are visible
-				if (this.mapLayers[i] instanceof me.TiledLayer) {
-					this.mapLayers[i].clearTile(x, y);
-				}
-			};
-		}
-	
-	});
-
-	
-	
-	/**
-	 * a TMX Tile Map Object
-	 * Tile QT 0.7.x format
-	 * @class
-	 * @extends me.TileMap
-	 * @memberOf me
-	 * @constructor
-	 */
-	me.TMXTileMap = me.TileMap.extend({
-		// constructor
-		init: function(tmxfile, x, y) {
-			// call the constructor
-			this.parent(x, y);
 
 			this.xmlMap = me.loader.getTMX(tmxfile);
 			this.isJSON = me.loader.getTMXFormat(tmxfile) === 'json';
@@ -11150,7 +11120,10 @@ var me = me || {};
 					this.objectGroups[i] = null;
 				};
 				// call parent reset function
-				this.parent();
+				this.tilesets = null;
+				this.mapLayers.length = 0;
+				this.objectGroups.length = 0;
+				this.pos.set(0,0);
 				// set back as not initialized
 				this.initialized = false;
 			}
@@ -11176,115 +11149,220 @@ var me = me || {};
 
 			// parse all tags
 			for ( var i = 0; i < xmlElements.length; i++) {
+
 				// check each Tag
-				var tagName = xmlElements.item(i).nodeName;
+				switch (xmlElements.item(i).nodeName) {
+					// get the map information
+					case me.TMX_TAG_MAP: {
+						var map = xmlElements.item(i);
+						this.version = me.TMXParser.getStringAttribute(map, me.TMX_TAG_VERSION);
+						this.orientation = me.TMXParser.getStringAttribute(map, me.TMX_TAG_ORIENTATION);
+						this.width = me.TMXParser.getIntAttribute(map, me.TMX_TAG_WIDTH);
+						this.height = me.TMXParser.getIntAttribute(map, me.TMX_TAG_HEIGHT);
+						this.tilewidth = me.TMXParser.getIntAttribute(map,	me.TMX_TAG_TILEWIDTH);
+						this.tileheight = me.TMXParser.getIntAttribute(map, me.TMX_TAG_TILEHEIGHT);
+						this.realwidth = this.width * this.tilewidth;
+						this.realheight = this.height * this.tileheight;
+						this.backgroundcolor = me.TMXParser.getStringAttribute(map, me.TMX_BACKGROUND_COLOR);
+						this.z = zOrder++;
+					   
+					   	// initilialize a new default renderer
+						if ((me.game.renderer === null) || !me.game.renderer.canRender(this)) {
+							switch (this.orientation) {
+								case "orthogonal": {
+								  me.game.renderer = new me.TMXOrthogonalRenderer(this.width, this.height, this.tilewidth, this.tileheight);
+								  break;
+								}
+								case "isometric": {
+								  me.game.renderer =  new me.TMXIsometricRenderer(this.width, this.height , this.tilewidth, this.tileheight);
+								  break;
+								}
+								// if none found, throw an exception
+								default : {
+									throw "melonJS: " + this.orientation + " type TMX Tile Map not supported!";
+								}
+							}
+						}
 
-				switch (tagName) {
-				// get the map information
-				case me.TMX_TAG_MAP: {
-				   var map = xmlElements.item(i);
-				   this.version = me.TMXParser.getStringAttribute(map, me.TMX_TAG_VERSION);
-				   this.orientation = me.TMXParser.getStringAttribute(map, me.TMX_TAG_ORIENTATION);
-				   this.width = me.TMXParser.getIntAttribute(map, me.TMX_TAG_WIDTH);
-				   this.height = me.TMXParser.getIntAttribute(map, me.TMX_TAG_HEIGHT);
-				   this.tilewidth = me.TMXParser.getIntAttribute(map,	me.TMX_TAG_TILEWIDTH);
-				   this.tileheight = me.TMXParser.getIntAttribute(map, me.TMX_TAG_TILEHEIGHT);
-				   this.realwidth = this.width * this.tilewidth;
-				   this.realheight = this.height * this.tileheight;
-				   this.backgroundcolor = me.TMXParser.getStringAttribute(map, me.TMX_BACKGROUND_COLOR);
-				   this.z = zOrder++;
+						// center the map if smaller than the current viewport
+						if ((this.realwidth < me.game.viewport.width) || 
+							(this.realheight < me.game.viewport.height)) {
+							var shiftX =  ~~( (me.game.viewport.width - this.realwidth) / 2);
+							var shiftY =  ~~( (me.game.viewport.height - this.realheight) / 2);
+							// update the map default screen position
+							this.pos.add({x:shiftX > 0 ? shiftX : 0 , y:shiftY > 0 ? shiftY : 0} );
+						}
 
-				   // center the map if smaller than the current viewport
-				   if ((this.realwidth < me.game.viewport.width) || 
-					   (this.realheight < me.game.viewport.height)) {
-						var shiftX =  ~~( (me.game.viewport.width - this.realwidth) / 2);
-						var shiftY =  ~~( (me.game.viewport.height - this.realheight) / 2);
-						// update the map default screen position
-						this.pos.add({x:shiftX > 0 ? shiftX : 0 , y:shiftY > 0 ? shiftY : 0} );
-				   }
+						// set the map properties (if any)
+						me.TMXUtils.setTMXProperties(this, map);
+						
+						// check if a user-defined background color is defined  
+						this.background_color = this.backgroundcolor ? this.backgroundcolor : this.background_color;
+						if (this.background_color) {
+							this.mapLayers.push(new me.ColorLayer("background_color", 
+																  this.background_color, 
+																  zOrder++));
+						}
 
-				   // set the map properties (if any)
-				   me.TMXUtils.setTMXProperties(this, map);
+						// check if a background image is defined
+						if (this.background_image) {
+							// add a new image layer
+							this.mapLayers.push(new me.ImageLayer("background_image", 
+																  this.width, this.height, 
+																  this.background_image, 
+																  zOrder++));
+						}
+						break;
+					};
+
+					// get the tileset information
+					case me.TMX_TAG_TILESET: {
+					   // Initialize our object if not yet done
+					   if (!this.tilesets) {
+						  this.tilesets = new me.TMXTilesetGroup();
+					   }
+					   // add the new tileset
+					   this.tilesets.add(new me.TMXTileset(xmlElements.item(i)));
+					   break;
+					};
 					
-				   // check if a user-defined background color is defined  
-				   this.background_color = this.backgroundcolor ? this.backgroundcolor : this.background_color;
-				   if (this.background_color) {
-						this.mapLayers.push(new me.ColorLayer("background_color", 
-															  this.background_color, 
-															  zOrder++));
-				   }
-
-				   // check if a background image is defined
-				   if (this.background_image) {
-						// add a new image layer
-						this.mapLayers.push(new me.ImageLayer("background_image", 
-															  this.width, this.height, 
-															  this.background_image, 
-															  zOrder++));
-				   }
-				   break;
-				}
-				   
-
-				// get the tileset information
-				case me.TMX_TAG_TILESET: {
-				   // Initialize our object if not yet done
-				   if (!this.tilesets) {
-					  this.tilesets = new me.TMXTilesetGroup();
-				   }
-				   // add the new tileset
-				   this.tilesets.add(new me.TMXTileset(xmlElements.item(i)));
-				   break;
-				}
-				
-				// get image layer information
-				case me.TMX_TAG_IMAGE_LAYER: {
+					// get image layer information
+					case me.TMX_TAG_IMAGE_LAYER: {
+						
+						// extract layer information
+						var iln = me.TMXParser.getStringAttribute(xmlElements.item(i), me.TMX_TAG_NAME);
+						var ilw = me.TMXParser.getIntAttribute(xmlElements.item(i), me.TMX_TAG_WIDTH);
+						var ilh = me.TMXParser.getIntAttribute(xmlElements.item(i), me.TMX_TAG_HEIGHT);
+						var ilsrc = xmlElements.item(i).getElementsByTagName(me.TMX_TAG_IMAGE)[0].getAttribute(me.TMX_TAG_SOURCE);
+						
+						// create the layer
+						var ilayer = new me.ImageLayer(iln, ilw * this.tilewidth, ilh * this.tileheight, ilsrc, zOrder++);
+						
+						// set some additional flags
+						ilayer.visible = (me.TMXParser.getIntAttribute(xmlElements.item(i), me.TMX_TAG_VISIBLE, 1) == 1);
+						ilayer.opacity = me.TMXParser.getFloatAttribute(xmlElements.item(i), me.TMX_TAG_OPACITY, 1.0);
+						
+						// check if we have any properties 
+						me.TMXUtils.setTMXProperties(ilayer, xmlElements.item(i));
+		
+						// add the new layer
+						this.mapLayers.push(ilayer);
+						break;
+					};
 					
-					// extract layer information
-					var iln = me.TMXParser.getStringAttribute(xmlElements.item(i), me.TMX_TAG_NAME);
-					var ilw = me.TMXParser.getIntAttribute(xmlElements.item(i), me.TMX_TAG_WIDTH);
-					var ilh = me.TMXParser.getIntAttribute(xmlElements.item(i), me.TMX_TAG_HEIGHT);
-					var ilsrc = xmlElements.item(i).getElementsByTagName(me.TMX_TAG_IMAGE)[0].getAttribute(me.TMX_TAG_SOURCE);
+					// get the layer(s) information
+					case me.TMX_TAG_LAYER: {
+						// regular layer or collision layer
+						this.mapLayers.push(new me.TMXLayer(xmlElements.item(i), this.tilewidth, this.tileheight, this.orientation, this.tilesets, zOrder++));
+						break;
+					};
 					
-					// create the layer
-					var ilayer = new me.ImageLayer(iln, ilw * this.tilewidth, ilh * this.tileheight, ilsrc, zOrder++);
-				    
-					// set some additional flags
-					ilayer.visible = (me.TMXParser.getIntAttribute(xmlElements.item(i), me.TMX_TAG_VISIBLE, 1) == 1);
-					ilayer.opacity = me.TMXParser.getFloatAttribute(xmlElements.item(i), me.TMX_TAG_OPACITY, 1.0);
+					// get the object groups information
+					case me.TMX_TAG_OBJECTGROUP: {
+					   var name = me.TMXParser.getStringAttribute(xmlElements.item(i), me.TMX_TAG_NAME);
+					   this.objectGroups.push(new me.TMXOBjectGroup(name, xmlElements.item(i), this.tilesets, zOrder++));
+					   break;
+					};
 					
-					// check if we have any properties 
-					me.TMXUtils.setTMXProperties(ilayer, xmlElements.item(i));
-	
-					// add the new layer
-					this.mapLayers.push(ilayer);
-					break;
-				}
-				
-				// get the layer(s) information
-				case me.TMX_TAG_LAYER: {
-					// regular layer or collision layer
-					this.mapLayers.push(new me.TMXLayer(xmlElements.item(i), this.tilewidth, this.tileheight, this.orientation, this.tilesets, zOrder++));
-					break;
-				}
-				
-				// get the object groups information
-				case me.TMX_TAG_OBJECTGROUP: {
-				   var name = me.TMXParser.getStringAttribute(xmlElements.item(i), me.TMX_TAG_NAME);
-				   this.objectGroups.push(new me.TMXOBjectGroup(name, xmlElements.item(i), this.tilesets, zOrder++));
-				   break;
-				}
+					default : {
+						// ignore unrecognized tags
+						break;
+					};
 					
 				} // end switch 
+			
 			} // end for
 
 			// free the TMXParser ressource
 			me.TMXParser.free();
-
+			
 			// flag as loaded
 			this.initialized = true;
 
+		},
+		
+		/**
+		 * return the specified object group
+		 * @private	
+		 */
+		getObjectGroupByName : function(name) {
+			var objectGroup = null;
+           		// normalize name
+           		name = name.trim().toLowerCase();
+           		for ( var i = this.objectGroups.length; i--;) {
+               		if (this.objectGroups[i].name.toLowerCase().contains(name)) {
+                   			objectGroup = this.objectGroups[i];
+                   			break;
+               		}
+           		};
+			return objectGroup;
+		},
+
+		/**
+		 * return all the object group
+		 * @private		
+		 */
+		getObjectGroups : function() {
+			return this.objectGroups;
+		},
+		
+		/**
+		 * return all the existing layers
+		 * @name me.TMXTileMap#getLayers
+		 * @public
+		 * @function
+		 * @return {me.TMXLayer[]} Array of Layers
+		 */
+		getLayers : function() {
+			return this.mapLayers;
+		},
+
+		/**
+		 * return the specified layer object
+		 * @name me.TMXTileMap#getLayerByName
+		 * @public
+		 * @function
+		 * @param {String} name Layer Name 
+		 * @return {me.TMXLayer} Layer Object
+		 */
+		getLayerByName : function(name) {
+			var layer = null;
+
+			// normalize name
+			name = name.trim().toLowerCase();
+			for ( var i = this.mapLayers.length; i--;) {
+				if (this.mapLayers[i].name.toLowerCase().contains(name)) {
+					layer = this.mapLayers[i];
+					break;
+				}
+			};
+
+			// return a fake collision layer if not found
+			if ((name.toLowerCase().contains(me.LevelConstants.COLLISION_MAP)) && (layer == null)) {
+				layer = new CollisionTiledLayer(me.game.currentLevel.realwidth,	me.game.currentLevel.realheight);
+			}
+
+			return layer;
+		},
+
+		/**
+		 * clear the tile at the specified position from all layers
+		 * @name me.TMXTileMap#clearTile
+		 * @public
+		 * @function
+		 * @param {Integer} x x position 
+		 * @param {Integer} y y position 
+		 */
+		clearTile : function(x, y) {
+			// add all layers
+			for ( var i = this.mapLayers.length; i--;) {
+				// that are visible
+				if (this.mapLayers[i] instanceof me.TMXLayer) {
+					this.mapLayers[i].clearTile(x, y);
+				}
+			};
 		}
+
 
 	});
 		
@@ -11295,7 +11373,7 @@ var me = me || {};
 })(window);
 /*
  * MelonJS Game Engine
- * Copyright (C) 2012, Olivier BIOT
+ * Copyright (C) 2011 - 2013, Olivier BIOT
  * http://www.melonjs.org
  *
  */
@@ -11499,6 +11577,16 @@ var me = me || {};
 			}
 		};
 
+		/**
+		 * return the amount of level preloaded<br>
+		 * @name me.levelDirector#levelCount
+		 * @public
+		 * @function
+		 */
+		obj.levelCount = function() {
+			return levelIdx.length;
+		};
+		
 		// return our object
 		return obj;
 
@@ -12284,7 +12372,7 @@ var me = me || {};
 })();
 /*
  * MelonJS Game Engine
- * Copyright (C) 2012, Olivier BIOT
+ * Copyright (C) 2011 - 2013, Olivier BIOT
  * http://www.melonjs.org
  */
  

@@ -7,7 +7,7 @@
 	// configuring system variables
 	me.sys.pauseOnBlur = false;
 	me.sys.useNativeAnimFrame = true;
-	me.sys.interpolation = true;
+	// me.sys.interpolation = true;
 	// me.sys.preRender = true;
 	// me.sys.dirtyRegion = true;
 	me.sys.fps = 60;

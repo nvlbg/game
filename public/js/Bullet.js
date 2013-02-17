@@ -1,7 +1,7 @@
 (function() {
 	
 	window.game.Bullet = me.ObjectEntity.extend({
-		init : function(x, y, direction, speed, ownerID) {
+		init : function(x, y, direction, speed, ownerID, team, seq, id) {
 			if (!this.initialized) { // on first pass
 				var settings = {
 					image : "tanks",
@@ -14,40 +14,53 @@
 				this.collidable = true;
 				this.gravity = 0;
 
-				this.addAnimation("forward", [43]);
+				// this.addAnimation("forward", [43]);
 				this.addAnimation("sideward", [44]);
 				this.addAnimation("explode", [45,46]);
 
 				this.type = me.game.BULLET_OBJECT;
+				
+				this.initialized = true;
+				
+				this.updateColRect(14, 6, 12, 6);
 			} else {
 				this.pos.x = x;
 				this.pos.y = y;
 			}
 
+			this.confirmed = false;
+			this.seq = seq;
+
 			this.visible = true;
-			this.initialized = true;
 			this.ownerID = ownerID;
+			this.id = id;
+			this.team = team;
 			this.isExploding = false;
 
 			this.setCurrentAnimation("sideward");
-			this.updateColRect(14, 6, 12, 6);
 
 			this.angle = Math.atan2(direction.y, direction.x);
 
-			// me.debug.renderHitBox = true;
-			// me.debug.renderVelocity = true;
-			// me.debug.renderCollisionMap = true;
-
 			this.speed = speed || 5;
 			this.direction = direction;
-			// console.log(this.direction);
+			
 			this.vel.x = this.direction.x * this.speed;
 			this.vel.y = this.direction.y * this.speed;
+
+			this.compensation = null;
+		},
+
+		applyCorrection: function(correction) {
+
+		},
+
+		applyCompensation: function() {
+			this.compensation = this.vel.clone().mul(window.game.network.net_latency);
 		},
 
 		update : function() {
 			if(!this.visible) {
-				me.game.remove(this);
+				this.remove();
 				return false;
 			}
 
@@ -61,13 +74,19 @@
 			return true;
 		},
 
+		remove: function() {
+			if ( window.game.network.players[this.ownerID] === window.game.network.player ) {
+				window.game.network.player.removeBulletById(this.id);
+			} else {
+				me.game.remove(this);
+			}
+		},
+
 		explode : function() {
 			this.vel.x = this.vel.y = 0;
 			this.isExploding = true;
 
-			this.setCurrentAnimation("explode", function() {
-				me.game.remove(this);
-			}.bind(this));
+			this.setCurrentAnimation("explode", this.remove.bind(this));
 		},
 
 		updateMovement : function() {
@@ -89,12 +108,11 @@
 			if (collision && collision.obj instanceof game.Tank &&
 				collision.obj.GUID !== this.ownerID) { // a Tank is hit
 
-				if (collision.obj.type === me.game.ENEMY_OBJECT ||   // Enemy Tank or
-					(collision.obj.type === me.game.FRIEND_OBJECT && // Friend Tank
-					me.gamestat.getItemValue("friendly_fire"))) {    // with friendly_fire
+				if (collision.obj.team !== this.team ||   // Enemy Tank or
+					(collision.obj.team === this.team &&  // Friend Tank
+					me.gamestat.getItemValue("friendly_fire"))) { // with friendly_fire
 				
-					collision.obj.explode();
-					me.game.remove(this);
+					this.remove();
 					return;
 				}
 			}

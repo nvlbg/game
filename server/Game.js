@@ -25,6 +25,10 @@ var Game = {
 	_dte : null,
 	local_time : 0,
 
+	net_ping_update_step: 0,
+	buffer_size: 0,
+	buffer: null,
+
 	authenticateSmathphone : function(socket, playerID) {
 		if (!Game.players[playerID]) {
 			socket.emit(Game.TYPE.SMARTPHONE_ACCEPT, false);
@@ -35,58 +39,105 @@ var Game = {
 
 	update : function () {
 		Game.timer.update();
+
+		//TODO: maybe this isn't the right approach
+		if (Game.buffer.length > Game.buffer_size) {
+			Game.buffer.splice(0, 1);
+		}
 		
-		var player;
+		var player, state = {};
 		for(var i in Game.players) {
 			player = Game.players[i];
+
+			state[player.id] = {
+				x: player.pos.x,
+				y: player.pos.y
+			};
+
 			player.update();
-
-			/*
-			if(player.updated) {
-				if (player.smartphoneConnected) {
-					player.socket.emit(Game.TYPE.PLAYER_UPDATED, {
-						p : player.pressed,
-						x : player.pos.x,
-						y : player.pos.y
-					});
-				}
-
-				player.socket.broadcast.emit(Game.TYPE.PLAYER_UPDATED, {
-					p : player.pressed,
-					x : player.pos.x,
-					y : player.pos.y,
-					
-					i : player.id
-				});
-
-				player.updated = false;
-			}
-			*/
 		}
+
+		state.t = Game.local_time;
+		Game.buffer.push(state);
 	},
 
 	correctionUpdate : function () {
 		//TODO: last_input_seq should be send only to your player and not to others
-		var i, player, correction = {}, isEmpty = true;
+		//TODO: only what has changed should be sent
+		var i, player, correction = {}, isEmpty = true, j, bullet, unconfimedCnt;
 		for(i in Game.players) {
 			player = Game.players[i];
 			
-			if (!player.lastSendPos.equals(player.pos)) {
+			if (!player.lastSentPos.equals(player.pos)) {
 				correction[player.id] = {
-					x: player.pos.x,
-					y: player.pos.y,
 					s: player.last_input_seq
 				};
 
-				player.lastSendPos = player.pos.clone();
+				if (player.lastSentPos.x !== player.pos.x) {
+					correction[player.id].x = player.pos.x;
+				}
+
+				if (player.lastSentPos.y !== player.pos.y) {
+					correction[player.id].y = player.pos.y;
+				}
+
+				player.lastSentPos = player.pos.clone();
+				isEmpty = false;
+			}
+
+			if (player.lastSentDir !== player.direction) {
+				if (correction[player.id] !== undefined) {
+					correction[player.id].d = player.direction;
+				} else {
+					correction[player.id] = {
+						d: player.direction,
+						s: player.last_input_seq
+					};
+				}
+
+				player.lastSentDir = player.direction;
+				isEmpty = false;
+			}
+
+			for (j in player.bullets) {
+				bullet = player.bullets[j];
+
+				if (!bullet.isBroadcasted) {
+					if (correction[player.id] === undefined) {
+						correction[player.id] = {s: player.last_input_seq};
+					}
+
+					if (correction[player.id].b === undefined) {
+						correction[player.id].b = [];
+					}
+
+					correction[player.id].b.push({
+						x: bullet.pos.x,
+						y: bullet.pos.y,
+						z: bullet.vel.x,
+						c: bullet.vel.y
+					});
+
+					isEmpty = false;
+					bullet.isBroadcasted = true;
+				}
+			}
+
+			unconfimedCnt = player.unconfirmedBullets.length;
+			if (unconfimedCnt > 0) {
+				if (correction[player.id] === undefined) {
+					correction[player.id] = {s: player.last_input_seq};
+				}
+
+				correction[player.id].u = player.unconfirmedBullets.splice(0, unconfimedCnt);
+
 				isEmpty = false;
 			}
 		}
 
 		if(!isEmpty) {
 			correction.t = Game.local_time;
-			console.log(correction);
-			
+			// console.log(correction);
 			for(i in Game.players) {
 				Game.players[i].socket.emit(Game.TYPE.CORRECTION, correction);
 			}
@@ -105,14 +156,16 @@ var Game = {
 			Game.blue += 1;
 		}
 
-		var player = new Player(new Vector2d(32, 64), this.DIRECTION.DOWN, 0, 3, 0, team, socket, this.idCounter++);
+		var player = new Player(new Vector2d(32, 64), this.DIRECTION.DOWN, 0, 3, 0,
+								team, 500, socket, this.idCounter++);
 
 		while ( Game.collide(player) || 
-				Game.world.checkCollision(player, new Vector2d(0, 0)).xtyle ||
-				Game.world.checkCollision(player, new Vector2d(0, 0)).ytyle )
+				Game.world.checkCollision(player, new Vector2d(0, 0)).xtile ||
+				Game.world.checkCollision(player, new Vector2d(0, 0)).ytile )
 		{
 			player.pos = new Vector2d(Number.prototype.random(32, 320), Number.prototype.random(32, 320));
 		}
+		player.lastSentPos = player.pos.clone();
 
 		var data = {
 			x : player.pos.x,
@@ -120,6 +173,8 @@ var Game = {
 			d : player.direction,
 			t : player.team,
 			i : player.id,
+
+			z : Game.local_time,
 			
 			l : config.MAP,
 			f : config.FRIENDLY_FIRE,
@@ -151,22 +206,19 @@ var Game = {
 
 		Game.players[player.id] = player;
 
-		socket.on(Game.TYPE.INPUT, function(data) {
-			player.pressed = data.p;
-			var delta = new Vector2d(data.x, data.y);
-			delta.sub(player.pos);
-			player.delta = delta;
-			player.updated = true;
-		});
-
 		socket.on(Game.TYPE.UPDATE, function(data) {
-			player.inputs.push({
-				input_seq: data.s,
-				pressed: data.p
-			});
+			var update = {input_seq: data.s};
+			if (data.p !== undefined) {
+				update.pressed = data.p;
+			}
+			if (data.a !== undefined && data.i !== undefined) {
+				update.shootAngle = data.a;
+				update.clientBulletId = data.i;
+			}
+			player.inputs.push(update);
 		});
 
-		socket.on(Game.TYPE.PING, function(data) {
+		socket.on(Game.TYPE.PING_REQUEST, function(data) {
 			socket.emit(Game.TYPE.PING, data);
 		});
 
@@ -228,6 +280,10 @@ var Game = {
 		Game.DIRECTION = constants.DIRECTION;
 		Game.TEAM = constants.TEAM;
 		Game.PRESSED = constants.PRESSED;
+
+		Game.net_ping_update_step = config.NET_PING_UPDATE_STEP;
+		Game.buffer_size = config.BUFFER_SIZE * 60;
+		Game.buffer = [];
 		
 		Game.world = new World(require('./../public/data/maps/' + config.MAP + '.json'));
 

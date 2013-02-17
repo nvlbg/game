@@ -7,7 +7,7 @@
 		this.networking = this.gui.addFolder('Networking');
 		this.player = this.gui.addFolder('Your player');
 
-		this.connection.add(window.game.network, 'latency_buffer_size', 2, 20);
+		// this.connection.add(window.game.network, 'latency_buffer_size', 2, 20);
 		this.connection.add(window.game.network, 'last_ping_time').listen();
 		this.connection.add(window.game.network, 'net_ping_update_step', 10, 5000);
 		this.connection.add(window.game.network, 'net_latency').listen();
@@ -22,7 +22,6 @@
 		}.bind(this), 250);
 
 		// this.network.add(window.game.network, 'buffer_size', 1, 5);
-		// this.network.add(window.game.network, 'client_smooth', 0, 50);
 		
 		this.networking.open();
 		this.connection.open();

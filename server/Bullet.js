@@ -3,31 +3,33 @@ require('./Util.js');
 var Vector2d = require('./Vector2d.js');
 var Rect = require('./Rect.js');
 var config = require('./config.json');
-/*
+
 var Bullet = Rect.extend({
 	// constructor
-	init : function(pos, angle, speed, ownerID, team) {
+	init : function(pos, direction, speed, ownerID, team, id) {
 		if (!this.initialized) { // on first pass
-			this.parent(pos, settings);
+			this.parent(pos, 6, 6);
+			this.vel = new Vector2d(0, 0);
+			// this.initialized = true;
 		} else {
-			this.pos = pos;
+			this.pos.x = pos.x;
+			this.pos.y = pos.y;
 		}
 
-		this.initialized = true;
+		this.isBroadcasted = false;
+
 		this.ownerID = ownerID;
 		this.team = team;
-
-		this.updateColRect(6, 6);
+		this.id = id;
 
 		this.speed = speed || 5;
-		this.direction = new me.Vector2d(
-								Math.cos(angle),
-								Math.sin(angle)
-							);
-		this.angle = angle;
+		this.accel = new Vector2d(this.speed, this.speed);
+		this.friction = new Vector2d(0, 0);
 
-		this.vel.x = this.direction.x * this.speed;
-		this.vel.y = this.direction.y * this.speed;
+		this.vel.x = direction.x * this.speed;
+		this.vel.y = direction.y * this.speed;
+
+		this.angle = Math.atan2(direction.y, direction.x);
 	},
 
 	update : function() {
@@ -39,18 +41,18 @@ var Bullet = Rect.extend({
 
 		var collision = Game.world.checkCollision(this, this.vel);
 
-		if(collision.y && collision.yprop.isSolid && collision.yprop.type !== 'water') {
-			me.game.remove(this);
+		if(collision.y && collision.ytile !== Game.world.collisionLayer.watergid) {
+			Game.players[this.ownerID].removeBullet( this.id );
 			return;
 		}
 
-		if(collision.x && collision.xprop.isSolid && collision.xprop.type !== 'water') {
-			me.game.remove(this);
+		if(collision.x && collision.xtile !== Game.world.collisionLayer.watergid) {
+			Game.players[this.ownerID].removeBullet( this.id );
 			return;
 		}
 
 		collision = Game.collide(this);
-		if (collision && collision.obj instanceof Player &&
+		if (collision && collision.obj &&
 			collision.obj.id !== this.ownerID) { // a Tank is hit
 
 			if (collision.obj.team !== this.team ||
@@ -58,9 +60,8 @@ var Bullet = Rect.extend({
 				// we have hit enemy
 				// or friendly fire is enabled and we have hit friend
 				
-				// TODO: broadcast to everyone that collision.obj is hit/dead
-				
-				me.game.remove(this); // remove bullet from game simulation
+				collision.obj.explode();
+				Game.players[this.ownerID].removeBullet( this.id );
 				return;
 			}
 		}
@@ -68,11 +69,32 @@ var Bullet = Rect.extend({
 		this.pos.add(this.vel);
 	},
 
-	updateColRect : function(w, h) {
-		this.width = w;
-		this.height = h;
+	computeVelocity : function(vel) {
+		// apply friction
+		if (this.friction.x) {
+			this.vel.x = Game.world.applyFriction(this.vel.x, this.friction.x);
+		}
+		if (this.friction.y) {
+			this.vel.y = Game.world.applyFriction(this.vel.y, this.friction.y);
+		}
+
+		// cap velocity
+		if (vel.y !== 0) {
+			vel.y = vel.y.clamp(-this.accel.y,this.accel.y);
+		}
+		if (vel.x !== 0) {
+			vel.x = vel.x.clamp(-this.accel.x,this.accel.x);
+		}
+		
+	},
+
+	onCollision: function(res, obj) {
+		if (obj === Game.players[this.ownerID]) {
+			return;
+		}
+
+		console.log('player got hit');
 	}
 });
 
 module.exports = Bullet;
-*/

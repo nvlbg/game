@@ -5,18 +5,19 @@
 			SPAWN               : 1,
 			NEW_PLAYER          : 2,
 			INPUT               : 3,
-			PLAYER_UPDATED      : 4,
-			CORRECTION          : 5,
-			PLAYER_CORRECTION   : 6,
-			PLAYER_DISCONNECTED : 7,
-			PRESSED             : 8,
-			SEQUENCE_NUMBER     : 9,
-			LOCAL_TIME          : 10,
-			SMARTPHONE_CONNECT  : 11,
-			SMARTPHONE_REQUEST  : 12,
-			SMARTPHONE_ACCEPT   : 13,
-			UPDATE              : 14,
-			PING                : 15
+			CORRECTION          : 4,
+			PLAYER_DISCONNECTED : 5,
+			PRESSED             : 6,
+			SEQUENCE_NUMBER     : 7,
+			LOCAL_TIME          : 8,
+			SMARTPHONE_CONNECT  : 9,
+			SMARTPHONE_REQUEST  : 10,
+			SMARTPHONE_ACCEPT   : 11,
+			UPDATE              : 12,
+			PING                : 13,
+			PING_REQUEST        : 14,
+			PLAYER_DIED         : 15,
+			PLAYER_RESPAWNED    : 16
 		},
 
 		POSITION : {
@@ -30,10 +31,12 @@
 			LEFT  : 2,
 			RIGHT : 3
 		},
+
 		TEAM : {
 			BLUE  : 0,
 			GREEN : 1
 		},
+		
 		PRESSED : {
 			UP    : 1 << 0,
 			DOWN  : 1 << 1,
