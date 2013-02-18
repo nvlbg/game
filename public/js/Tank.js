@@ -100,6 +100,7 @@
 		},
 
 		applyClientSideInterpolation: function() {
+			//TODO: clear this method a bit
 			if (this.updates.length > 0) {
 				var current_time = game.network.client_time;
 				var count = this.updates.length - 1;
@@ -113,7 +114,7 @@
 					nextPoint = this.updates[i+1];
 
 					if(current_time > point.t && current_time < nextPoint.t) {
-						this.updates.splice(0, i-1);
+						this.updates.splice(0, i+1);
 						target = nextPoint;
 						previous = point;
 						break;
@@ -121,12 +122,7 @@
 				}
 
 				if(!target) {
-					if (current_time > this.updates[ this.updates.length - 1 ].t) {
-						target = previous = this.updates[ this.updates.length - 1 ];
-						this.updates.length = 0;
-					} else {
-						target = previous = this.updates[0];
-					}
+					target = previous = this.updates[0];
 				}
 
 				var pos = new me.Vector2d(previous.x, previous.y);
@@ -144,12 +140,11 @@
 
 				this.setDirection(target.d);
 
-				// this.updateMovement();
 				this.computeVelocity(this.vel);
 				this.pos.add(this.vel);
 
 				var updated = this.vel.x !== 0 || this.vel.y !== 0;
-				this.vel.x = this.vel.y = 0;
+				this.vel.setZero();
 				return updated;
 			}
 

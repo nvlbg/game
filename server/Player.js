@@ -39,6 +39,8 @@ var Player = Rect.extend({
 		this.lastSentPos = null;
 		this.inputs = [];
 		this.last_input_seq = 0;
+
+		this.fake_latency = 0;
 		/*
 		if(dir === Game.DIRECTION.UP || dir === Game.DIRECTION.DOWN) {
 			this.updateColRect(24, 29);

@@ -47,7 +47,8 @@
 			this.vel.x = this.direction.x * this.speed;
 			this.vel.y = this.direction.y * this.speed;
 
-			this.compensation = null;
+			this.compensation = new me.Vector2d(0,0);
+			this.compensationFrames = 0;
 		},
 
 		applyCorrection: function(correction) {
@@ -55,7 +56,11 @@
 		},
 
 		applyCompensation: function() {
-			this.compensation = this.vel.clone().mul(window.game.network.net_latency);
+			this.compensation.copy(this.vel);
+			this.compensation.x *= window.game.network.net_latency/4;
+			this.compensation.y *= window.game.network.net_latency/4;
+			this.compensationFrames = 4;
+			console.log(this.compensation);
 		},
 
 		update : function() {
@@ -67,6 +72,12 @@
 			if(this.isExploding) {
 				this.parent(this);
 				return true;
+			}
+
+			if (this.compensationFrames > 0) {
+				console.log('compensation added');
+				this.pos.add(this.compensation);
+				this.compensationFrames -= 1;
 			}
 
 			this.updateMovement();

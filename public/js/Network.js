@@ -12,6 +12,7 @@
 		net_latency: 0.001,
 		net_offset: 100,
 		net_ping_update_step: 2500,
+		fake_latency: 0,
 		last_ping_time: 0.001,
 		last_server_time: 0.01,
 		client_time: 0.01,
@@ -49,7 +50,7 @@
 		},
 
 		createPingTimer: function() {
-			this.last_ping_time = new Date().getTime();
+			this.last_ping_time = new Date().getTime() - this.fake_latency;
 			this.socket.emit(game.ENUM.TYPE.PING_REQUEST, this.last_ping_time);
 		},
 
@@ -132,17 +133,11 @@
 				}
 
 				if (player === this.player && !player.smarthphoneConnected) {
-					//TODO: maybe client side prediction should happen (or be called) here
-					//so there won't be check for correction every frame
-					if (!data[i].x) {
-						data[i].x = player.pos.x;
+					if (data[i].x || data[i].y) {
+						player.correction = data[i];
+						player.applyClientSideAdjustment();
 					}
 
-					if(!data[i].y) {
-						data[i].y = player.pos.y;
-					}
-
-					player.correction = data[i];
 				} else {
 					data[i].t = data.t;
 
@@ -204,18 +199,24 @@
 
 					player.updates.push(data[i]);
 
-					var bullet, dir, bulletObj;
-					for (var j = 0, len = data[i].b.length; i < len; i++) {
-						bullet = data[i].b[j];
-						dir = new me.Vector2d(bullet.z, bullet.c);
+					if (data[i].b !== undefined) {
+						var bullet, dir, bulletObj;
+						for (var j = 0, len = data[i].b.length; j < len; j++) {
+							bullet = data[i].b[j];
+							dir = new me.Vector2d(bullet.z, bullet.c);
 
-						bulletObj = me.entityPool.newInstanceOf('Bullet',
-														bullet.x,
-														bullet.y,
-														dir, 1, this.players[i].GUID, this.players[i].team);
+							bulletObj = me.entityPool.newInstanceOf('Bullet',
+																	bullet.x,
+																	bullet.y,
+																	dir,
+																	1,
+																	player.GUID,
+																	player.team);
+							bulletObj.applyCompensation();
 
-						me.game.add(bulletObj, 5);
-						me.game.sort();
+							me.game.add(bulletObj, 5);
+							me.game.sort();
+						}
 					}
 				}
 			}

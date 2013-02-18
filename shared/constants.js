@@ -17,7 +17,8 @@
 			PING                : 13,
 			PING_REQUEST        : 14,
 			PLAYER_DIED         : 15,
-			PLAYER_RESPAWNED    : 16
+			PLAYER_RESPAWNED    : 16,
+			FAKE_LATENCY_CHANGE : 17
 		},
 
 		POSITION : {

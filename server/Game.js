@@ -137,12 +137,23 @@ var Game = {
 
 		if(!isEmpty) {
 			correction.t = Game.local_time;
-			// console.log(correction);
+			console.log(correction);
+
 			for(i in Game.players) {
-				Game.players[i].socket.emit(Game.TYPE.CORRECTION, correction);
+				if (Game.players[i].fake_latency) {
+					Game.delayCorrectionUpdate(Game.players[i], correction);
+				} else {
+					Game.players[i].socket.emit(Game.TYPE.CORRECTION, correction);
+				}
 			}
 		}
 
+	},
+
+	delayCorrectionUpdate: function(player, correction) {
+		setTimeout(function() {
+			player.socket.emit(Game.TYPE.CORRECTION, correction);
+		}, player.fake_latency/2);
 	},
 
 	addNewPlayer : function (socket) {
@@ -215,11 +226,22 @@ var Game = {
 				update.shootAngle = data.a;
 				update.clientBulletId = data.i;
 			}
-			player.inputs.push(update);
+
+			//if (player.fake_latency) {
+			//	setTimeout(function() {
+			//		player.inputs.push(update);
+			//	}, player.fake_latency/2);
+			//} else {
+				player.inputs.push(update);
+			//}
 		});
 
 		socket.on(Game.TYPE.PING_REQUEST, function(data) {
 			socket.emit(Game.TYPE.PING, data);
+		});
+
+		socket.on(Game.TYPE.FAKE_LATENCY_CHANGE, function(newFakeLatency) {
+			player.fake_latency = newFakeLatency;
 		});
 
 		socket.on(Game.TYPE.SMARTPHONE_ACCEPT, player.answerSmartphone.bind(player));

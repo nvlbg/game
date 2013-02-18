@@ -13,6 +13,7 @@
 			this.smarthphoneConnected = false;
 
 			this.correction = null;
+			this.lastCorrectionPos = this.pos.clone();
 			this.inputs = [];
 			this.input_seq = 0;
 
@@ -32,86 +33,6 @@
 
 		/**
 		called on each frame
-		*/
-		/*
-		update : function() {
-			if(this.isExploding) {
-				this.parent(this);
-				return true;
-			}
-
-			if (!this.smarthphoneConnected) {
-				this.pressed = 0;
-
-				if(me.input.isKeyPressed("left")) {
-					this.moveLeft();
-				} else if (me.input.isKeyPressed("right")) {
-					this.moveRight();
-				}
-
-				if(me.input.isKeyPressed("up")) {
-					this.moveUp();
-				} else if (me.input.isKeyPressed("down")) {
-					this.moveDown();
-				}
-			} else {
-				if(this.pressed & game.ENUM.PRESSED.LEFT) {
-					this.moveLeft();
-				} else if (this.pressed & game.ENUM.PRESSED.RIGHT) {
-					this.moveRight();
-				}
-
-				if(this.pressed & game.ENUM.PRESSED.UP) {
-					this.moveUp();
-				} else if (this.pressed & game.ENUM.PRESSED.DOWN) {
-					this.moveDown();
-				}
-			}
-
-			if(me.input.isKeyPressed("shoot")) {
-				this.shoot();
-			}
-
-
-			if(this.isCurrentAnimation("shootForward") || this.isCurrentAnimation("shootSideward")) {
-				if(this.recoil > 0) {
-					if(this.direction === game.ENUM.DIRECTION.UP) {
-						this.vel.y += this.recoil;
-					} else if(this.direction === game.ENUM.DIRECTION.DOWN) {
-						this.vel.y -= this.recoil;
-					} else if(this.direction === game.ENUM.DIRECTION.LEFT) {
-						this.vel.x += this.recoil;
-					} else if(this.direction === game.ENUM.DIRECTION.RIGHT) {
-						this.vel.x -= this.recoil;
-					}
-				}
-
-				updated = true;
-			}
-
-			this.updateMovement();
-
-			if(!this.smarthphoneConnected && this.pressed !== this.lastPressed) {
-				this.lastPressed = this.pressed;
-				
-				var input = {
-					p: this.pressed,
-					x: this.pos.x,
-					y: this.pos.y
-				};
-
-				this.socket.emit(game.ENUM.TYPE.INPUT, input);
-			}
-
-			var updated = this.vel.x !== 0 || this.vel.y !== 0;
-			this.vel.x = this.vel.y = 0;
-
-			if(updated) {
-				this.parent(this);
-				return true;
-			}
-			return false;
-		},
 		*/
 		update: function() {
 			if(this.isExploding) {
@@ -149,6 +70,8 @@
 				if (this.delta.x > 0.1 || this.delta.y > 0.1) {
 					this.delta.div(2);
 					this.pos.add(this.delta);
+
+					updated = true;
 				}
 				
 				/*
@@ -160,16 +83,16 @@
 				*/
 			
 				var bullet = null;
-				if(me.input.isKeyPressed("shoot")) {
+				/*if(me.input.isKeyPressed("shoot")) {
 					bullet = this.shoot();
 
 					if (bullet) {
 						this.bullets[this.bulletsCounter] = bullet;
 						this.bulletsCounter += 1;
 					}
-				}
+				}*/
 
-				if(this.pressed > 0 || bullet) {
+				if(this.pressed > 0 || bullet !== null) {
 					var input = {
 						s: this.input_seq
 					};
@@ -183,15 +106,17 @@
 						input.i = bullet.id;
 					}
 
-					this.socket.emit(game.ENUM.TYPE.UPDATE, input);
+					setTimeout(function() {
+						this.socket.emit(game.ENUM.TYPE.UPDATE, input);
+					}.bind(this), window.game.network.fake_latency/2);
 
 					this.input_seq += 1;
 					this.inputs.push(input);
 				}
 
 				this.updateMovement();
-				updated = this.applyClientSideAdjustment() || updated || this.vel.x !== 0 || this.vel.y !== 0;
-				this.vel.x = this.vel.y = 0;
+				updated = updated || this.vel.x !== 0 || this.vel.y !== 0;
+				this.vel.setZero();
 			}
 		
 			if(updated) {
@@ -210,20 +135,34 @@
 
 		applyClientSideAdjustment: function() {
 			if(this.correction !== null) {
-				//TODO: this surely needs some kind of improving
 				var i, len;
 
+				// remove bullets that the server declined
 				if (this.correction.u !== undefined) {
 					for (i = 0, len = this.correction.u.length; i < len; i++) {
-						console.log('bullet not accepted: ' + this.correction.u[i]);
 						this.removeBulletById(this.correction.u[i]);
 					}
 				}
 
+				// set correction x/y if it doesn't exist to the previous one that we have
+				// (x or y won't exist in correction, because it hasn't changed)
+				if (this.correction.x !== undefined) {
+					this.lastCorrectionPos.x = this.correction.x;
+				} else {
+					this.correction.x = this.lastCorrectionPos.x;
+				}
+
+				if (this.correction.y !== undefined) {
+					this.lastCorrectionPos.y = this.correction.y;
+				} else {
+					this.correction.y = this.lastCorrectionPos.y;
+				}
+
+				// keep a copy of our pos that we see before the correction
 				var currentPos = this.pos.clone();
 
-				this.pos.x = this.correction.x;
-				this.pos.y = this.correction.y;
+				// set the pos to the correction pos, so we can predict the new pos 
+				this.pos.set(this.correction.x, this.correction.y);
 
 				// discard all processed inputs by server
 				for (i = 0, len = this.inputs.length; i < len; i++) {
@@ -233,11 +172,13 @@
 					}
 				}
 
-
 				// re-process the moves that the server hasn't recieved/processed yet
 				for (i = 0, len = this.inputs.length; i < len; i++) {
-					this.vel.x = this.vel.y = 0;
 					var pressed = this.inputs[i].p;
+
+					if (pressed === undefined) {
+						continue;
+					}
 
 					if(pressed & game.ENUM.PRESSED.LEFT) {
 						this.moveLeft();
@@ -252,21 +193,25 @@
 					}
 
 					this.updateMovement();
+					this.vel.setZero();
 				}
 
 				// compute a delta with the difference between client-side predicted pos
 				// and our new predicted pos (after the correction we recieved)
 				// each frame we will add half of that delta to our pos, so it will smoothly
 				// be corrected after few frames
-				this.delta = this.pos.clone();
+				this.delta.copy(this.pos);
 				this.delta.sub(currentPos);
 
-				this.pos.x = currentPos.x;
-				this.pos.y = currentPos.y;
+				// set pos to the original one
+				// the delta will make sure we get to the predicted pos in a few frames
+				this.pos.copy(currentPos);
 
 				this.correction = null;
+
 				return true;
 			}
+
 			return false;
 		},
 
