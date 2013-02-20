@@ -46,21 +46,12 @@
 			
 			this.vel.x = this.direction.x * this.speed;
 			this.vel.y = this.direction.y * this.speed;
-
-			this.compensation = new me.Vector2d(0,0);
-			this.compensationFrames = 0;
 		},
 
-		applyCorrection: function(correction) {
 
-		},
-
-		applyCompensation: function() {
-			this.compensation.copy(this.vel);
-			this.compensation.x *= window.game.network.net_latency/4;
-			this.compensation.y *= window.game.network.net_latency/4;
-			this.compensationFrames = 4;
-			console.log(this.compensation);
+		applyCompensation: function( delta ) {
+			this.pos.x += this.vel.x * delta;
+			this.pos.y += this.vel.y * delta;
 		},
 
 		update : function() {
@@ -69,18 +60,10 @@
 				return false;
 			}
 
-			if(this.isExploding) {
-				this.parent(this);
-				return true;
+			if(!this.isExploding) {
+				this.updateMovement();
 			}
 
-			if (this.compensationFrames > 0) {
-				console.log('compensation added');
-				this.pos.add(this.compensation);
-				this.compensationFrames -= 1;
-			}
-
-			this.updateMovement();
 			this.parent(this);
 			return true;
 		},
@@ -122,9 +105,12 @@
 				if (collision.obj.team !== this.team ||   // Enemy Tank or
 					(collision.obj.team === this.team &&  // Friend Tank
 					me.gamestat.getItemValue("friendly_fire"))) { // with friendly_fire
-				
-					this.remove();
-					return;
+					
+					if (!collision.obj.invulnerable) {
+						this.remove();
+						return;
+					}
+					
 				}
 			}
 

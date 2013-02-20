@@ -23,6 +23,8 @@
 			this.gravity = 0;
 			this.delta = new me.Vector2d(0, 0);
 
+			this.alive = true;
+
 			this.needsUpdate = false;
 			
 			this.setVelocity(speed, speed);
@@ -97,6 +99,9 @@
 
 			this.updates = [];
 			this.lastProcessedSeq = -1;
+
+			this.invulnerable = false;
+			this.makeInvulnerable();
 		},
 
 		applyClientSideInterpolation: function() {
@@ -140,8 +145,43 @@
 
 				this.setDirection(target.d);
 
-				this.computeVelocity(this.vel);
+				// this.computeVelocity(this.vel);
 				this.pos.add(this.vel);
+
+				if (previous.b !== undefined) {
+					var bullet, dir, bulletObj;
+					for (var j = 0, len = previous.b.length; j < len; j++) {
+						bullet = previous.b[j];
+						dir = new me.Vector2d(bullet.z, bullet.c);
+
+						bulletObj = me.entityPool.newInstanceOf('Bullet',
+																bullet.x - 14,
+																bullet.y - 12,
+																dir,
+																1,
+																this.GUID,
+																this.team);
+						bulletObj.applyCompensation( current_time - previous.t );
+
+						me.game.add(bulletObj, 5);
+					}
+					
+					me.game.sort();
+
+					previous.b = undefined;
+				}
+
+				if (previous.a !== undefined) {
+					if (previous.a === false) {
+						this.explode();
+					} else {
+						this.pos.set(previous.x, previous.y);
+						this.respawn();
+					}
+					
+					previous.a = undefined;
+					return;
+				}
 
 				var updated = this.vel.x !== 0 || this.vel.y !== 0;
 				this.vel.setZero();
@@ -150,15 +190,32 @@
 
 			return false;
 		},
+
+		makeInvulnerable: function() {
+			this.invulnerable = true;
+			this.alpha = 0.5;
+			this.needsUpdate = true;
+
+			//var fadeIn  = new me.Tween(this).to({alpha: 1.0}, 100);
+			//var fadeOut = new me.Tween(this).to({alpha: 0.5}, 100).chain(fadeIn).start();
+
+			setTimeout(function() {
+				//fadeOut.stop();
+				//fadeIn = fadeOut = null;
+
+				this.invulnerable = false;
+				this.alpha = 1;
+				this.needsUpdate = true;
+			}.bind(this), window.game.network.INVULNERABLE_TIME_STEP);
+		},
 		
 		updateHelper: function() {
-
 			if(this.isExploding) {
 				this.parent(this);
 				return true;
 			}
 
-			if(!this.visible) {
+			if(!this.alive) {
 				return false;
 			}
 
@@ -183,19 +240,22 @@
 				this.collidable = false;
 				this.visible = false;
 				this.isExploding = false;
+				this.alive = false;
 
 				if (this.direction === game.ENUM.DIRECTION.LEFT || this.direction === game.ENUM.DIRECTION.RIGHT) {
 					this.setCurrentAnimation("idleSideward");
 				} else if (this.direction === game.ENUM.DIRECTION.DOWN || this.direction === game.ENUM.DIRECTION.UP) {
 					this.setCurrentAnimation("idleForward");
 				}
-			});
+			}.bind(this));
 		},
 
 		respawn : function() {
 			this.visible = true;
 			this.collidable = true;
 			this.needsUpdate = true;
+
+			this.makeInvulnerable();
 		},
 
 		updateMovement : function() {
@@ -211,13 +271,13 @@
 				this.vel.x = 0;
 			}
 
-			var pos = this.pos.clone();
+			// var pos = this.pos.clone();
 			this.pos.add(this.vel);
 
 			/*
 			collision = me.game.collide(this);
 
-			if(collision && collision.obj instanceof game.Tank) {
+			if(collision && collision.obj instanceof game.Tank && !collision.obj.isExploding) {
 				if(collision.y !== 0) {
 					this.vel.y = 0;
 				}

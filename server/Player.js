@@ -36,7 +36,11 @@ var Player = Rect.extend({
 		this.pressed = 0;
 		this.direction = this.lastSentDir = dir;
 
+		this.invulnerable = false;
+		this.makeInvulnerable();
+
 		this.lastSentPos = null;
+		this.lastAliveState = true;
 		this.inputs = [];
 		this.last_input_seq = 0;
 
@@ -51,6 +55,13 @@ var Player = Rect.extend({
 		}*/
 
 		this.id = id;
+	},
+
+	makeInvulnerable: function() {
+		this.invulnerable = true;
+		setTimeout(function() {
+			this.invulnerable = false;
+		}.bind(this), config.INVULNERABLE_TIME_STEP);
 	},
 
 	answerSmartphone : function (answer) {
@@ -189,7 +200,7 @@ var Player = Rect.extend({
 
 		// compute angle/direction
 		var dir = new Vector2d(Math.cos(angle), Math.sin(angle));
-		var pos = new Vector2d(this.pos.x + dir.x*16, this.pos.y + dir.y*16);
+		var pos = new Vector2d(this.pos.x + dir.x*16 + 14, this.pos.y + dir.y*16 + 12);
 
 		this.bullets[this.bulletsCounter] = new Bullet (pos, dir, 5, this.id, this.team,
 														this.bulletsCounter);
@@ -213,9 +224,10 @@ var Player = Rect.extend({
 			console.log((new Date().getTime()) + ": I'm colliding with x: " + collision.x);
 		}
 		
+		// var pos = this.pos.clone();
 		this.pos.add(this.vel);
+		
 		/*
-		var pos = this.pos.clone();
 		collision = Game.collide(this);
 		
 		if(collision && collision.obj instanceof Player) {
@@ -294,16 +306,13 @@ var Player = Rect.extend({
 
 	removeBullet: function(id) {
 		if (this.bullets[id]) {
+			console.log(this.bullets[id].pos);
 			delete this.bullets[id];
 		}
 	},
 
 	explode: function() {
 		this.alive = false;
-
-		for (var i in Game.players) {
-			Game.players[i].socket.emit(Game.TYPE.PLAYER_DIED, this.id);
-		}
 
 		setTimeout(function() {
 			this.alive = true;
@@ -314,14 +323,7 @@ var Player = Rect.extend({
 					Game.world.checkCollision(this, new Vector2d(0, 0)).xtile ||
 					Game.world.checkCollision(this, new Vector2d(0, 0)).ytile );
 
-			var update = {};
-			update.i = this.id;
-			update.x = this.pos.x;
-			update.y = this.pos.y;
-
-			for (var i in Game.players) {
-				Game.players[i].socket.emit(Game.TYPE.PLAYER_RESPAWNED, update);
-			}
+			this.makeInvulnerable();
 		}.bind(this), config.RESPAWN_TIME_STEP);
 	}
 });

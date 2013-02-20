@@ -18,6 +18,8 @@
 		client_time: 0.01,
 		server_time: 0.01,
 
+		INVULNERABLE_TIME_STEP: 0,
+
 		// constructor
 		init : function() {
 			// set players into an empty dict
@@ -30,8 +32,6 @@
 			this.socket.on(game.ENUM.TYPE.SPAWN, this.onSpawn.bind(this));
 			this.socket.on(game.ENUM.TYPE.NEW_PLAYER, this.onNewPlayer.bind(this));
 			this.socket.on(game.ENUM.TYPE.CORRECTION, this.onCorrection.bind(this));
-			this.socket.on(game.ENUM.TYPE.PLAYER_DIED, this.onPlayerDeath.bind(this));
-			this.socket.on(game.ENUM.TYPE.PLAYER_RESPAWNED, this.onPlayerRespawn.bind(this));
 			this.socket.on(game.ENUM.TYPE.PLAYER_DISCONNECTED, this.onPlayerLeave.bind(this));
 			this.socket.on(game.ENUM.TYPE.SMARTPHONE_REQUEST, this.onSmartphoneRequest.bind(this));
 			this.socket.on(game.ENUM.TYPE.PING, this.onPing.bind(this));
@@ -104,6 +104,8 @@
 
 			me.game.sort();
 
+			this.INVULNERABLE_TIME_STEP = data.q;
+
 			this.server_time = this.last_server_time = data.z;
 			this.createPingTimer();
 			this.createTimer();
@@ -133,11 +135,10 @@
 				}
 
 				if (player === this.player && !player.smarthphoneConnected) {
-					if (data[i].x || data[i].y) {
+					if (data[i].x !== undefined || data[i].y !==undefined || data[i].a !== undefined) {
 						player.correction = data[i];
 						player.applyClientSideAdjustment();
 					}
-
 				} else {
 					data[i].t = data.t;
 
@@ -197,41 +198,15 @@
 						}
 					}
 
-					player.updates.push(data[i]);
-
-					if (data[i].b !== undefined) {
-						var bullet, dir, bulletObj;
-						for (var j = 0, len = data[i].b.length; j < len; j++) {
-							bullet = data[i].b[j];
-							dir = new me.Vector2d(bullet.z, bullet.c);
-
-							bulletObj = me.entityPool.newInstanceOf('Bullet',
-																	bullet.x,
-																	bullet.y,
-																	dir,
-																	1,
-																	player.GUID,
-																	player.team);
-							bulletObj.applyCompensation();
-
-							me.game.add(bulletObj, 5);
-							me.game.sort();
-						}
+					if (data[i].a === true) {
+						player.alive = true;
 					}
+
+					player.updates.push(data[i]);
 				}
 			}
 
 			this.last_server_time = this.server_time = data.t;
-		},
-
-		onPlayerDeath: function(id) {
-			this.players[id].explode();
-		},
-
-		onPlayerRespawn: function(data) {
-			this.players[data.i].pos.x = data.x;
-			this.players[data.i].pos.y = data.y;
-			this.players[data.i].respawn();
 		},
 
 		onPlayerLeave : function(id) {

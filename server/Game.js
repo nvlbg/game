@@ -99,6 +99,25 @@ var Game = {
 				isEmpty = false;
 			}
 
+			if (player.alive !== player.lastAliveState) {
+				if (correction[player.id] !== undefined) {
+					correction[player.id].a = player.alive;
+				} else {
+					correction[player.id] = {
+						a: player.alive,
+						s: player.last_input_seq
+					};
+				}
+
+				if (player.alive === true) {
+					correction[player.id].x = player.pos.x;
+					correction[player.id].y = player.pos.y;
+				}
+
+				player.lastAliveState = player.alive;
+				isEmpty = false;
+			}
+
 			for (j in player.bullets) {
 				bullet = player.bullets[j];
 
@@ -153,7 +172,7 @@ var Game = {
 	delayCorrectionUpdate: function(player, correction) {
 		setTimeout(function() {
 			player.socket.emit(Game.TYPE.CORRECTION, correction);
-		}, player.fake_latency/2);
+		}, player.fake_latency);
 	},
 
 	addNewPlayer : function (socket) {
@@ -186,6 +205,7 @@ var Game = {
 			i : player.id,
 
 			z : Game.local_time,
+			q : config.INVULNERABLE_TIME_STEP,
 			
 			l : config.MAP,
 			f : config.FRIENDLY_FIRE,

@@ -83,14 +83,14 @@
 				*/
 			
 				var bullet = null;
-				/*if(me.input.isKeyPressed("shoot")) {
+				if(me.input.isKeyPressed("shoot")) {
 					bullet = this.shoot();
 
 					if (bullet) {
 						this.bullets[this.bulletsCounter] = bullet;
 						this.bulletsCounter += 1;
 					}
-				}*/
+				}
 
 				if(this.pressed > 0 || bullet !== null) {
 					var input = {
@@ -101,14 +101,14 @@
 						input.p = this.pressed;
 					}
 
-					if (bullet) {
+					if (bullet !== null) {
 						input.a = bullet.angle;
 						input.i = bullet.id;
 					}
 
 					setTimeout(function() {
 						this.socket.emit(game.ENUM.TYPE.UPDATE, input);
-					}.bind(this), window.game.network.fake_latency/2);
+					}.bind(this), window.game.network.fake_latency);
 
 					this.input_seq += 1;
 					this.inputs.push(input);
@@ -156,6 +156,19 @@
 					this.lastCorrectionPos.y = this.correction.y;
 				} else {
 					this.correction.y = this.lastCorrectionPos.y;
+				}
+
+				if (this.correction.a !== undefined) {
+					if (this.correction.a === false) {
+						this.explode();
+					} else {
+						this.pos.set(this.correction.x, this.correction.y);
+						this.respawn();
+					}
+
+					this.delta.setZero();
+					this.correction = null;
+					return;
 				}
 
 				// keep a copy of our pos that we see before the correction
@@ -220,9 +233,9 @@
 
 			var capitalizedDirection = dir.charAt(0).toUpperCase() + dir.slice(1);
 			this.setCurrentAnimation("shoot" + capitalizedDirection, function() {
-				this.isShooting = false;
 				this.setCurrentAnimation("move" + capitalizedDirection);
 				this.setAnimationFrame(animFrame);
+				this.isShooting = false;
 			}.bind(this));
 
 			this.flipX(flipX);
@@ -276,21 +289,25 @@
 		moveLeft : function() {
 			this.parent();
 			this.pressed |= game.ENUM.PRESSED.LEFT;
+			this.isShooting = false;
 		},
 
 		moveRight : function() {
 			this.parent();
 			this.pressed |= game.ENUM.PRESSED.RIGHT;
+			this.isShooting = false;
 		},
 
 		moveUp : function() {
 			this.parent();
 			this.pressed |= game.ENUM.PRESSED.UP;
+			this.isShooting = false;
 		},
 
 		moveDown : function() {
 			this.parent();
 			this.pressed |= game.ENUM.PRESSED.DOWN;
+			this.isShooting = false;
 		},
 
 		explode: function() {

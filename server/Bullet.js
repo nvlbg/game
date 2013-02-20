@@ -60,10 +60,13 @@ var Bullet = Rect.extend({
 				// we have hit enemy
 				// or friendly fire is enabled and we have hit friend
 				
-				collision.obj.explode();
-				Game.players[this.ownerID].removeBullet( this.id );
-				return;
+				if (!collision.obj.invulnerable) {
+					collision.obj.explode();
+					Game.players[this.ownerID].removeBullet( this.id );
+					return;
+				}
 			}
+
 		}
 
 		this.pos.add(this.vel);
@@ -89,11 +92,7 @@ var Bullet = Rect.extend({
 	},
 
 	onCollision: function(res, obj) {
-		if (obj === Game.players[this.ownerID]) {
-			return;
-		}
 
-		console.log('player got hit');
 	}
 });
 
