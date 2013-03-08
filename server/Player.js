@@ -70,10 +70,12 @@ var Player = Rect.extend({
 		if ( answer === true ) {
 			this.smartphoneConnected = true;
 			this.smartphone.on(Game.TYPE.UPDATE, function(data) {
-				this.inputs.push({
-					input_seq: data.s,
-					pressed: data.p
-				});
+				for (var i = 0; i < 3; i++) {
+					this.inputs.push({
+						input_seq: data.s,
+						pressed: data.p
+					});
+				}
 			}.bind(this));
 		} else {
 			this.smartphone = null;
@@ -318,10 +320,10 @@ var Player = Rect.extend({
 			this.alive = true;
 
 			do {
-				this.pos = new Vector2d(Number.prototype.random(32, 320), Number.prototype.random(32, 320));
+				this.pos = new Vector2d(Number.prototype.random(64, 320), Number.prototype.random(64, 320));
 			} while ( Game.collide(this) || 
-					Game.world.checkCollision(this, new Vector2d(0, 0)).xtile ||
-					Game.world.checkCollision(this, new Vector2d(0, 0)).ytile );
+					Game.world.checkCollision(this, new Vector2d(0, 0)).xtile !== undefined ||
+					Game.world.checkCollision(this, new Vector2d(0, 0)).ytile !== undefined );
 
 			this.makeInvulnerable();
 		}.bind(this), config.RESPAWN_TIME_STEP);

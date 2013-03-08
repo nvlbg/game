@@ -101,7 +101,6 @@
 			this.lastProcessedSeq = -1;
 
 			this.invulnerable = false;
-			this.makeInvulnerable();
 		},
 
 		applyClientSideInterpolation: function() {
@@ -193,18 +192,21 @@
 
 		makeInvulnerable: function() {
 			this.invulnerable = true;
-			this.alpha = 0.5;
 			this.needsUpdate = true;
 
-			//var fadeIn  = new me.Tween(this).to({alpha: 1.0}, 100);
-			//var fadeOut = new me.Tween(this).to({alpha: 0.5}, 100).chain(fadeIn).start();
+			this.alpha = 0.5;
+			var	fadeIn  = new me.Tween(this).to({alpha: 1.0}, 500);
+
+			fadeIn.onComplete(function() {
+				this.alpha = 0.5;
+				fadeIn.start();
+			}.bind(this)).start();
 
 			setTimeout(function() {
-				//fadeOut.stop();
-				//fadeIn = fadeOut = null;
-
+				fadeIn.stop();
+				
 				this.invulnerable = false;
-				this.alpha = 1;
+				this.alpha = 1.0;
 				this.needsUpdate = true;
 			}.bind(this), window.game.network.INVULNERABLE_TIME_STEP);
 		},

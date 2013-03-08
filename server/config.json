@@ -1,5 +1,5 @@
 {
-	"MAP": "water_hole",
+	"MAP": "map",
 	"FPS": 60,
 	"PORT": 1337,
 	"CORRECTION_TIME_STEP": 50,

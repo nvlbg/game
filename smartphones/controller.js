@@ -198,7 +198,7 @@
 					socket.emit(window.ENUM.TYPE.UPDATE, input);
 					input_seq += 1;
 				}
-			}, 1000 / 60);
+			}, 1000 / 15);
 		}
 	});
 })();

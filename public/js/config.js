@@ -1,5 +1,6 @@
 (function() {
 	window.game = {};
+	window.game.config = {};
 
 	//TODO: load json via AJAX instead
 	window.game.ENUM = window.ENUM;
@@ -7,8 +8,9 @@
 	// configuring system variables
 	me.sys.pauseOnBlur = false;
 	me.sys.useNativeAnimFrame = true;
+	window.game.config.doubleBuffering = true;
 	// me.sys.interpolation = true;
-	// me.sys.preRender = true;
+	me.sys.preRender = true;
 	// me.sys.dirtyRegion = true;
 	me.sys.fps = 60;
 

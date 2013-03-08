@@ -86,7 +86,10 @@
 			me.gamestat.add("team", data.t);
 			me.gamestat.add("friendly_fire", data.f);
 
+			this.INVULNERABLE_TIME_STEP = data.q;
+
 			this.player = new game.Player(data.x, data.y, data.d, 0, 3, 0, 500, this.socket);
+			this.player.makeInvulnerable();
 			this.players[data.i] = this.player;
 			me.game.add(this.player, 4);
 
@@ -104,8 +107,6 @@
 
 			me.game.sort();
 
-			this.INVULNERABLE_TIME_STEP = data.q;
-
 			this.server_time = this.last_server_time = data.z;
 			this.createPingTimer();
 			this.createTimer();
@@ -119,8 +120,10 @@
 				p = me.entityPool.newInstanceOf('Enemy', data.x, data.y, data.d, 0, 3, 0);
 			}
 
-			me.game.add(p, 4);
 			this.players[data.i] = p;
+			p.makeInvulnerable();
+			
+			me.game.add(p, 4);
 			me.game.sort();
 		},
 

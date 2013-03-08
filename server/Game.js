@@ -186,14 +186,14 @@ var Game = {
 			Game.blue += 1;
 		}
 
-		var player = new Player(new Vector2d(32, 64), this.DIRECTION.DOWN, 0, 3, 0,
+		var player = new Player(new Vector2d(64, 64), this.DIRECTION.DOWN, 0, 3, 0,
 								team, 500, socket, this.idCounter++);
 
 		while ( Game.collide(player) || 
-				Game.world.checkCollision(player, new Vector2d(0, 0)).xtile ||
-				Game.world.checkCollision(player, new Vector2d(0, 0)).ytile )
+				Game.world.checkCollision(player, new Vector2d(0, 0)).xtile !== undefined ||
+				Game.world.checkCollision(player, new Vector2d(0, 0)).ytile !== undefined )
 		{
-			player.pos = new Vector2d(Number.prototype.random(32, 320), Number.prototype.random(32, 320));
+			player.pos = new Vector2d(Number.prototype.random(64, 320), Number.prototype.random(64, 320));
 		}
 		player.lastSentPos = player.pos.clone();
 

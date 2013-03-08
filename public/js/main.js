@@ -10,8 +10,12 @@
 		{ name : "bullet",     type : "image", src : "data/sprites/bullet.png"    },
 		{ name : "metatiles",  type : "image", src : "data/sprites/metatiles.png" },
 
+		{ name : "tile_pack_1",  type : "image", src : "data/sprites/tile_pack_1.png" },
+		{ name : "tile_pack_2",  type : "image", src : "data/sprites/tile_pack_2.png" },
+
 		{ name : "water_hole", type : "tmx",   src : "data/maps/water_hole.tmx"   },
-		{ name : "maze",       type : "tmx",   src : "data/maps/maze.tmx"         }
+		{ name : "maze",       type : "tmx",   src : "data/maps/maze.tmx"         },
+		{ name : "map",        type : "tmx",   src : "data/maps/map.tmx"          }
 	];
 
 	/*
@@ -56,7 +60,7 @@
 	*/
 	window.game.onLoad = function() {
 		// init the video
-		if (!me.video.init('jsapp', 800, 600, true, 1.0)) {
+		if (!me.video.init('jsapp', 800, 600, window.game.config.doubleBuffering, 1.0)) {
 			window.alert("Sorry but your browser does not support html 5 canvas.");
 			return;
 		}

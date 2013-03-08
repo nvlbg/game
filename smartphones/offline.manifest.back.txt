@@ -1,8 +1,0 @@
-CACHE MANIFEST
-
-# version 0.7
-
-index.html
-style.css
-controller.js
-icon.png
