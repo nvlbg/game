@@ -2,9 +2,11 @@
 
 	window.game.PlayScreen = me.ScreenObject.extend({
 		stats: null,
+
 		onResetEvent : function() {
-			window.game.network = new game.Network();
-			// window.game.melonDebugPanel = new window.debugPanel();
+			// window.game.network = new game.Network();
+			window.game.network.start();
+			//window.game.melonDebugPanel = new window.debugPanel();
 			window.game.debugPanel = new window.game.debug();
 			
 			//me.gamestat.add("team", game.ENUM.TEAM.GREEN);
@@ -20,6 +22,7 @@
 
 			//me.game.sort();
 			
+			/*
 			this.stats = new Stats();
 			this.stats.setMode(0); // 0: fps, 1: ms
 
@@ -29,12 +32,13 @@
 			this.stats.domElement.style.top = '0px';
 
 			document.body.appendChild( this.stats.domElement );
+			*/
 		},
 
 		onUpdateFrame : function() {
-			this.stats.begin();
+			//this.stats.begin();
 			this.parent();
-			this.stats.end();
+			//this.stats.end();
 		}
 	});
 

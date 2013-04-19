@@ -45,4 +45,13 @@
 		this.gui.close();
 	};
 
+	me.Vector2d.prototype.draw = function(ctx) {
+		ctx.save();
+
+		ctx.fillStyle = 'red';
+		ctx.fillRect(this.x-2, this.y-2, 4, 4);
+
+		ctx.restore();
+	};
+
 })();

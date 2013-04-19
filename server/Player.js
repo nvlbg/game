@@ -7,8 +7,10 @@ var config = require('./config.json');
 
 var Player = Rect.extend({
 	// constructor
-	init : function(pos, dir, recoil, speed, friction, team, shootSpeed, socket, id) {
+	init : function(pos, dir, speed, friction, team, shootSpeed, nickname, socket, id) {
 		this.parent(pos, 32, 32);
+
+		this.nickname = nickname;
 
 		this.updated = false;
 		this.socket = socket;
@@ -28,7 +30,6 @@ var Player = Rect.extend({
 
 		this.alive = true;
 
-		this.recoil = recoil;
 		this.accel = new Vector2d(speed, speed);
 		this.friction = new Vector2d(friction, friction);
 
@@ -65,19 +66,25 @@ var Player = Rect.extend({
 	},
 
 	answerSmartphone : function (answer) {
-		this.smartphone.emit(Game.TYPE.SMARTPHONE_ACCEPT, answer);
-
 		if ( answer === true ) {
+			this.smartphone.emit(Game.TYPE.SMARTPHONE_AUTH, Game.SMARTPHONE.ACCEPTED);
 			this.smartphoneConnected = true;
 			this.smartphone.on(Game.TYPE.UPDATE, function(data) {
+				var input = {input_seq:data.s};
+				if (data.p !== undefined) {
+					input.pressed = data.p;
+				}
+				if (data.a !== undefined) {
+					input.shootAngle = data.a;
+					input.clientBulletId = -1;
+				}
+
 				for (var i = 0; i < 3; i++) {
-					this.inputs.push({
-						input_seq: data.s,
-						pressed: data.p
-					});
+					this.inputs.push(input);
 				}
 			}.bind(this));
 		} else {
+			this.smartphone.emit(Game.TYPE.SMARTPHONE_AUTH, Game.SMARTPHONE.DECLINED);
 			this.smartphone = null;
 		}
 	},
@@ -183,22 +190,6 @@ var Player = Rect.extend({
 			this.unconfirmedBullets.push(clientBulletId);
 			return false;
 		}
-
-		//TODO: recoil won't work when interpolating
-		//TODO: most likely, get rid of recoil
-		/*
-		if(this.direction === game.ENUM.DIRECTION.UP) {
-			this.vel.y += this.recoil;
-		} else if (this.direction === game.ENUM.DIRECTION.DOWN) {
-			this.vel.y -= this.recoil;
-		} else if (this.direction === game.ENUM.DIRECTION.LEFT) {
-			this.vel.x += this.recoil;
-		} else if (this.direction === game.ENUM.DIRECTION.RIGHT) {
-			this.vel.x -= this.recoil;
-		} else { // this should never happen
-			throw "unknown direction \"" + this.direction + "\"";
-		}
-		*/
 
 		// compute angle/direction
 		var dir = new Vector2d(Math.cos(angle), Math.sin(angle));
@@ -319,7 +310,7 @@ var Player = Rect.extend({
 		setTimeout(function() {
 			this.alive = true;
 
-			do {
+			do { console.log(Game.world.checkCollision(this, new Vector2d(0, 0)));
 				this.pos = new Vector2d(Number.prototype.random(64, 320), Number.prototype.random(64, 320));
 			} while ( Game.collide(this) || 
 					Game.world.checkCollision(this, new Vector2d(0, 0)).xtile !== undefined ||

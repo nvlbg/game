@@ -23,7 +23,9 @@ module.exports = function(grunt) {
       },
       dist: {
         src: ['public/js/config.js',
+              'public/js/debug.js',
               'public/js/Network.js',
+              'public/js/Chat.js',
               'public/js/LoadingScreen.js',
               'public/js/MenuScreen.js',
               'public/js/PlayScreen.js',
@@ -32,6 +34,7 @@ module.exports = function(grunt) {
               'public/js/Tank.js',
               'public/js/Friend.js',
               'public/js/Enemy.js',
+              'public/js/EnemyBoy.js',
               'public/js/Player.js',
               'public/js/main.js'],
         dest: 'public/build/<%= pkg.name %>.<%= pkg.version %>.js'

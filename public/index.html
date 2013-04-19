@@ -3,60 +3,64 @@
 	<head>
 		<title>Title</title>
 		<meta charset="utf-8" />
-		<style>
-		body {
-			margin: 0;
-			background: #666;
-		}
-		canvas {
-			float: left;
-			position: fixed;
-			left: 50%;
-			top: 50%;
-			margin-left: -400px;
-			margin-top: -300px;
-			/* cursor: none; */
-
-			image-rendering: optimizeSpeed;
-			image-rendering: -moz-crisp-edges;
-			image-rendering: -o-crisp-edges;
-			image-rendering: -webkit-optimize-contrast;
-			image-rendering: optimize-contrast;
-			-ms-interpolation-mode: nearest-neighbor;
-		}
-		@font-face {
-			font-family: Minecraftia;
-			src: url('data/fonts/Minecraftia.ttf');
-		}
-		@font-face {
-			font-family: Roboto-Bold;
-			src: url('data/fonts/Roboto-Bold.ttf');
-		}
-		@font-face {
-			font-family: 8-BIT WONDER;
-			src: url('data/fonts/8-BIT WONDER.ttf');
-		}
-		@font-face {
-			font-family: ABSTRACT;
-			src: url('data/fonts/ABSTRACT.ttf');
-		}
-		@font-face {
-			font-family: visitor1;
-			src: url('data/fonts/visitor1.ttf');
-		}
-		</style>
+		<link rel="stylesheet" href="css/apprise.min.css" type="text/css" />
+		<link rel="stylesheet" href="css/default.css" type="text/css" />
+		<link rel="stylesheet" href="css/login.css" type="text/css" />
+		<link rel="stylesheet" href="css/chat.css" type="text/css" />
 	</head>
 	<body>
+		<div id="login">
+			<div id="logintab" class="login_selected"></div>
+			<div id="registertab"></div>
+			
+			<div id="colcontent">
+				<form id="registered_login">
+					<input id="username" pattern=".{4,16}" maxlength="16" type="text" required placeholder="Username" />
+
+					<input id="password" pattern=".{6,}" type="password" required placeholder="Password" />
+
+					<input type="submit" value="" id="login_btn" />
+					<input type="submit" value="" id="guest" />
+				</form>
+
+				<form id="register">
+					<input id="register_username" pattern=".{4,16}" maxlength="16" type="text" required placeholder="Username" />
+
+					<input id="register_password" pattern=".{6,}" type="password" required placeholder="Password" />
+
+					<input id="register_re_password" pattern=".{6,}" type="password" required placeholder="Password again" />
+
+					<input id="register_btn" type="submit" value="" />
+				</form>
+			</div>
+		</div>
+
+		<div id="chat">
+			<div id="messages">
+				<!-- <p class="message_user"> <span class="msg_time">09:38</span> <span class="msg_sender">Guest0005</span>: <span class="msg_message">hello, there</span> </p> -->
+			</div>
+
+			<form>
+				<input type="text" pattern=".{1,100}" required maxlength="100" placeholder="Type something..." />
+				<input type="submit" value="Send" />
+			</form>
+		</div>
+
 		<div id="jsapp">
 			<script type="text/javascript" src="socket.io/socket.io.js"></script>
 			<script type="text/javascript" src="shared/constants.js"></script>
-			<script type="text/javascript" src="lib/melonJS-0.9.6.js"></script>
+
+			<script type="text/javascript" src="lib/jquery-1.9.1.min.js"></script>
+			<script type="text/javascript" src="lib/apprise-1.5.min.js"></script>
+			<script type="text/javascript" src="lib/melonJS-0.9.7.js"></script>
 			<script type="text/javascript" src="lib/debugPanel.js"></script>
 			<script type="text/javascript" src="lib/dat.gui.min.js"></script>
 			<script type="text/javascript" src="lib/stats.min.js"></script>
+
 			<script type="text/javascript" src="js/config.js"></script>
 			<script type="text/javascript" src="js/debug.js"></script>
 			<script type="text/javascript" src="js/Network.js"></script>
+			<script type="text/javascript" src="js/Chat.js"></script>
 			<script type="text/javascript" src="js/LoadingScreen.js"></script>
 			<script type="text/javascript" src="js/MenuScreen.js"></script>
 			<script type="text/javascript" src="js/PlayScreen.js"></script>
@@ -67,6 +71,7 @@
 			<script type="text/javascript" src="js/Enemy.js"></script>
 			<script type="text/javascript" src="js/EnemyBot.js"></script>
 			<script type="text/javascript" src="js/Player.js"></script>
+
 			<script type="text/javascript" src="js/main.js"></script>
 		</div>
 	</body>

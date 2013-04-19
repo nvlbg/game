@@ -14,6 +14,7 @@ var World = Object.extend({
 	checkCollision : function (obj, pv) {
 		var x = (pv.x < 0) ? ~~(obj.left + pv.x) : Math.ceil(obj.right  - 1 + pv.x);
 		var y = (pv.y < 0) ? ~~(obj.top  + pv.y) : Math.ceil(obj.bottom - 1 + pv.y);
+
 		//to return tile collision detection
 		var res = {
 			x : 0, // !=0 if collision on x axis

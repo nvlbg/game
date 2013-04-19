@@ -2,31 +2,24 @@
 	
 	window.game.Bullet = me.ObjectEntity.extend({
 		init : function(x, y, direction, speed, ownerID, team, seq, id) {
-			if (!this.initialized) { // on first pass
-				var settings = {
-					image : "tanks",
-					spritewidth : 32,
-					spriteheight : 32
-				};
+			var settings = {
+				image : "tanks",
+				spritewidth : 32,
+				spriteheight : 32
+			};
 
-				this.parent(x, y, settings);
+			this.parent(x, y, settings);
 
-				this.collidable = true;
-				this.gravity = 0;
+			this.collidable = true;
+			this.gravity = 0;
 
-				// this.addAnimation("forward", [43]);
-				this.addAnimation("sideward", [44]);
-				this.addAnimation("explode", [45,46]);
+			// this.renderable.addAnimation("forward", [43]);
+			this.renderable.addAnimation("sideward", [44]);
+			this.renderable.addAnimation("explode", [45,46]);
 
-				this.type = me.game.BULLET_OBJECT;
-				
-				this.initialized = true;
-				
-				this.updateColRect(14, 6, 12, 6);
-			} else {
-				this.pos.x = x;
-				this.pos.y = y;
-			}
+			this.type = me.game.BULLET_OBJECT;
+			
+			this.updateColRect(14, 6, 12, 6);
 
 			this.confirmed = false;
 			this.seq = seq;
@@ -37,9 +30,9 @@
 			this.team = team;
 			this.isExploding = false;
 
-			this.setCurrentAnimation("sideward");
+			this.renderable.setCurrentAnimation("sideward");
 
-			this.angle = Math.atan2(direction.y, direction.x);
+			this.angle = this.renderable.angle = Math.atan2(direction.y, direction.x);
 
 			this.speed = speed || 5;
 			this.direction = direction;
@@ -55,7 +48,7 @@
 		},
 
 		update : function() {
-			if(!this.visible) {
+			if(!this.renderable.visible) {
 				this.remove();
 				return false;
 			}
@@ -74,13 +67,16 @@
 			} else {
 				me.game.remove(this);
 			}
+
+			// hacky way to force redraw next frame ( avoids a bug where the bullet is gone but is still drawn )
+			window.game.network.player.needsUpdate = true;
 		},
 
 		explode : function() {
 			this.vel.x = this.vel.y = 0;
 			this.isExploding = true;
 
-			this.setCurrentAnimation("explode", this.remove.bind(this));
+			this.renderable.setCurrentAnimation("explode", this.remove.bind(this));
 		},
 
 		updateMovement : function() {

@@ -1,4 +1,5 @@
 {
+	"MONGO_CONNECTION_STRING": "database",
 	"MAP": "map",
 	"FPS": 60,
 	"PORT": 1337,

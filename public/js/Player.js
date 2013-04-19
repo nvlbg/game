@@ -4,8 +4,8 @@
 		/**
 		constructor
 		*/
-		init : function(x, y, direction, recoil, speed, friction, shootSpeed, socket) {
-			this.parent(x, y, direction, recoil, speed, friction);
+		init : function(x, y, direction, speed, friction, nickname, shootSpeed, socket) {
+			this.parent(x, y, direction, speed, friction, nickname);
 			//this.lastVel = new me.Vector2d(0, 0);
 			this.shootSpeed = shootSpeed;
 			this.socket = socket;
@@ -31,6 +31,11 @@
 			me.game.viewport.follow(this.pos, me.game.viewport.AXIS.BOTH);
 		},
 
+		draw: function(ctx) {
+			this.parent(ctx);
+			// this.pos.draw(ctx);
+		},
+
 		/**
 		called on each frame
 		*/
@@ -47,6 +52,10 @@
 			var updated = this.isShooting;
 
 			if (!updated && this.needsUpdate) {
+				if (!this.invulnerable && this.renderable.alpha !== 1.0) {
+					this.renderable.alpha = 1.0;
+				}
+
 				this.needsUpdate = false;
 				updated = true;
 			}
@@ -56,15 +65,27 @@
 			} else {
 				this.pressed = 0;
 				if(me.input.isKeyPressed("left")) {
-					this.moveLeft();
+					this.pressed = 0 | game.ENUM.PRESSED.LEFT;
 				} else if (me.input.isKeyPressed("right")) {
-					this.moveRight();
+					this.pressed = 0 | game.ENUM.PRESSED.RIGHT;
 				}
 
 				if(me.input.isKeyPressed("up")) {
-					this.moveUp();
+					this.pressed = 0 | game.ENUM.PRESSED.UP;
 				} else if (me.input.isKeyPressed("down")) {
-					this.moveDown();
+					this.pressed = 0 | game.ENUM.PRESSED.DOWN;
+				}
+
+				if (this.pressed > 0) {
+					if (this.pressed & game.ENUM.PRESSED.LEFT) {
+						this.moveLeft()
+					} else if (this.pressed & game.ENUM.PRESSED.RIGHT) {
+						this.moveRight();
+					} else if (this.pressed & game.ENUM.PRESSED.UP) {
+						this.moveUp();
+					} else if (this.pressed & game.ENUM.PRESSED.DOWN) {
+						this.moveDown();
+					}
 				}
 
 				if (this.delta.x > 0.1 || this.delta.y > 0.1) {
@@ -232,14 +253,14 @@
 			this.isShooting = true;
 
 			var capitalizedDirection = dir.charAt(0).toUpperCase() + dir.slice(1);
-			this.setCurrentAnimation("shoot" + capitalizedDirection, function() {
-				this.setCurrentAnimation("move" + capitalizedDirection);
-				this.setAnimationFrame(animFrame);
+			this.renderable.setCurrentAnimation("shoot" + capitalizedDirection, function() {
+				this.renderable.setCurrentAnimation("move" + capitalizedDirection);
+				this.renderable.setAnimationFrame(animFrame);
 				this.isShooting = false;
 			}.bind(this));
 
-			this.flipX(flipX);
-			this.flipY(flipY);
+			this.renderable.flipX(flipX);
+			this.renderable.flipY(flipY);
 		},
 
 		shoot : function() {
@@ -252,19 +273,15 @@
 				return false;
 			}
 
-			var animFrame = this.getCurrentAnimationFrame();
+			var animFrame = this.renderable.getCurrentAnimationFrame();
 			if(this.direction === game.ENUM.DIRECTION.UP) {
 				this._shootInternal("forward", false, false, animFrame);
-				this.vel.y += this.recoil;
 			} else if (this.direction === game.ENUM.DIRECTION.DOWN) {
 				this._shootInternal("forward", false, true, animFrame);
-				this.vel.y -= this.recoil;
 			} else if (this.direction === game.ENUM.DIRECTION.LEFT) {
 				this._shootInternal("sideward", true, false, animFrame);
-				this.vel.x += this.recoil;
 			} else if (this.direction === game.ENUM.DIRECTION.RIGHT) {
 				this._shootInternal("sideward", false, false, animFrame);
-				this.vel.x -= this.recoil;
 			} else { // this should never happen
 				throw "unknown direction \"" + this.direction + "\"";
 			}
@@ -288,25 +305,21 @@
 
 		moveLeft : function() {
 			this.parent();
-			this.pressed |= game.ENUM.PRESSED.LEFT;
 			this.isShooting = false;
 		},
 
 		moveRight : function() {
 			this.parent();
-			this.pressed |= game.ENUM.PRESSED.RIGHT;
 			this.isShooting = false;
 		},
 
 		moveUp : function() {
 			this.parent();
-			this.pressed |= game.ENUM.PRESSED.UP;
 			this.isShooting = false;
 		},
 
 		moveDown : function() {
 			this.parent();
-			this.pressed |= game.ENUM.PRESSED.DOWN;
 			this.isShooting = false;
 		},
 

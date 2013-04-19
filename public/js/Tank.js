@@ -5,7 +5,7 @@
 		pressed : 0,
 
 		// constructor
-		init : function(x, y, direction, recoil, speed, friction, enemy) {
+		init : function(x, y, direction, speed, friction, nickname, enemy) {
 			var settings = {
 				image : "tanks",
 				spritewidth : 32,
@@ -16,10 +16,12 @@
 
 			enemy = enemy || false;
 
+			this.nickname = nickname;
+			this.measure = window.game.font.measureText(me.video.getScreenContext(), this.nickname);
+
 			this.isExploding = false;
 			this.collidable = true;
 			this.direction = direction;
-			this.recoil = recoil;
 			this.gravity = 0;
 			this.delta = new me.Vector2d(0, 0);
 
@@ -32,21 +34,21 @@
 
 			if(enemy) {
 				if(me.gamestat.getItemValue("team") === game.ENUM.TEAM.GREEN) {
-					this.addAnimation("idleForward", [17]);
-					this.addAnimation("moveForward", [17,16,15,14,13,12,11,10], me.sys.fps / 10);
-					this.addAnimation("shootForward", [17,18,19,18,17], me.sys.fps / 50);
-					this.addAnimation("idleSideward", [37]);
-					this.addAnimation("moveSideward", [37,36,35,34,33,32,31,30], me.sys.fps / 10);
-					this.addAnimation("shootSideward", [37,38,39,38,37], me.sys.fps / 50);
+					this.renderable.addAnimation("idleForward", [17]);
+					this.renderable.addAnimation("moveForward", [17,16,15,14,13,12,11,10], me.sys.fps / 10);
+					this.renderable.addAnimation("shootForward", [17,18,19,18,17], me.sys.fps / 50);
+					this.renderable.addAnimation("idleSideward", [37]);
+					this.renderable.addAnimation("moveSideward", [37,36,35,34,33,32,31,30], me.sys.fps / 10);
+					this.renderable.addAnimation("shootSideward", [37,38,39,38,37], me.sys.fps / 50);
 
 					this.team = game.ENUM.TEAM.BLUE;
 				} else if(me.gamestat.getItemValue("team") === game.ENUM.TEAM.BLUE) {
-					this.addAnimation("idleForward", [7]);
-					this.addAnimation("moveForward", [7,6,5,4,3,2,1,0], me.sys.fps / 10);
-					this.addAnimation("shootForward", [7,8,9,8,7], me.sys.fps / 50);
-					this.addAnimation("idleSideward", [27]);
-					this.addAnimation("moveSideward", [27,26,25,24,23,22,21,20], me.sys.fps / 10);
-					this.addAnimation("shootSideward", [27,28,29,28,27], me.sys.fps / 50);
+					this.renderable.addAnimation("idleForward", [7]);
+					this.renderable.addAnimation("moveForward", [7,6,5,4,3,2,1,0], me.sys.fps / 10);
+					this.renderable.addAnimation("shootForward", [7,8,9,8,7], me.sys.fps / 50);
+					this.renderable.addAnimation("idleSideward", [27]);
+					this.renderable.addAnimation("moveSideward", [27,26,25,24,23,22,21,20], me.sys.fps / 10);
+					this.renderable.addAnimation("shootSideward", [27,28,29,28,27], me.sys.fps / 50);
 
 					this.team = game.ENUM.TEAM.GREEN;
 				} else {
@@ -54,28 +56,28 @@
 				}
 			} else {
 				if(me.gamestat.getItemValue("team") === game.ENUM.TEAM.GREEN) {
-					this.addAnimation("idleForward", [7]);
-					this.addAnimation("moveForward", [7,6,5,4,3,2,1,0], me.sys.fps / 10);
-					this.addAnimation("shootForward", [7,8,9,8,7], me.sys.fps / 50);
-					this.addAnimation("idleSideward", [27]);
-					this.addAnimation("moveSideward", [27,26,25,24,23,22,21,20], me.sys.fps / 10);
-					this.addAnimation("shootSideward", [27,28,29,28,27], me.sys.fps / 50);
+					this.renderable.addAnimation("idleForward", [7]);
+					this.renderable.addAnimation("moveForward", [7,6,5,4,3,2,1,0], me.sys.fps / 10);
+					this.renderable.addAnimation("shootForward", [7,8,9,8,7], me.sys.fps / 50);
+					this.renderable.addAnimation("idleSideward", [27]);
+					this.renderable.addAnimation("moveSideward", [27,26,25,24,23,22,21,20], me.sys.fps / 10);
+					this.renderable.addAnimation("shootSideward", [27,28,29,28,27], me.sys.fps / 50);
 
 					this.team = game.ENUM.TEAM.GREEN;
 				} else if(me.gamestat.getItemValue("team") === game.ENUM.TEAM.BLUE) {
-					this.addAnimation("idleForward", [17]);
-					this.addAnimation("moveForward", [17,16,15,14,13,12,11,10], me.sys.fps / 10);
-					this.addAnimation("shootForward", [17,18,19,18,17], me.sys.fps / 50);
-					this.addAnimation("idleSideward", [37]);
-					this.addAnimation("moveSideward", [37,36,35,34,33,32,31,30], me.sys.fps / 10);
-					this.addAnimation("shootSideward", [37,38,39,38,37], me.sys.fps / 50);
+					this.renderable.addAnimation("idleForward", [17]);
+					this.renderable.addAnimation("moveForward", [17,16,15,14,13,12,11,10], me.sys.fps / 10);
+					this.renderable.addAnimation("shootForward", [17,18,19,18,17], me.sys.fps / 50);
+					this.renderable.addAnimation("idleSideward", [37]);
+					this.renderable.addAnimation("moveSideward", [37,36,35,34,33,32,31,30], me.sys.fps / 10);
+					this.renderable.addAnimation("shootSideward", [37,38,39,38,37], me.sys.fps / 50);
 
 					this.team = game.ENUM.TEAM.BLUE;
 				} else {
 					throw "unknown team \"" + me.gamestat.getItemValue("team") + "\"";
 				}
 			}
-			this.addAnimation("explode", [40,41,42]);
+			this.renderable.addAnimation("explode", [40,41,42]);
 
 			var currentAnimation = "move";
 
@@ -89,18 +91,35 @@
 				throw "unknown direction \"" + direction + "\"";
 			}
 			
-			this.setCurrentAnimation(currentAnimation);
+			this.renderable.setCurrentAnimation(currentAnimation);
 
 			if(direction === game.ENUM.DIRECTION.LEFT) {
-				this.flipX(true);
+				this.renderable.flipX(true);
 			} else if(direction === game.ENUM.DIRECTION.DOWN) {
-				this.flipY(true);
+				this.renderable.flipY(true);
 			}
 
 			this.updates = [];
 			this.lastProcessedSeq = -1;
 
 			this.invulnerable = false;
+
+			this.alphaFadeInTween  = null;
+			this.alphaFadeOutTween = null;
+		},
+
+		draw: function(context) {
+			this.parent(context);
+
+			var x = this.pos.x + 16 - this.measure.width/2;
+			var y = this.pos.y+36;
+			
+			context.save();
+			context.fillStyle = 'black';
+			context.fillRect(x-1, y-1, this.measure.width+1, this.measure.height-1);
+			context.restore();
+
+			window.game.font.draw(context, this.nickname, x, y);
 		},
 
 		applyClientSideInterpolation: function() {
@@ -113,6 +132,7 @@
 				var previous = null;
 
 				var point, nextPoint;
+
 				for(var i = 0; i < count; i++) {
 					point = this.updates[i];
 					nextPoint = this.updates[i+1];
@@ -190,15 +210,14 @@
 			return false;
 		},
 
+		/*
 		makeInvulnerable: function() {
 			this.invulnerable = true;
 			this.needsUpdate = true;
 
-			this.alpha = 0.5;
-			var	fadeIn  = new me.Tween(this).to({alpha: 1.0}, 500);
-
-			fadeIn.onComplete(function() {
-				this.alpha = 0.5;
+			this.renderable.alpha = 0.5;
+			var	fadeIn  = new me.Tween(this.renderable).to({alpha: 1.0}, 500).onComplete(function() {
+				this.renderable.alpha = 0.5;
 				fadeIn.start();
 			}.bind(this)).start();
 
@@ -206,7 +225,31 @@
 				fadeIn.stop();
 				
 				this.invulnerable = false;
-				this.alpha = 1.0;
+				this.renderable.alpha = 1.0;
+				this.needsUpdate = true;
+			}.bind(this), window.game.network.INVULNERABLE_TIME_STEP);
+		},
+		*/
+
+		makeInvulnerable: function() {
+			this.invulnerable = true;
+			this.needsUpdate = true;
+
+			if (this.alphaFadeInTween === null && this.alphaFadeOutTween === null) {
+				this.alphaFadeInTween  = new me.Tween(this.renderable).to({alpha: 0.9}, 250);
+				this.alphaFadeOutTween = new me.Tween(this.renderable).to({alpha: 0.6}, 250);
+
+				this.alphaFadeInTween.chain(this.alphaFadeOutTween);
+				this.alphaFadeOutTween.chain(this.alphaFadeInTween);
+			}
+
+			this.alphaFadeOutTween.start();
+
+			setTimeout(function() {
+				this.alphaFadeInTween.stop();
+				this.alphaFadeOutTween.stop();
+
+				this.invulnerable = false;
 				this.needsUpdate = true;
 			}.bind(this), window.game.network.INVULNERABLE_TIME_STEP);
 		},
@@ -228,6 +271,11 @@
 			
 			if (this.needsUpdate) {
 				this.parent(this);
+
+				if (!this.invulnerable && this.renderable.alpha !== 1.0) {
+					this.renderable.alpha = 1.0;
+				}
+
 				this.needsUpdate = false;
 				return true;
 			}
@@ -238,17 +286,11 @@
 		explode : function() {
 			this.isExploding = true;
 
-			this.setCurrentAnimation("explode", function() {
+			this.renderable.setCurrentAnimation("explode", function() {
 				this.collidable = false;
 				this.visible = false;
 				this.isExploding = false;
 				this.alive = false;
-
-				if (this.direction === game.ENUM.DIRECTION.LEFT || this.direction === game.ENUM.DIRECTION.RIGHT) {
-					this.setCurrentAnimation("idleSideward");
-				} else if (this.direction === game.ENUM.DIRECTION.DOWN || this.direction === game.ENUM.DIRECTION.UP) {
-					this.setCurrentAnimation("idleForward");
-				}
 			}.bind(this));
 		},
 
@@ -257,10 +299,16 @@
 			this.collidable = true;
 			this.needsUpdate = true;
 
+			if (this.direction === game.ENUM.DIRECTION.LEFT || this.direction === game.ENUM.DIRECTION.RIGHT) {
+				this.renderable.setCurrentAnimation("idleSideward");
+			} else if (this.direction === game.ENUM.DIRECTION.DOWN || this.direction === game.ENUM.DIRECTION.UP) {
+				this.renderable.setCurrentAnimation("idleForward");
+			}
+
 			this.makeInvulnerable();
 		},
 
-		updateMovement : function() {
+		updateMovement: function() {
 			this.computeVelocity(this.vel);
 
 			var collision = this.collisionMap.checkCollision(this.collisionBox, this.vel);
@@ -340,16 +388,16 @@
 				currentAnimation = "moveSideward";
 			}
 
-			this.setCurrentAnimation(currentAnimation);
+			this.renderable.setCurrentAnimation(currentAnimation);
 
 			if(dir === game.ENUM.DIRECTION.LEFT) {
-				this.flipX(true);
+				this.renderable.flipX(true);
 			} else if(dir === game.ENUM.DIRECTION.RIGHT) {
-				this.flipX(false);
+				this.renderable.flipX(false);
 			} else if(dir === game.ENUM.DIRECTION.UP) {
-				this.flipY(false);
+				this.renderable.flipY(false);
 			} else if(dir === game.ENUM.DIRECTION.DOWN) {
-				this.flipY(true);
+				this.renderable.flipY(true);
 			}
 		}
 	});

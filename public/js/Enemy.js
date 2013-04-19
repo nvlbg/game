@@ -1,8 +1,8 @@
 (function() {
 
 	window.game.Enemy = game.Tank.extend({
-		init : function(x, y, direction, recoil, speed, friction) {
-			this.parent(x, y, direction, recoil, speed, friction, true);
+		init : function(x, y, direction, speed, friction, nickname) {
+			this.parent(x, y, direction, speed, friction, nickname, true);
 			
 			this.pressed = 0;
 			this.type = me.game.ENEMY_OBJECT;

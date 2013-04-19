@@ -36,10 +36,15 @@
 			this.socket.on(game.ENUM.TYPE.SMARTPHONE_REQUEST, this.onSmartphoneRequest.bind(this));
 			this.socket.on(game.ENUM.TYPE.PING, this.onPing.bind(this));
 
-			this.socket.emit(game.ENUM.TYPE.SPAWN_REQUEST);
+			// init chat stuff
+			// window.game.Chat.init();
 		},
 
 		// methods
+		start: function() {
+			this.socket.emit(game.ENUM.TYPE.SPAWN_REQUEST);
+		},
+		
 		createTimer : function() {
 			setInterval(function() {
 				this._dt = new Date().getTime() - this._dte;
@@ -71,12 +76,14 @@
 		},
 
 		onSmartphoneRequest : function() {
-			var confirmRequest = window.confirm("Are you trying to connect with your smarthphone?");
-			this.socket.emit(game.ENUM.TYPE.SMARTPHONE_ACCEPT, confirmRequest);
+			apprise('Are you trying to connect with your smarthphone?', {'verify':true}, function(answer) {
+				this.socket.emit(game.ENUM.TYPE.SMARTPHONE_AUTH, answer);
 
-			if ( confirmRequest ) {
-				this.player.smarthphoneConnected = true;
-			}
+				if ( answer === true ) {
+					this.player.smarthphoneConnected = true;
+				}
+			}.bind(this));
+
 		},
 
 		onSpawn : function(data) {
@@ -88,7 +95,7 @@
 
 			this.INVULNERABLE_TIME_STEP = data.q;
 
-			this.player = new game.Player(data.x, data.y, data.d, 0, 3, 0, 500, this.socket);
+			this.player = new game.Player(data.x, data.y, data.d, 3, 0, data.n, 500, this.socket);
 			this.player.makeInvulnerable();
 			this.players[data.i] = this.player;
 			me.game.add(this.player, 4);
@@ -96,9 +103,9 @@
 			var other;
 			for(var i = 0, len = data.p.length; i < len; i++) {
 				if (data.p[i].t === data.t) {
-					other = me.entityPool.newInstanceOf('Friend', data.p[i].x, data.p[i].y, data.p[i].d, 0, 3, 0);
+					other = me.entityPool.newInstanceOf('Friend', data.p[i].x, data.p[i].y, data.p[i].d, 3, 0, data.p[i].n);
 				} else {
-					other = me.entityPool.newInstanceOf('Enemy', data.p[i].x, data.p[i].y, data.p[i].d, 0, 3, 0);
+					other = me.entityPool.newInstanceOf('Enemy', data.p[i].x, data.p[i].y, data.p[i].d, 3, 0, data.p[i].n);
 				}
 				other.pressed = data.p[i].p;
 				me.game.add(other, 4);
@@ -110,14 +117,15 @@
 			this.server_time = this.last_server_time = data.z;
 			this.createPingTimer();
 			this.createTimer();
+			window.game.Chat.init();
 		},
 
 		onNewPlayer : function(data) {
 			var p;
 			if (data.t === me.gamestat.getItemValue("team")) {
-				p = me.entityPool.newInstanceOf('Friend', data.x, data.y, data.d, 0, 3, 0);
+				p = me.entityPool.newInstanceOf('Friend', data.x, data.y, data.d, 3, 0, data.n);
 			} else {
-				p = me.entityPool.newInstanceOf('Enemy', data.x, data.y, data.d, 0, 3, 0);
+				p = me.entityPool.newInstanceOf('Enemy', data.x, data.y, data.d, 3, 0, data.n);
 			}
 
 			this.players[data.i] = p;

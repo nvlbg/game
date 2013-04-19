@@ -1,0 +1,26 @@
+body {
+	margin: 0;
+	background: #666;
+}
+
+canvas {
+	float: left;
+	position: fixed;
+	left: 50%;
+	top: 50%;
+	margin-left: -400px;
+	margin-top: -300px;
+	/* cursor: none; */
+
+	image-rendering: optimizeSpeed;
+	image-rendering: -moz-crisp-edges;
+	image-rendering: -o-crisp-edges;
+	image-rendering: -webkit-optimize-contrast;
+	image-rendering: optimize-contrast;
+	-ms-interpolation-mode: nearest-neighbor;
+}
+
+@font-face {
+	font-family: LCD_Solid;
+	src: url(../data/fonts/LCD_Solid.ttf);
+}

@@ -4,8 +4,8 @@
 		/**
 		constructor
 		*/
-		init : function(x, y, direction, recoil, speed, friction, shootSpeed) {
-			this.parent(x, y, direction, recoil, speed, friction, true);
+		init : function(x, y, direction, speed, friction, shootSpeed) {
+			this.parent(x, y, direction, speed, friction, true);
 			//this.lastVel = new me.Vector2d(0, 0);
 			this.shootSpeed = shootSpeed;
 			this.lastPressed = 0;

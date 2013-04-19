@@ -6,7 +6,7 @@ This is a fast paced game using melonJS as engine. It is supposed to be a massiv
 
 Server requirements
 -------------------
-You will need Node.js and NPM installed in order to run the server. Download (or clone) Node.js at http://nodejs.org/
+You will need Node.js, NPM and MongoDB installed in order to run the server. Download (or clone) Node.js at http://nodejs.org/ and MongoDB at http://www.mongodb.org/
 
 Quick start
 -----------
@@ -25,11 +25,15 @@ Configuration
 You can configure your game server by modifying server/config.js
 Here is what each option does:
 
-- MAP - the level that will be started. It must be saved in public/data/maps/
+- MONGO_CONNECTION_STRING - your mongo database connection string
+- MAP - the level that will be started. It must be saved in public/data/maps/ as a .json file
 - FPS - the frame rate on the server update loop. Default: 60
-- PORT - the port the server will be started
-- CORRECTION_TIME_STEP - in what interval should corrections be sent. Default: 50
-- FRIENDLY_FIRE - should friendly fire be on
+- PORT - the port the server will be started. Default: 1337
+- CORRECTION_TIME_STEP - in what interval should corrections be sent. Default: 50 (ms)
+- FRIENDLY_FIRE - should friendly fire be turned on. Default: false
+- NET_PING_UPDATE_STEP - in what interval should ping calculations be done. Default: 2500 (ms)
+- RESPAWN_TIME_STEP - how much time should pass before player is respawned after death. Default: 3000 (ms)
+- INVULNERABLE_TIME_STEP - how much time should the player be invulnerable after respawn. Default: 2500 (ms) 
 
 How to build with Grunt
 -------------

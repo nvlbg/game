@@ -1,0 +1,8 @@
+#ignore chat logs
+chat.log
+
+#ignore node_modules (you can simply install them via npm)
+node_modules/*
+
+#ignore build folder
+public/build/*

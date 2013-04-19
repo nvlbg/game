@@ -22,7 +22,7 @@ var CollisionLayer = Object.extend({
 		this.realWidth = this.width * this.tileWidth;
 		this.realHeight = this.height * this.tileHeight;
 
-		this.collisionData = new Array(this.width);
+		this.collisionData = new Array(this.height);
 
 		var tilesets = map.tilesets,
 			layers = map.layers;
@@ -66,27 +66,27 @@ var CollisionLayer = Object.extend({
 		}
 
 		var i = 0, x = 0, y = 0;
-		for (; x < this.width; x++) {
-			this.collisionData[x] = new Array(this.height);
-			for (y = 0; y < this.height; y++) {
-				this.collisionData[x][y] = data[i++];
+		for (; y < this.height; y++) {
+			this.collisionData[y] = new Array(this.width);
+			for (x = 0; x < this.width; x++) {
+				this.collisionData[y][x] = data[i++];
 			}
 		}
 	},
 
 	getGid: function(x, y) {
-		return this.collisionData[~~(x / this.tileWidth)][~~(y / this.tileHeight)];
+		return this.collisionData[~~(y / this.tileHeight)][~~(x / this.tileWidth)];
 	},
 
 	// for debugging purposes
 	print : function() {
 		var s = '';
-		for(var x = 0; x < this.collisionData.length; x++) {
+		for(var y = 0; y < this.collisionData.length; y++) {
 			s = '[ ';
-			for(var y = 0; y < this.collisionData[x].length; y++) {
-				if (this.collisionData[x][y] === this.solidgid) {
+			for(var x = 0; x < this.collisionData[y].length; x++) {
+				if (this.collisionData[y][x] === this.solidgid) {
 					s += 'S ';
-				} else if (this.collisionData[x][y] === this.watergid) {
+				} else if (this.collisionData[y][x] === this.watergid) {
 					s += 'W ';
 				} else {
 					s += '  ';

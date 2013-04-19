@@ -4,6 +4,8 @@ var express = require('express'),
 	server = http.createServer(app),
 	io = require('socket.io').listen(server),
 
+	Users = require('./server/Users.js'),
+
 	config = require('./server/config.json'),
 	constants = require('./shared/constants.js');
 
@@ -44,13 +46,16 @@ server.listen(config.PORT);
 console.log('Server started at 127.0.0.1:' + config.PORT);
 
 io.sockets.on('connection', function (socket) {
+	// login dealing
+	Users.bindEventListeners(socket);
+
 	// player client connected
 	socket.on(constants.TYPE.SPAWN_REQUEST, function() {
 		global.Game.addNewPlayer(socket);
 	});
 
 	// smartphone client conneted
-	socket.on(constants.TYPE.SMARTPHONE_CONNECT, function(playerID) {
-		global.Game.authenticateSmathphone(socket, playerID);
+	socket.on(constants.TYPE.SMARTPHONE_CONNECT, function(player) {
+		global.Game.authenticateSmathphone(socket, player);
 	});
 });
