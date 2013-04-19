@@ -16,6 +16,8 @@ var Player = Rect.extend({
 		this.socket = socket;
 		this.team = team;
 
+		this.inputMethod = Game.INPUT_TYPE.KEYBOARD_AND_MOUSE;
+
 		this.net_latency = 0.001;
 		this.net_offset = 100;
 		this.last_ping_time = 0.001;
@@ -69,7 +71,31 @@ var Player = Rect.extend({
 		if ( answer === true ) {
 			this.smartphone.emit(Game.TYPE.SMARTPHONE_AUTH, Game.SMARTPHONE.ACCEPTED);
 			this.smartphoneConnected = true;
+			this.inputMethod = Game.INPUT_TYPE.SMARTPHONE_CONTROLLER;
+
+			this.socket.on(Game.TYPE.SET_INPUT, function(input_method) {
+				if (input_method !== Game.INPUT_TYPE.KEYBOARD_AND_MOUSE &&
+					input_method !== Game.INPUT_TYPE.SMARTPHONE_CONTROLLER) {
+					return;
+				}
+
+				this.inputMethod = input_method;
+
+				if (this.smartphone !== undefined) {
+					this.smartphone.emit(Game.TYPE.SET_INPUT, input_method);
+				}
+			}.bind(this));
+			
+			this.smartphone.on('disconnect', function() {
+				this.socket.emit(Game.TYPE.SMARTPHONE_DISCONNECTED);
+				this.smartphone = null;
+			}.bind(this));
+			
 			this.smartphone.on(Game.TYPE.UPDATE, function(data) {
+				if (this.inputMethod !== Game.INPUT_TYPE.SMARTPHONE_CONTROLLER) {
+					return;
+				}
+
 				var input = {input_seq:data.s};
 				if (data.p !== undefined) {
 					input.pressed = data.p;
@@ -79,7 +105,7 @@ var Player = Rect.extend({
 					input.clientBulletId = -1;
 				}
 
-				for (var i = 0; i < 3; i++) {
+				for (var i = 0; i < 6; i++) {
 					this.inputs.push(input);
 				}
 			}.bind(this));
@@ -310,11 +336,22 @@ var Player = Rect.extend({
 		setTimeout(function() {
 			this.alive = true;
 
-			do { console.log(Game.world.checkCollision(this, new Vector2d(0, 0)));
-				this.pos = new Vector2d(Number.prototype.random(64, 320), Number.prototype.random(64, 320));
-			} while ( Game.collide(this) || 
-					Game.world.checkCollision(this, new Vector2d(0, 0)).xtile !== undefined ||
-					Game.world.checkCollision(this, new Vector2d(0, 0)).ytile !== undefined );
+			var x1, x2, y1, y2;
+			if (this.team === Game.TEAM.BLUE) {
+				x1 = Game.world.collisionLayer.blueSpawnPoint.left;
+				x2 = Game.world.collisionLayer.blueSpawnPoint.right;
+				y1 = Game.world.collisionLayer.blueSpawnPoint.top;
+				y2 = Game.world.collisionLayer.blueSpawnPoint.bottom;
+			} else if (this.team === Game.TEAM.GREEN) {
+				x1 = Game.world.collisionLayer.greenSpawnPoint.left;
+				x2 = Game.world.collisionLayer.greenSpawnPoint.right;
+				y1 = Game.world.collisionLayer.greenSpawnPoint.top;
+				y2 = Game.world.collisionLayer.greenSpawnPoint.bottom;
+			}
+
+			do {
+				this.pos = new Vector2d(Number.prototype.random(x1, x2), Number.prototype.random(y1, y2));
+			} while ( Game.collide(this) );
 
 			this.makeInvulnerable();
 		}.bind(this), config.RESPAWN_TIME_STEP);

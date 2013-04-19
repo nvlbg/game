@@ -34,10 +34,20 @@ var Users = {
 			return;
 		}
 
+		if (!/[a-zA-Z0-9_]{4,16}/.test(username)) {
+			return;
+		}
+
 		db.users.find({username:username}, function(err, user) {
 			if (err || user.length > 1) { Users.onError(this, constants.TYPE.LOGIN_ANSWER); return; }
 			if (user.length === 0) {
 				this.emit(constants.TYPE.LOGIN_ANSWER, constants.LOGIN.USER_NOT_FOUND);
+				return;
+			}
+
+			// check if user is currently playing
+			if ( global.Game.isUsernamePlaying(username) ) {
+				this.emit(constants.TYPE.LOGIN_ANSWER, constants.LOGIN.USER_PLAYING);
 				return;
 			}
 
@@ -60,6 +70,10 @@ var Users = {
 		var password = data.password;
 
 		if (username.length < 4 || username.length > 16 || password.length < 6) {
+			return;
+		}
+
+		if (!/[a-zA-Z0-9_]{4,16}/.test(username)) {
 			return;
 		}
 

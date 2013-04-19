@@ -83,7 +83,7 @@
 			}
 
 			self.dir.x = self.pos.x - 100;
-			self.dir.y = 100 - self.pos.y;
+			self.dir.y = self.pos.y - 100;
 			
 			self.axisCtx.beginPath();
 			self.axisCtx.arc(self.pos.x, self.pos.y, 33, 0, Math.PI * 2, true);
@@ -123,17 +123,17 @@
 	}
 
 	var moveAxis  = new Axis('moveAxis',  'moveAxisBackground' , {
-		backgroundFillColor: '#777',
-		backgroundStrokeColor: 'white',
-		axisFillColor: '#777',
-		axisStrokeColor: '#111'
+		backgroundFillColor: '#CCC',
+		backgroundStrokeColor: '#00F',
+		axisFillColor: '#00F',
+		axisStrokeColor: '#FFF'
 	});
 
 	var shootAxis = new Axis('shootAxis', 'shootAxisBackground', {
-		backgroundFillColor: 'red',
-		backgroundStrokeColor: 'white',
-		axisFillColor: '#777',
-		axisStrokeColor: '#111'
+		backgroundFillColor: '#CCC',
+		backgroundStrokeColor: '#F00',
+		axisFillColor: '#F00',
+		axisStrokeColor: '#FFF'
 	});
 
 	var fixPosition = function() {
@@ -184,58 +184,65 @@
 	var socket = window.io.connect();
 	var input_seq = 0;
 	var DIR_ENUM = window.ENUM.PRESSED;
+	var interval = undefined;
 
 	var connect = function() {
 		var player = window.prompt("Please, enter your player's username", "");
 
-		socket.emit(window.ENUM.TYPE.SMARTPHONE_CONNECT, player);
+		if (player) {
+			socket.emit(window.ENUM.TYPE.SMARTPHONE_CONNECT, player);
+		}
+	};
+
+	var update = function() {
+		var direction, angle;
+		if (moveAxis.dir.x !== undefined && moveAxis.dir.y !== undefined) {
+			var x = moveAxis.dir.x;
+			var y = moveAxis.dir.y;
+			if(Math.abs(x) > 50 || Math.abs(y) > 50) {
+				if(x > 0) {
+					if(y > 0) {
+						direction = (Math.abs(x) > Math.abs(y)) ? DIR_ENUM.RIGHT : DIR_ENUM.DOWN;
+					} else {
+						direction = (Math.abs(x) > Math.abs(y)) ? DIR_ENUM.RIGHT : DIR_ENUM.UP;
+					}
+				} else {
+					if(y > 0) {
+						direction = (Math.abs(x) > Math.abs(y)) ? DIR_ENUM.LEFT : DIR_ENUM.DOWN;
+					} else {
+						direction = (Math.abs(x) > Math.abs(y)) ? DIR_ENUM.LEFT : DIR_ENUM.UP;
+					}
+				}
+			}
+		}
+
+		if (shootAxis.dir.x !== undefined && shootAxis.dir.y !== undefined) {
+			if (Math.abs(shootAxis.dir.x) > 50 || Math.abs(shootAxis.dir.y) > 50) {
+				angle = Math.atan2(shootAxis.dir.y, shootAxis.dir.x);
+			}
+		}
+
+		if (direction || angle) {
+			var input = {
+				s: input_seq
+			};
+			
+			if ( direction ) {
+				input.p = direction;
+			}
+
+			if ( angle ) {
+				input.a = angle;
+			}
+
+			socket.emit(window.ENUM.TYPE.UPDATE, input);
+			input_seq += 1;
+		}
 	};
 
 	socket.on(window.ENUM.TYPE.SMARTPHONE_AUTH, function(result) {
 		if (result === window.ENUM.SMARTPHONE.ACCEPTED) {
-			setInterval(function() {
-				var direction, angle;
-				if (moveAxis.dir.x !== undefined && moveAxis.dir.y !== undefined) {
-					var x = moveAxis.dir.x;
-					var y = moveAxis.dir.y;
-					if(Math.abs(x) > 50 || Math.abs(y) > 50) {
-						if(x > 0) {
-							if(y > 0) {
-								direction = (Math.abs(x) > Math.abs(y)) ? DIR_ENUM.RIGHT : DIR_ENUM.UP;
-							} else {
-								direction = (Math.abs(x) > Math.abs(y)) ? DIR_ENUM.RIGHT : DIR_ENUM.DOWN;
-							}
-						} else {
-							if(y > 0) {
-								direction = (Math.abs(x) > Math.abs(y)) ? DIR_ENUM.LEFT : DIR_ENUM.UP;
-							} else {
-								direction = (Math.abs(x) > Math.abs(y)) ? DIR_ENUM.LEFT : DIR_ENUM.DOWN;
-							}
-						}
-					}
-				}
-
-				if (shootAxis.dir.x !== undefined && shootAxis.dir.y !== undefined) {
-					angle = Math.atan2(shootAxis.dir.y, shootAxis.dir.x);
-				}
-
-				if (direction || angle) {
-					var input = {
-						s: input_seq
-					};
-					
-					if ( direction ) {
-						input.p = direction;
-					}
-
-					if ( angle ) {
-						input.a = angle;
-					}
-
-					socket.emit(window.ENUM.TYPE.UPDATE, input);
-					input_seq += 1;
-				}
-			}, 1000 / 15);
+			interval = setInterval(update, 1000 / 10);
 		} else {
 			if (result === window.ENUM.SMARTPHONE.DECLINED) {
 				window.alert("Sorry, the user declined your access.");
@@ -244,6 +251,14 @@
 			}
 
 			connect();
+		}
+	});
+
+	socket.on(window.ENUM.TYPE.SET_INPUT, function(input_method) {
+		if (input_method === window.ENUM.INPUT_TYPE.KEYBOARD_AND_MOUSE) {
+			clearInterval(interval);
+		} else if (input_method === window.ENUM.INPUT_TYPE.SMARTPHONE_CONTROLLER) {
+			interval = setInterval(update, 1000 / 10);
 		}
 	});
 

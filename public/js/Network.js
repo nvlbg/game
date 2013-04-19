@@ -81,6 +81,23 @@
 
 				if ( answer === true ) {
 					this.player.smarthphoneConnected = true;
+
+					var toggleInput = $('#toggleInput');
+
+					toggleInput.bind('click', function(e) {
+						e.preventDefault();
+
+						this.player.smarthphoneConnected = !this.player.smarthphoneConnected;
+						this.socket.emit(game.ENUM.TYPE.SET_INPUT,
+										 this.player.smarthphoneConnected ? 
+										 game.ENUM.INPUT_TYPE.SMARTPHONE_CONTROLLER :
+										 game.ENUM.INPUT_TYPE.KEYBOARD_AND_MOUSE);
+					}.bind(this)).show();
+
+					this.socket.on(game.ENUM.TYPE.SMARTPHONE_DISCONNECTED, function() {
+						toggleInput.unbind('click').hide();
+						this.player.smarthphoneConnected = false;
+					}.bind(this));
 				}
 			}.bind(this));
 

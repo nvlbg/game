@@ -11,7 +11,6 @@
 		{ name : "tile_pack_1",  type : "image", src : "data/sprites/tile_pack_1.png" },
 		{ name : "tile_pack_2",  type : "image", src : "data/sprites/tile_pack_2.png" },
 
-		{ name : "maze",       type : "tmx",   src : "data/maps/maze.json"         },
 		{ name : "map",        type : "tmx",   src : "data/maps/map.json"          }
 	];
 
@@ -108,6 +107,7 @@
 
 			} else {
 				apprise('Error occured', {animate:true});
+				$('input').blur();
 			}
 		});
 
@@ -116,22 +116,31 @@
 
 				panel.remove();
 				window.game.onLoad();
+				return;
 
 			} else if (success === window.game.ENUM.LOGIN.FAIL) {
 				apprise('Wrong username or password', {animate:true});
 			} else if (success === window.game.ENUM.LOGIN.USER_NOT_FOUND) {
 				apprise('User does not exist', {animate:true});
+			} else if (success === window.game.ENUM.LOGIN.USER_PLAYING) {
+				apprise('User is logged in and playing', {animate:true});
 			} else if (success === window.game.ENUM.LOGIN.UNDEFINED) {
 				apprise('Error occured', {animate:true});
 			}
+
+			$('input').blur();
 		});
 
 		window.game.network.socket.on(window.game.ENUM.TYPE.REGISTER_ANSWER, function(success) {
-			if (success === window.game.ENUM.LOGIN.USER_EXISTS) {
+			if (success === window.game.ENUM.LOGIN.SUCCESS) {
+				return;
+			} else if (success === window.game.ENUM.LOGIN.USER_EXISTS) {
 				apprise('Username is already taken', {animate:true});
 			} else if (success === window.game.ENUM.LOGIN.UNDEFINED) {
 				apprise('Error occured', {animate:true});
 			}
+
+			$('input').blur();
 		});
 
 		login_form.submit(function(e) {
@@ -141,6 +150,11 @@
 			var pass     = $.trim( password.val() );
 
 			if (nickname.length < 4 || nickname.length > 16 || pass.length < 6) {
+				return;
+			}
+
+			if (!/[a-zA-Z0-9_]{4,16}/.test(nickname)) {
+				apprise('Username has unallowed characters. Allowed characters are a-z, A-Z, 0-9 and _', {animate:true});
 				return;
 			}
 
@@ -159,6 +173,11 @@
 			var re_pass  = $.trim( register_re_password.val() );
 
 			if (nickname.length < 4 || nickname.length > 16 || pass < 6 || re_pass < 6) {
+				return;
+			}
+
+			if (!/[a-zA-Z0-9_]{4,16}/.test(nickname)) {
+				apprise('Username has unallowed characters. Allowed characters are a-z, A-Z, 0-9 and _', {animate:true});
 				return;
 			}
 
@@ -204,7 +223,7 @@
 			}
 		});
 
-		// guest_btn.click();
+		guest_btn.click();
 	});
 
 })();

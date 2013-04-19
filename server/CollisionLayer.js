@@ -1,4 +1,6 @@
 require('./Util.js');
+var Vector2d = require('./Vector2d.js');
+var Rect = require('./Rect.js');
 
 var CollisionLayer = Object.extend({
 	width: 0,
@@ -12,6 +14,9 @@ var CollisionLayer = Object.extend({
 
 	solidgid: 0,
 	watergid: 0,
+
+	blueSpawnPoint : null,
+	greenSpawnPoint: null,
 	
 	init : function(map) {
 		this.width = parseInt(map.width, 10);
@@ -37,7 +42,11 @@ var CollisionLayer = Object.extend({
 		for (i = 0, len = layers.length; i < len; i++) {
 			layer = layers[i];
 
-			this.iterateLayer(layer.name, layer.data);
+			if (layer.type === 'tilelayer') {
+				this.iterateLayer(layer.name, layer.data);
+			} else if (layer.type === 'objectgroup') {
+				this.iterateObjectGroup(layer.name, layer.objects);
+			}
 		}
 	},
 
@@ -70,6 +79,23 @@ var CollisionLayer = Object.extend({
 			this.collisionData[y] = new Array(this.width);
 			for (x = 0; x < this.width; x++) {
 				this.collisionData[y][x] = data[i++];
+			}
+		}
+	},
+
+	iterateObjectGroup: function(name, objects) {
+		if(!name.toLowerCase().contains('spawn')) {
+			return;
+		}
+
+		var i = 0, len = objects.length, obj;
+		for (; i < len; i++) {
+			obj = objects[i];
+
+			if (obj.name === 'blue') {
+				this.blueSpawnPoint = new Rect(new Vector2d(obj.x, obj.y), obj.width - 32, obj.height - 32);
+			} else if (obj.name === 'green') {
+				this.greenSpawnPoint = new Rect(new Vector2d(obj.x, obj.y), obj.width - 32, obj.height - 32);
 			}
 		}
 	},

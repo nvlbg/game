@@ -19,6 +19,7 @@ var Game = {
 	TEAM : null,
 	PRESSED : null,
 	SMARTPHONE : null,
+	INPUT_TYPE : null,
 
 	blue  : 0,
 	green : 0,
@@ -28,8 +29,16 @@ var Game = {
 	local_time : 0,
 
 	net_ping_update_step: 0,
-	buffer_size: 0,
-	buffer: null,
+
+	isUsernamePlaying: function(username) {
+		for (var i in Game.players) {
+			if (Game.players[i].nickname === username) {
+				return true;
+			}
+		}
+
+		return false;
+	},
 
 	authenticateSmathphone : function(socket, player) {
 		for(var i in Game.players) {
@@ -45,25 +54,9 @@ var Game = {
 	update : function () {
 		Game.timer.update();
 
-		//TODO: maybe this isn't the right approach
-		if (Game.buffer.length > Game.buffer_size) {
-			Game.buffer.splice(0, 1);
-		}
-		
-		var player, state = {};
 		for(var i in Game.players) {
-			player = Game.players[i];
-
-			state[player.id] = {
-				x: player.pos.x,
-				y: player.pos.y
-			};
-
-			player.update();
+			Game.players[i].update();
 		}
-
-		state.t = Game.local_time;
-		Game.buffer.push(state);
 	},
 
 	correctionUpdate : function () {
@@ -187,25 +180,31 @@ var Game = {
 				return;
 			}
 
-			var team;
-
+			var team, x1, x2, y1, y2;
 			if (Game.blue > Game.green) {
 				team = Game.TEAM.GREEN;
 				Game.green += 1;
+
+				x1 = Game.world.collisionLayer.greenSpawnPoint.left;
+				x2 = Game.world.collisionLayer.greenSpawnPoint.right;
+				y1 = Game.world.collisionLayer.greenSpawnPoint.top;
+				y2 = Game.world.collisionLayer.greenSpawnPoint.bottom;
 			} else {
 				team = Game.TEAM.BLUE;
 				Game.blue += 1;
+
+				x1 = Game.world.collisionLayer.blueSpawnPoint.left;
+				x2 = Game.world.collisionLayer.blueSpawnPoint.right;
+				y1 = Game.world.collisionLayer.blueSpawnPoint.top;
+				y2 = Game.world.collisionLayer.blueSpawnPoint.bottom;
 			}
 
-			var player = new Player(new Vector2d(64, 64), this.DIRECTION.DOWN, 3, 0,
+			var player = new Player(new Vector2d(0, 0), Number.prototype.random(0,3), 3, 0,
 									team, 500, nickname, socket, this.idCounter++);
 
-			while ( Game.collide(player) || 
-					Game.world.checkCollision(player, new Vector2d(0, 0)).xtile !== undefined ||
-					Game.world.checkCollision(player, new Vector2d(0, 0)).ytile !== undefined )
-			{
-				player.pos = new Vector2d(Number.prototype.random(64, 320), Number.prototype.random(64, 320));
-			}
+			do {
+				player.pos = new Vector2d(Number.prototype.random(x1, x2), Number.prototype.random(y1, y2));
+			} while ( Game.collide(player) );
 			player.lastSentPos = player.pos.clone();
 
 			var data = {
@@ -340,10 +339,9 @@ var Game = {
 		Game.TEAM = constants.TEAM;
 		Game.PRESSED = constants.PRESSED;
 		Game.SMARTPHONE = constants.SMARTPHONE;
+		Game.INPUT_TYPE = constants.INPUT_TYPE;
 
 		Game.net_ping_update_step = config.NET_PING_UPDATE_STEP;
-		Game.buffer_size = config.BUFFER_SIZE * 60;
-		Game.buffer = [];
 		
 		Game.world = new World(require('./../public/data/maps/' + config.MAP + '.json'));
 

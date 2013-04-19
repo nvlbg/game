@@ -24,3 +24,7 @@ canvas {
 	font-family: LCD_Solid;
 	src: url(../data/fonts/LCD_Solid.ttf);
 }
+
+#toggleInput {
+	display: none;
+}

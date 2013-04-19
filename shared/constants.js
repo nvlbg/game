@@ -1,30 +1,39 @@
 (function() {
 	var ENUM = {
 		TYPE : {
-			GUEST_LOGIN         : 0,
-			LOGIN               : 1,
-			REGISTER            : 2,
-			SPAWN_REQUEST       : 3,
-			SPAWN               : 4,
-			NEW_PLAYER          : 5,
-			INPUT               : 6,
-			CORRECTION          : 7,
-			PLAYER_DISCONNECTED : 8,
-			PRESSED             : 9,
-			SEQUENCE_NUMBER     : 10,
-			LOCAL_TIME          : 11,
-			SMARTPHONE_CONNECT  : 12,
-			SMARTPHONE_REQUEST  : 13,
-			SMARTPHONE_AUTH     : 14,
-			UPDATE              : 15,
-			PING                : 16,
-			PING_REQUEST        : 17,
-			FAKE_LATENCY_CHANGE : 18,
-			CHAT_MESSAGE        : 19,
+			GUEST_LOGIN             : 0,
+			LOGIN                   : 1,
+			REGISTER                : 2,
+			SPAWN_REQUEST           : 3,
+			SPAWN                   : 4,
+			NEW_PLAYER              : 5,
+			INPUT                   : 6,
+			CORRECTION              : 7,
+			PLAYER_DISCONNECTED     : 8,
+			PRESSED                 : 9,
+			SEQUENCE_NUMBER         : 10,
+			LOCAL_TIME              : 11,
+			
+			SMARTPHONE_CONNECT      : 12,
+			SMARTPHONE_REQUEST      : 13,
+			SMARTPHONE_AUTH         : 14,
+			SMARTPHONE_DISCONNECTED : 15,
+			SET_INPUT               : 16,
 
-			GUEST_LOGIN_ANSWER  : 20,
-			LOGIN_ANSWER        : 21,
-			REGISTER_ANSWER     : 22
+			UPDATE                  : 17,
+			PING                    : 18,
+			PING_REQUEST            : 19,
+			FAKE_LATENCY_CHANGE     : 20,
+			CHAT_MESSAGE            : 21,
+
+			GUEST_LOGIN_ANSWER      : 22,
+			LOGIN_ANSWER            : 23,
+			REGISTER_ANSWER         : 24
+		},
+
+		INPUT_TYPE : {
+			KEYBOARD_AND_MOUSE: 0,
+			SMARTPHONE_CONTROLLER: 1
 		},
 
 		LOGIN : {
@@ -32,7 +41,8 @@
 			FAIL: 1,
 			USER_EXISTS: 2,
 			USER_NOT_FOUND: 3,
-			UNDEFINED: 4
+			USER_PLAYING: 4,
+			UNDEFINED: 5
 		},
 
 		POSITION : {
