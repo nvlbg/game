@@ -24,12 +24,12 @@ var Chat = {
 			data_packet[1] = player.id;
 		}
 
-		socket.emit(constants.TYPE.CHAT_MESSAGE, data_packet);
+		player.socket.emit(constants.TYPE.CHAT_MESSAGE, data_packet);
 	},
 
 	// events
 	onNewMessage: function(message) {
-		if (!(typeof message === "string") || message.length === 0 || message.length > 100) {
+		if (typeof message !== "string" || message.length === 0 || message.length > 100) {
 			return;
 		}
 

@@ -1,0 +1,27 @@
+body {
+	margin: 0;
+	padding: 0;
+	background: #333;
+	overflow: hidden;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	display: none;
+}
+
+#moveAxisBackground {
+	position: absolute;
+}
+
+#moveAxis {
+	position: absolute;
+}
+
+#shootAxisBackground {
+	position: absolute;
+}
+
+#shootAxis {
+	position: absolute;
+}

@@ -65,6 +65,7 @@
 
 		var self = this;
 
+		var length, sqLength;
 		this.move = function(e) {
 			e.preventDefault();
 
@@ -77,7 +78,7 @@
 
 			if(sqLength >= 4356) {  // 66^2 = 4356, 66 = big circle radius (100) - small circle radius (34)
 									// if small circle is outside big circe
-				var length = Math.sqrt(sqLength);
+				length = Math.sqrt(sqLength);
 				self.pos.x = (((self.pos.x - 100) * 66) / length) + 100;
 				self.pos.y = (((self.pos.y - 100) * 66) / length) + 100;
 			}
@@ -137,17 +138,18 @@
 	});
 
 	var fixPosition = function() {
+		var axisPosX, axisPosY, shootPos;
 		if(window.orientation % 180 === 0) {
-			var shootPos = ~~((window.innerHeight - 400) / 3);
-			var axisPosX = (window.innerWidth / 2 - 100);
-			var axisPosY = 200 + 2 * shootPos;
+			shootPos = ~~((window.innerHeight - 400) / 3);
+			axisPosX = (window.innerWidth / 2 - 100);
+			axisPosY = 200 + 2 * shootPos;
 
 			moveAxis.setTranslate(axisPosX, axisPosY);
 			shootAxis.setTranslate(axisPosX, shootPos);
 		} else {
-			var axisPosX = ~~((window.innerWidth - 400) / 3);
-			var axisPosY = window.innerHeight / 2 - 100;
-			var shootPos = 200 + 2 * axisPosX;
+			axisPosX = ~~((window.innerWidth - 400) / 3);
+			axisPosY = window.innerHeight / 2 - 100;
+			shootPos = 200 + 2 * axisPosX;
 
 			moveAxis.setTranslate(axisPosX, axisPosY);
 			shootAxis.setTranslate(shootPos, axisPosY);
@@ -184,7 +186,7 @@
 	var socket = window.io.connect();
 	var input_seq = 0;
 	var DIR_ENUM = window.ENUM.PRESSED;
-	var interval = undefined;
+	var interval;
 
 	var connect = function() {
 		var player = window.prompt("Please, enter your player's username", "");

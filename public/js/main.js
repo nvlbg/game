@@ -102,7 +102,7 @@
 		window.game.network.socket.on(window.game.ENUM.TYPE.GUEST_LOGIN_ANSWER, function(success) {
 			if (success === window.game.ENUM.LOGIN.SUCCESS) {
 
-				panel.remove()
+				panel.remove();
 				window.game.onLoad();
 
 			} else {
@@ -202,8 +202,6 @@
 		// tabs functionality
 		var login_tab = $('#logintab');
 		var register_tab = $('#registertab');
-		var login_form = $('#registered_login');
-		var register_form = $('#register');
 
 		$('#logintab, #registertab').click(function(e) {
 			e.preventDefault();
@@ -223,7 +221,7 @@
 			}
 		});
 
-		guest_btn.click();
+		// guest_btn.click();
 	});
 
 })();

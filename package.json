@@ -21,11 +21,18 @@
     "socket.io": "0.9.x",
     "express": "3.0.x",
     "bcrypt": ">= 0.7.x",
-    "mongojs": ">= 0.7.x",
-    "grunt": "~0.4.1"
+    "mongojs": ">= 0.7.x"
   },
   "engine": "node >= 0.8.16",
   "devDependencies": {
-    "grunt-contrib-clean": "~0.4.0a"
+    "grunt": "~0.4.1",
+    "grunt-contrib-clean": "~0.4.1",
+    "grunt-contrib-concat": "~0.2.0",
+    "grunt-contrib-jshint": "~0.4.3",
+    "grunt-contrib-uglify": "~0.2.0",
+    "grunt-contrib-csslint": "~0.1.2",
+    "grunt-contrib-cssmin": "~0.6.0",
+    "grunt-html": "~0.3.3",
+    "grunt-contrib-htmlmin": "~0.1.3"
   }
 }

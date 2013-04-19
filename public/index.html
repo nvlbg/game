@@ -10,27 +10,27 @@
 	</head>
 	<body>
 		<div id="login">
-			<div id="logintab" class="login_selected"></div>
-			<div id="registertab"></div>
+			<div id="logintab" class="login_selected login_background"></div>
+			<div id="registertab" class="login_background"></div>
 			
 			<div id="colcontent">
 				<form id="registered_login">
-					<input id="username" pattern=".{4,16}" maxlength="16" type="text" required placeholder="Username" />
+					<input class="login_background" id="username" pattern=".{4,16}" maxlength="16" type="text" required placeholder="Username" />
 
-					<input id="password" pattern=".{6,}" type="password" required placeholder="Password" />
+					<input class="login_background" id="password" pattern=".{6,}" type="password" required placeholder="Password" />
 
-					<input type="submit" value="" id="login_btn" />
-					<input type="submit" value="" id="guest" />
+					<input class="login_background" type="submit" value="" id="login_btn" />
+					<input class="login_background" type="submit" value="" id="guest" />
 				</form>
 
 				<form id="register">
-					<input id="register_username" pattern=".{4,16}" maxlength="16" type="text" required placeholder="Username" />
+					<input class="login_background" id="register_username" pattern=".{4,16}" maxlength="16" type="text" required placeholder="Username" />
 
-					<input id="register_password" pattern=".{6,}" type="password" required placeholder="Password" />
+					<input class="login_background" id="register_password" pattern=".{6,}" type="password" required placeholder="Password" />
 
-					<input id="register_re_password" pattern=".{6,}" type="password" required placeholder="Password again" />
+					<input class="login_background" id="register_re_password" pattern=".{6,}" type="password" required placeholder="Password again" />
 
-					<input id="register_btn" type="submit" value="" />
+					<input class="login_background" id="register_btn" type="submit" value="" />
 				</form>
 			</div>
 		</div>

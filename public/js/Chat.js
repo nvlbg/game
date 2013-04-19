@@ -81,10 +81,10 @@
 		onNewMessageRecieved: function(msg) {
 			var timestamp = new Date().toLocaleTimeString();
 			var username = msg.length === 2 ? msg[1] : 'System';
-			var msg = msg[0];
+			var message = msg[0];
 			var cls = username === 'System' ? 'message_system' : 'message_user';
 
-			this.formatMessage(timestamp, username, msg, cls);
+			this.formatMessage(timestamp, username, message, cls);
 		}
 	};
 

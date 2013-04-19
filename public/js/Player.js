@@ -78,7 +78,7 @@
 
 				if (this.pressed > 0) {
 					if (this.pressed & game.ENUM.PRESSED.LEFT) {
-						this.moveLeft()
+						this.moveLeft();
 					} else if (this.pressed & game.ENUM.PRESSED.RIGHT) {
 						this.moveRight();
 					} else if (this.pressed & game.ENUM.PRESSED.UP) {
