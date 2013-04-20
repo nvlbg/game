@@ -17,7 +17,6 @@
 			enemy = enemy || false;
 
 			this.nickname = nickname;
-			this.measure = window.game.font.measureText(me.video.getScreenContext(), this.nickname);
 
 			this.isExploding = false;
 			this.collidable = true;
@@ -111,14 +110,9 @@
 		draw: function(context) {
 			this.parent(context);
 
-			var x = this.pos.x + 16 - this.measure.width/2;
-			var y = this.pos.y+36;
+			var x = this.pos.x + 15;
+			var y = this.pos.y + 36;
 			
-			context.save();
-			context.fillStyle = 'black';
-			context.fillRect(x-1, y-1, this.measure.width+1, this.measure.height-1);
-			context.restore();
-
 			window.game.font.draw(context, this.nickname, x, y);
 		},
 

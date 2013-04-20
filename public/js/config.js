@@ -2,9 +2,6 @@
 	window.game = {};
 	window.game.config = {};
 
-	//TODO: load json via AJAX instead
-	window.game.ENUM = window.ENUM;
-
 	// configuring system variables
 	me.sys.pauseOnBlur = false;
 	me.sys.useNativeAnimFrame = true;

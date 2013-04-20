@@ -48,12 +48,15 @@ module.exports = function(grunt) {
 				src: ['public/css/default.css',
 					  'public/css/login.css',
 					  'public/css/chat.css',
-					  'public/css/apprise-1.5.min.css'],
+					  'public/css/apprise-1.5.min.css',
+					  'public/css/toastr.css',
+					  'public/css/toastr-responsive.css'],
 				dest: 'public/build/<%= pkg.name %>.<%= pkg.version %>.css'
 			},
 
 			lib: {
 				src: ['public/lib/apprise-1.5.min.js',
+					  'public/lib/toastr.js',
 					  'public/lib/jquery-1.9.1.min.js',
 					  'public/lib/melonJS-0.9.7-min.js'],
 				dest: 'public/build/libs.js'
@@ -68,11 +71,6 @@ module.exports = function(grunt) {
 			public: {
 				src: '<%= concat.javascript.dest %>',
 				dest: 'public/build/js/game.min.js'
-			},
-
-			shared: {
-				src: 'shared/constants.js',
-				dest: 'public/build/js/shared.min.js'
 			},
 
 			smartphones: {
@@ -115,12 +113,6 @@ module.exports = function(grunt) {
 				},
 				files: {
 					src: ['Gruntfile.js', 'server.js', 'server/**/*.js']
-				}
-			},
-
-			shared: {
-				files: {
-					src: 'shared/**/*.js'
 				}
 			},
 
@@ -255,7 +247,6 @@ module.exports = function(grunt) {
 	grunt.registerTask('default', ['clean:begin',
 								   'concat:lib',
 								   'jshint:server',
-								   'jshint:shared',
 								   'jshint:smartphones',
 								   'jshint:clientBeforeConcat',
 								   'concat:javascript',

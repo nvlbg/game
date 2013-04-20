@@ -1,6 +1,5 @@
-var constants = require('../shared/constants.js');
-var config = require('./config.json');
-var db = require('mongojs').connect(config.MONGO_CONNECTION_STRING, ['users']);
+var constants = require('../shared/constants.json');
+var db = global.DB;
 var bcrypt = require('bcrypt');
 
 var Users = {
@@ -59,7 +58,9 @@ var Users = {
 				}
 
 				this.set('nickname', username, function() {
-					this.emit(constants.TYPE.LOGIN_ANSWER, constants.LOGIN.SUCCESS);
+					this.set('mongo_id', user[0]._id, function() {
+						this.emit(constants.TYPE.LOGIN_ANSWER, constants.LOGIN.SUCCESS);
+					}.bind(this));
 				}.bind(this));
 			}.bind(this));
 		}.bind(this));
@@ -92,7 +93,15 @@ var Users = {
 				bcrypt.hash(password, salt, function(err, hash) {
 					if (err) { Users.onError(this, constants.TYPE.REGISTER_ANSWER); return; }
 
-					db.users.save({username:username,password:hash}, function(err, saved) {
+					db.users.save({username:username,
+								   password:hash,
+								   ip_address: this.handshake.address.address,
+								   kills:0,
+								   deaths:0,
+								   highest_killstreak:0,
+								   time_played:0,
+								   longest_time_played:0,
+								   smartphone_used:false}, function(err, saved) {
 						if (err || !saved) { Users.onError(this, constants.TYPE.REGISTER_ANSWER); return; }
 
 						this.emit(constants.TYPE.REGISTER_ANSWER, constants.LOGIN.SUCCESS);

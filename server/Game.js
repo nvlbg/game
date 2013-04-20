@@ -176,127 +176,132 @@ var Game = {
 	addNewPlayer : function (socket) {
 		socket.get('nickname', function(err, nickname) {
 			if (err || !nickname || nickname.length === 0) {
-				console.log('FATAL ERROR maybe ???');
+				console.log('FATAL ERROR: no nickname set');
 				return;
 			}
 
-			var team, x1, x2, y1, y2;
-			if (Game.blue > Game.green) {
-				team = Game.TEAM.GREEN;
-				Game.green += 1;
-
-				x1 = Game.world.collisionLayer.greenSpawnPoint.left;
-				x2 = Game.world.collisionLayer.greenSpawnPoint.right;
-				y1 = Game.world.collisionLayer.greenSpawnPoint.top;
-				y2 = Game.world.collisionLayer.greenSpawnPoint.bottom;
-			} else {
-				team = Game.TEAM.BLUE;
-				Game.blue += 1;
-
-				x1 = Game.world.collisionLayer.blueSpawnPoint.left;
-				x2 = Game.world.collisionLayer.blueSpawnPoint.right;
-				y1 = Game.world.collisionLayer.blueSpawnPoint.top;
-				y2 = Game.world.collisionLayer.blueSpawnPoint.bottom;
-			}
-
-			var player = new Player(new Vector2d(0, 0), Number.prototype.random(0,3), 3, 0,
-									team, 500, nickname, socket, this.idCounter++);
-
-			do {
-				player.pos = new Vector2d(Number.prototype.random(x1, x2), Number.prototype.random(y1, y2));
-			} while ( Game.collide(player) );
-			player.lastSentPos = player.pos.clone();
-
-			var data = {
-				x : player.pos.x,
-				y : player.pos.y,
-				d : player.direction,
-				t : player.team,
-				i : player.id,
-				n : player.nickname,
-
-				z : Game.local_time,
-				q : config.INVULNERABLE_TIME_STEP,
+			socket.get('mongo_id', function(err2, mongo_id) {
+				mongo_id = err2 || !mongo_id ? -1 : mongo_id;
 				
-				l : config.MAP,
-				f : config.FRIENDLY_FIRE,
-				p : []
-			};
+				var team, x1, x2, y1, y2;
+				if (Game.blue > Game.green) {
+					team = Game.TEAM.GREEN;
+					Game.green += 1;
 
-			for(var i in Game.players) {
-				data.p.push({
-					x : Game.players[i].pos.x,
-					y : Game.players[i].pos.y,
-					d : Game.players[i].direction,
-					t : Game.players[i].team,
-					i : Game.players[i].id,
-					n : Game.players[i].nickname,
-
-					p : Game.players[i].pressed
-				});
-			}
-
-			socket.emit(Game.TYPE.SPAWN, data);
-
-			socket.broadcast.emit(Game.TYPE.NEW_PLAYER, {
-				x : player.pos.x,
-				y : player.pos.y,
-				d : player.direction,
-				t : player.team,
-				n : player.nickname,
-
-				i : player.id
-			});
-
-			Game.players[player.id] = player;
-
-			socket.on(Game.TYPE.UPDATE, function(data) {
-				var update = {input_seq: data.s};
-				if (data.p !== undefined) {
-					update.pressed = data.p;
-				}
-				if (data.a !== undefined && data.i !== undefined) {
-					update.shootAngle = data.a;
-					update.clientBulletId = data.i;
-				}
-
-				//if (player.fake_latency) {
-				//	setTimeout(function() {
-				//		player.inputs.push(update);
-				//	}, player.fake_latency/2);
-				//} else {
-					player.inputs.push(update);
-				//}
-			});
-
-			socket.on(Game.TYPE.PING_REQUEST, function(data) {
-				socket.emit(Game.TYPE.PING, data);
-			});
-
-			socket.on(Game.TYPE.FAKE_LATENCY_CHANGE, function(newFakeLatency) {
-				player.fake_latency = newFakeLatency;
-			});
-
-			socket.on(Game.TYPE.SMARTPHONE_AUTH, player.answerSmartphone.bind(player));
-
-			console.log('Client connected: ' + player.id);
-			socket.on('disconnect', function() {
-				console.log('Client disconnect: ' + player.id);
-
-				if (player.team === Game.TEAM.BLUE) {
-					Game.blue -= 1;
+					x1 = Game.world.collisionLayer.greenSpawnPoint.left;
+					x2 = Game.world.collisionLayer.greenSpawnPoint.right;
+					y1 = Game.world.collisionLayer.greenSpawnPoint.top;
+					y2 = Game.world.collisionLayer.greenSpawnPoint.bottom;
 				} else {
-					Game.green -= 1;
+					team = Game.TEAM.BLUE;
+					Game.blue += 1;
+
+					x1 = Game.world.collisionLayer.blueSpawnPoint.left;
+					x2 = Game.world.collisionLayer.blueSpawnPoint.right;
+					y1 = Game.world.collisionLayer.blueSpawnPoint.top;
+					y2 = Game.world.collisionLayer.blueSpawnPoint.bottom;
 				}
 
-				socket.broadcast.emit(Game.TYPE.PLAYER_DISCONNECTED, player.id);
+				var player = new Player(new Vector2d(0, 0), Number.prototype.random(0,3), 3, 0,
+										team, 500, nickname, socket, this.idCounter++, mongo_id);
 
-				if(this.players !== null && typeof player !== 'undefined') {
-					delete Game.players[player.id];
+				do {
+					player.pos = new Vector2d(Number.prototype.random(x1, x2), Number.prototype.random(y1, y2));
+				} while ( Game.collide(player) );
+				player.lastSentPos = player.pos.clone();
+
+				var data = {
+					x : player.pos.x,
+					y : player.pos.y,
+					d : player.direction,
+					t : player.team,
+					i : player.id,
+					n : player.nickname,
+
+					z : Game.local_time,
+					q : config.INVULNERABLE_TIME_STEP,
+					
+					l : config.MAP,
+					f : config.FRIENDLY_FIRE,
+					p : []
+				};
+
+				for(var i in Game.players) {
+					data.p.push({
+						x : Game.players[i].pos.x,
+						y : Game.players[i].pos.y,
+						d : Game.players[i].direction,
+						t : Game.players[i].team,
+						i : Game.players[i].id,
+						n : Game.players[i].nickname,
+
+						p : Game.players[i].pressed
+					});
 				}
-			});
 
-			Chat.bindEventListeners(player);
+				socket.emit(Game.TYPE.SPAWN, data);
+
+				socket.broadcast.emit(Game.TYPE.NEW_PLAYER, {
+					x : player.pos.x,
+					y : player.pos.y,
+					d : player.direction,
+					t : player.team,
+					n : player.nickname,
+
+					i : player.id
+				});
+
+				Game.players[player.id] = player;
+
+				socket.on(Game.TYPE.UPDATE, function(data) {
+					var update = {input_seq: data.s};
+					if (data.p !== undefined) {
+						update.pressed = data.p;
+					}
+					if (data.a !== undefined && data.i !== undefined) {
+						update.shootAngle = data.a;
+						update.clientBulletId = data.i;
+					}
+
+					//if (player.fake_latency) {
+					//	setTimeout(function() {
+					//		player.inputs.push(update);
+					//	}, player.fake_latency/2);
+					//} else {
+						player.inputs.push(update);
+					//}
+				});
+
+				socket.on(Game.TYPE.PING_REQUEST, function(data) {
+					socket.emit(Game.TYPE.PING, data);
+				});
+
+				socket.on(Game.TYPE.FAKE_LATENCY_CHANGE, function(newFakeLatency) {
+					player.fake_latency = newFakeLatency;
+				});
+
+				socket.on(Game.TYPE.SMARTPHONE_AUTH, player.answerSmartphone.bind(player));
+
+				console.log('Client connected: ' + player.id);
+				socket.on('disconnect', function() {
+					console.log('Client disconnect: ' + player.id);
+
+					if (player.team === Game.TEAM.BLUE) {
+						Game.blue -= 1;
+					} else {
+						Game.green -= 1;
+					}
+
+					socket.broadcast.emit(Game.TYPE.PLAYER_DISCONNECTED, player.id);
+
+					if(this.players !== null && typeof player !== 'undefined') {
+						delete Game.players[player.id];
+					}
+				});
+
+				Chat.bindEventListeners(player);
+
+			}.bind(this));
 		}.bind(this));
 	},
 
@@ -331,7 +336,7 @@ var Game = {
 		this._dt = this._dte = new Date().getTime();
 		this.createTimer();
 
-		var constants = require('../shared/constants.js');
+		var constants = require('../shared/constants.json');
 
 		Game.TYPE = constants.TYPE;
 		Game.POSITION = constants.POSITION;

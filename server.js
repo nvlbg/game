@@ -7,7 +7,9 @@ var express = require('express'),
 	Users = require('./server/Users.js'),
 
 	config = require('./server/config.json'),
-	constants = require('./shared/constants.js');
+	constants = require('./shared/constants.json');
+
+global.db = require('mongojs').connect(config.MONGO_CONNECTION_STRING, ['users']);
 
 global.Game = require('./server/Game.js');
 global.Game.init();

@@ -1,5 +1,5 @@
 var fs = require('fs');
-var constants = require('../shared/constants.js');
+var constants = require('../shared/constants.json');
 var log = fs.createWriteStream('chat.log', {'flags': 'a'});
 
 

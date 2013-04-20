@@ -7,7 +7,7 @@ var config = require('./config.json');
 
 var Player = Rect.extend({
 	// constructor
-	init : function(pos, dir, speed, friction, team, shootSpeed, nickname, socket, id) {
+	init : function(pos, dir, speed, friction, team, shootSpeed, nickname, socket, id, mongoId) {
 		this.parent(pos, 32, 32);
 
 		this.nickname = nickname;
@@ -58,6 +58,13 @@ var Player = Rect.extend({
 		}*/
 
 		this.id = id;
+		this.mongoId = mongoId;
+
+		// used by Stats.js to keep track of killstreaks and other
+		this.metaStats = {
+			killStreak: 0,
+			startTime: new Date().getTime()
+		};
 	},
 
 	makeInvulnerable: function() {
