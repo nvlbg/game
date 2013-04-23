@@ -8,8 +8,10 @@ var config = require('./config.json');
 
 var Game = {
 	players : {},
+	bonuses : [],
 	idCounter : 0,
 
+	StatsManager : null,
 	world : null,
 	timer : null,
 
@@ -152,6 +154,36 @@ var Game = {
 			}
 		}
 
+		// add bonus updates
+		var bonus, bonusCnt = 0, bonusLen = Game.bonuses.length;
+		for ( ; bonusCnt < bonusLen; bonusCnt++ ) {
+			bonus = Game.bonuses[ bonusCnt ];
+
+			if (bonus.updated) {
+				if (correction.b === undefined) {
+					correction.b = {};
+					isEmpty = false;
+				}
+
+				if (bonus.valid) {
+					correction.b[bonus.id] = {
+						x : bonus.pos.x,
+						y : bonus.pos.y,
+						t : bonus.type,
+						v : true
+					};
+				} else {
+					correction.b[bonus.id] = {
+						v : false
+					};
+
+					//TODO: remove bonus from bonuses array
+				}
+
+				bonus.updated = false;
+			}
+		}
+
 		if(!isEmpty) {
 			correction.t = Game.local_time;
 			console.log(correction);
@@ -286,6 +318,8 @@ var Game = {
 				socket.on('disconnect', function() {
 					console.log('Client disconnect: ' + player.id);
 
+					Game.StatsManager.updateTime(player);
+
 					if (player.team === Game.TEAM.BLUE) {
 						Game.blue -= 1;
 					} else {
@@ -332,6 +366,8 @@ var Game = {
 	},
 
 	init : function () {
+		Game.StatsManager = require('./StatsManager.js');
+		
 		this.local_time = 0.016;
 		this._dt = this._dte = new Date().getTime();
 		this.createTimer();

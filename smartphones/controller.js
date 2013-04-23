@@ -185,8 +185,41 @@
 
 	var socket = window.io.connect();
 	var input_seq = 0;
-	var DIR_ENUM = window.ENUM.PRESSED;
 	var interval;
+
+	var jsonRequest = new XMLHttpRequest();
+	jsonRequest.onreadystatechange = function() {
+		if (this.readyState === 4 && this.status === 200) {
+			window.ENUM = JSON.parse(this.responseText);
+			window.DIR_ENUM = ENUM.PRESSED;
+
+			socket.on(window.ENUM.TYPE.SMARTPHONE_AUTH, function(result) {
+				if (result === window.ENUM.SMARTPHONE.ACCEPTED) {
+					interval = setInterval(update, 1000 / 10);
+				} else {
+					if (result === window.ENUM.SMARTPHONE.DECLINED) {
+						window.alert("Sorry, the user declined your access.");
+					} else if (result === window.ENUM.SMARTPHONE.NO_SUCH_USER) {
+						window.alert("There isn't a player with that nickname playing.");
+					}
+
+					connect();
+				}
+			});
+
+			socket.on(window.ENUM.TYPE.SET_INPUT, function(input_method) {
+				if (input_method === window.ENUM.INPUT_TYPE.KEYBOARD_AND_MOUSE) {
+					clearInterval(interval);
+				} else if (input_method === window.ENUM.INPUT_TYPE.SMARTPHONE_CONTROLLER) {
+					interval = setInterval(update, 1000 / 10);
+				}
+			});
+
+			connect();
+		}
+	};
+	jsonRequest.open('GET', 'shared/constants.json', true);
+	jsonRequest.send();
 
 	var connect = function() {
 		var player = window.prompt("Please, enter your player's username", "");
@@ -242,28 +275,4 @@
 		}
 	};
 
-	socket.on(window.ENUM.TYPE.SMARTPHONE_AUTH, function(result) {
-		if (result === window.ENUM.SMARTPHONE.ACCEPTED) {
-			interval = setInterval(update, 1000 / 10);
-		} else {
-			if (result === window.ENUM.SMARTPHONE.DECLINED) {
-				window.alert("Sorry, the user declined your access.");
-			} else if (result === window.ENUM.SMARTPHONE.NO_SUCH_USER) {
-				window.alert("There isn't a player with that nickname playing.");
-			}
-
-			connect();
-		}
-	});
-
-	socket.on(window.ENUM.TYPE.SET_INPUT, function(input_method) {
-		if (input_method === window.ENUM.INPUT_TYPE.KEYBOARD_AND_MOUSE) {
-			clearInterval(interval);
-		} else if (input_method === window.ENUM.INPUT_TYPE.SMARTPHONE_CONTROLLER) {
-			interval = setInterval(update, 1000 / 10);
-		}
-	});
-
-	connect();
-	
 })();

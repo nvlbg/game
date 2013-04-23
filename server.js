@@ -1,6 +1,6 @@
-var express = require('express'),
-	app = express(),
+var connect = require('connect'),
 	http = require('http'),
+	app = connect(),
 	server = http.createServer(app),
 	io = require('socket.io').listen(server),
 
@@ -9,31 +9,17 @@ var express = require('express'),
 	config = require('./server/config.json'),
 	constants = require('./shared/constants.json');
 
-global.db = require('mongojs').connect(config.MONGO_CONNECTION_STRING, ['users']);
+global.DB = require('mongojs').connect(config.MONGO_CONNECTION_STRING, ['users']);
 
 global.Game = require('./server/Game.js');
 global.Game.init();
 
-var ips = [];
-app.use(function(req, res, next) {
-	var ip_address = null;
-	if(req.headers['x-forwarded-for']){
-		ip_address = req.headers['x-forwarded-for'];
-	}
-	else {
-		ip_address = req.connection.remoteAddress;
-	}
+app.use('/shared', connect.static(__dirname + '/shared'));
+app.use('/smartphones', connect.static(__dirname + '/smartphones'));
+app.use(connect.static(__dirname + '/public'));
 
-	if (ips.indexOf(ip_address) === -1) {
-		console.log('Client connected: ' + ip_address);
-		ips.push(ip_address);
-	}
-
-	next();
-});
-app.use('/shared', express.static(__dirname + '/shared'));
-app.use('/smartphones', express.static(__dirname + '/smartphones'));
-app.use(express.static(__dirname + '/public'));
+server.listen(config.PORT);
+console.log('Server started at 127.0.0.1:' + config.PORT);
 
 // configure web sockets
 io.configure(function () {
@@ -44,8 +30,6 @@ io.configure(function () {
 	});
 });
 
-server.listen(config.PORT);
-console.log('Server started at 127.0.0.1:' + config.PORT);
 
 io.sockets.on('connection', function (socket) {
 	// login dealing
@@ -59,5 +43,9 @@ io.sockets.on('connection', function (socket) {
 	// smartphone client conneted
 	socket.on(constants.TYPE.SMARTPHONE_CONNECT, function(player) {
 		global.Game.authenticateSmathphone(socket, player);
+	});
+
+	socket.on('debug_ping', function(data) {
+		console.log(data !== undefined ? 'DEBUG: ' + data : 'DEBUG');
 	});
 });

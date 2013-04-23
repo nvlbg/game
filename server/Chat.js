@@ -2,6 +2,9 @@ var fs = require('fs');
 var constants = require('../shared/constants.json');
 var log = fs.createWriteStream('chat.log', {'flags': 'a'});
 
+// debug
+var Bonus = require('./Bonus.js');
+var Vector2d = require('./Vector2d.js');
 
 var Chat = {
 	// methods
@@ -34,6 +37,12 @@ var Chat = {
 		}
 
 		log.write('[' + new Date().toLocaleTimeString() + '] ' + this.nickname + ': ' + message + '\n');
+
+		// debug chat messages
+		//TODO: remove this when in production
+		if (message === '/bonus') {
+			Game.bonuses.push(new Bonus( new Vector2d(300, 300), 0, 2500 ));
+		}
 
 		var i, data_packet = [message, this.id], players = global.Game.players;
 		for (i in players) {

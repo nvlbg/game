@@ -94,6 +94,7 @@ var Player = Rect.extend({
 			}.bind(this));
 			
 			this.smartphone.on('disconnect', function() {
+				console.log('SMARTPHONE DISCONNECTED');
 				this.socket.emit(Game.TYPE.SMARTPHONE_DISCONNECTED);
 				this.smartphone = null;
 			}.bind(this));
@@ -116,6 +117,8 @@ var Player = Rect.extend({
 					this.inputs.push(input);
 				}
 			}.bind(this));
+
+			Game.StatsManager.setSmartphoneControllerUsed(this);
 		} else {
 			this.smartphone.emit(Game.TYPE.SMARTPHONE_AUTH, Game.SMARTPHONE.DECLINED);
 			this.smartphone = null;

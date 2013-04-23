@@ -68,8 +68,10 @@
 				me.game.remove(this);
 			}
 
-			// hacky way to force redraw next frame ( avoids a bug where the bullet is gone but is still drawn )
-			window.game.network.player.needsUpdate = true;
+			// force redraw next frame ( avoids a bug where the bullet is gone but is still drawn )
+			setTimeout(function() {
+				me.game.repaint();
+			}, 0);
 		},
 
 		explode : function() {

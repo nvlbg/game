@@ -5,6 +5,7 @@
 		socket  : null,
 		player  : null,
 		players : null,
+		bonuses : null,
 
 		_dt : null,
 		_dte : null,
@@ -22,8 +23,9 @@
 
 		// constructor
 		init : function() {
-			// set players into an empty dict
+			// set players and bonuses into an empty dict
 			this.players = {};
+			this.bonuses = {};
 
 			// establish websocket connection
 			this.socket = io.connect();
@@ -37,7 +39,7 @@
 			this.socket.on(game.ENUM.TYPE.PING, this.onPing.bind(this));
 
 			// init chat stuff
-			// window.game.Chat.init();
+			window.game.AchievementManager.init(this.socket);
 		},
 
 		// methods
@@ -158,7 +160,7 @@
 			var i, player;
 			for (i in data) {
 				player = this.players[i];
-				if (i === 't' || player === undefined) {
+				if (i === 't' || i === 'b' || player === undefined) {
 					continue;
 				}
 
@@ -231,6 +233,27 @@
 					}
 
 					player.updates.push(data[i]);
+				}
+			}
+
+			// handle bonuses
+			if (data.b !== undefined) {
+				var idx, bonus;
+				for (idx in data.b) {
+					bonus = data.b[idx];
+
+					if (bonus.v) { // is bonus valid?
+						// add this bonus
+						this.bonuses[idx] = new game.Bonus(bonus.x, bonus.y, bonus.t);
+						me.game.add(this.bonuses[idx], 3);
+						me.game.sort();
+					} else {
+						// remove this bonus
+						if (this.bonuses[idx] !== undefined) {
+							me.game.remove(this.bonuses[idx]);
+							me.game.sort();
+						}
+					}
 				}
 			}
 

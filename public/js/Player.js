@@ -56,9 +56,10 @@
 					this.renderable.alpha = 1.0;
 				}
 
-				this.needsUpdate = false;
 				updated = true;
 			}
+			
+			this.needsUpdate = false;
 
 			if (this.smarthphoneConnected) {
 				updated = this.applyClientSideInterpolation() || updated;

@@ -1,5 +1,5 @@
 var constants = require('../shared/constants.json');
-var db = global.DB;
+var db = null;
 var bcrypt = require('bcrypt');
 
 var Users = {
@@ -8,6 +8,10 @@ var Users = {
 
 	// methods
 	bindEventListeners: function(socket) {
+		if (db === null) {
+			db = global.DB;
+		}
+
 		socket.on(constants.TYPE.GUEST_LOGIN, Users.onGuestLogin.bind(socket));
 		socket.on(constants.TYPE.LOGIN, Users.onLoginAttempt.bind(socket));
 		socket.on(constants.TYPE.REGISTER, Users.onRegisterAttempt.bind(socket));
@@ -98,6 +102,8 @@ var Users = {
 								   ip_address: this.handshake.address.address,
 								   kills:0,
 								   deaths:0,
+								   friendlyKills:0,
+								   friendlyDeaths:0,
 								   highest_killstreak:0,
 								   time_played:0,
 								   longest_time_played:0,

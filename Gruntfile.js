@@ -29,6 +29,7 @@ module.exports = function(grunt) {
 			javascript: {
 				src: ['public/js/config.js',
 					  'public/js/Network.js',
+					  'public/js/AchievementManager.js',
 					  'public/js/Chat.js',
 					  'public/js/LoadingScreen.js',
 					  'public/js/MenuScreen.js',

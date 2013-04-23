@@ -1,6 +1,6 @@
 var db = global.DB;
 
-var Stats = {
+var StatsManager = {
 	onError: function(err, updated) {
 		if (err || !updated) {
 			console.log('ERROR: I couldn\'t update a record');
@@ -8,6 +8,22 @@ var Stats = {
 	},
 
 	// setters/updators
+	addFriendlyKill: function(player) {
+		if (player.mongoId === -1) {
+			return;
+		}
+
+		db.users.update({_id:player.mongoId}, { $inc: {friendlyKills: 1} });
+	},
+
+	addFriendlyDeath: function(player) {
+		if (player.mongoId === -1) {
+			return;
+		}
+
+		db.users.update({_id:player.mongoId}, { $inc: {friendlyDeaths: 1} });
+	},
+
 	addKill: function(player) {
 		if (player.mongoId === -1) {
 			return;
@@ -15,6 +31,61 @@ var Stats = {
 
 		player.metaStats.killStreak += 1;
 		db.users.update({_id:player.mongoId}, { $inc: { kills: 1 } }, this.onError);
+
+		db.users.find({_id:player.mongoId}, function(err, user) {
+			if (err || !user) {
+				console.log('ERROR: I couldn\'t read a record');
+				return;
+			}
+
+			switch(user.kills) {
+				case 10:
+					player.socket.emit(Game.TYPE.ACHIEVEMENT_UNLOCKED, {
+						title: 'Kills',
+						message: 'You killed your 10th enemy'
+					});
+					break;
+				case 25:
+					player.socket.emit(Game.TYPE.ACHIEVEMENT_UNLOCKED, {
+						title: 'Kills',
+						message: 'You killed your 25th enemy'
+					});
+					break;
+				case 50:
+					player.socket.emit(Game.TYPE.ACHIEVEMENT_UNLOCKED, {
+						title: 'Kills',
+						message: 'You killed yout 50th enemy'
+					});
+					break;
+				case 100:
+					player.socket.emit(Game.TYPE.ACHIEVEMENT_UNLOCKED, {
+						title: 'Kills',
+						message: 'You killed yout 100th enemy'
+					});
+					break;
+			}
+		});
+
+		switch(player.metaStats.killStreak) {
+			case 20:
+				player.socket.emit(Game.TYPE.ACHIEVEMENT_UNLOCKED, {
+					title: 'Killstreak',
+					message: 'You are on a streak of 20 players in a row'
+				});
+				break;
+			case 10:
+				player.socket.emit(Game.TYPE.ACHIEVEMENT_UNLOCKED, {
+					title: 'Killstreak',
+					message: 'You are on a streak of 10 players in a row'
+				});
+				break;
+			case 5:
+				player.socket.emit(Game.TYPE.ACHIEVEMENT_UNLOCKED, {
+					title: 'Killstreak',
+					message: 'You are on a streak of 5 players in a row'
+				});
+				break;
+		}
 	},
 
 	addDeath: function(player) {
@@ -37,6 +108,10 @@ var Stats = {
 						return;
 					}
 
+					player.socket.emit(Game.TYPE.ACHIEVEMENT_UNLOCKED, {
+						title: 'New personal record',
+						message: 'You beat your personal killstreak record: ' + player.metaStats.killStreak + 'in a row'
+					});
 					player.metaStats.killStreak = 0;
 				});
 			} else {
@@ -75,7 +150,28 @@ var Stats = {
 			return;
 		}
 
-		db.users.update({_id:player.mongoId}, { $set : {smartphone_used: true} });
+		db.users.find({_id:player.mongoId}, function(err, user) {
+			if (err || !user) {
+				console.log('ERROR: I couldn\'t read a record');
+				return;
+			}
+
+			if (user.smartphone_used === true) {
+				return;
+			}
+
+			db.users.update({_id:player.mongoId}, { $set : {smartphone_used: true} }, function(err, updated) {
+				if (err || !updated) {
+					console.log('ERROR: I couldn\'t update a record');
+					return;
+				}
+
+				player.socket.emit(Game.TYPE.ACHIEVEMENT_UNLOCKED, {
+					title: 'New achievement',
+					message: 'you unlocked an achievement by using your smartphone'
+				});
+			});
+		});
 	},
 
 	// getters
@@ -162,4 +258,4 @@ var Stats = {
 	}
 };
 
-module.exports = Stats;
+module.exports = StatsManager;

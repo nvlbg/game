@@ -61,6 +61,14 @@ var Bullet = Rect.extend({
 				// or friendly fire is enabled and we have hit friend
 				
 				if (!collision.obj.invulnerable) {
+					if (collision.obj.team === this.team) {
+						Game.StatsManager.addFriendlyKill(Game.players[this.ownerID]);
+						Game.StatsManager.addFriendlyDeath(collision.obj);
+					} else {
+						Game.StatsManager.addKill(Game.players[this.ownerID]);
+						Game.StatsManager.addDeath(collision.obj);
+					}
+
 					collision.obj.explode();
 					Game.players[this.ownerID].removeBullet( this.id );
 					return;

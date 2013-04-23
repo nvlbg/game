@@ -27,12 +27,21 @@
 
 		"GUEST_LOGIN_ANSWER"      : 22,
 		"LOGIN_ANSWER"            : 23,
-		"REGISTER_ANSWER"         : 24
+		"REGISTER_ANSWER"         : 24,
+
+		"ACHIEVEMENT_UNLOCKED"    : 25
 	},
 
 	"INPUT_TYPE" : {
 		"KEYBOARD_AND_MOUSE"      : 0,
 		"SMARTPHONE_CONTROLLER"   : 1
+	},
+
+	"BONUS_TYPE" : {
+		"SPEED"                   : 0,
+		"ARMOR"                   : 1,
+		"ENERGY_SHIELD"           : 2,
+		"FASTER_BULLETS"          : 3
 	},
 
 	"LOGIN" : {

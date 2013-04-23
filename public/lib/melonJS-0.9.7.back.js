@@ -70,7 +70,7 @@ var me = me || {};
 		 * @type Boolean
 		 * @memberOf me.sys
 		 */
-		localStorage : (typeof($.localStorage) === 'object'),
+		localStorage : (typeof($.localStorage) == 'object'),
 		/**
 		 * Browser Gyroscopic Motion Event capabilities (read-only) <br>
 		 * @type Boolean
@@ -83,7 +83,7 @@ var me = me || {};
 		 * @type Boolean
 		 * @memberOf me.sys
 		 */
-		nativeBase64 : (typeof($.atob) === 'function'),
+		nativeBase64 : (typeof($.atob) == 'function'),
 
 		/**
 		 * Touch capabilities <br>
@@ -122,14 +122,7 @@ var me = me || {};
 		 * @memberOf me.sys
 		 */
 		scale : null, //initialized by me.video.init
-		
-		/**
-		 * enable/disable video scaling interpolation (default disable)<br>
-		 * @type Boolean
-		 * @memberOf me.sys
-		 */
-		scalingInterpolation : false,
-	
+ 	
 		/**
 		 * Global gravity settings <br>
 		 * will override entities init value if defined<br>
@@ -194,7 +187,6 @@ var me = me || {};
 		 * @memberOf me.sys
 		 */
 		preRender : false,
-		
 
 		// System methods
 		/**
@@ -249,12 +241,11 @@ var me = me || {};
 			}
 
 			// clean up loading event
-			if (document.removeEventListener) {
+			if (document.removeEventListener)
 				document.removeEventListener("DOMContentLoaded", domReady, false);
-			} else {
+			else
 				$.removeEventListener("load", domReady, false);
-			}
-			
+
 			// Remember that the DOM is ready
 			isReady = true;
 
@@ -265,6 +256,7 @@ var me = me || {};
 			readyList.length = 0;
 		}
 	}
+	;
 
 	// bind ready
 	function bindReady() {
@@ -284,7 +276,7 @@ var me = me || {};
 			// A fallback to window.onload, that will always work
 			$.addEventListener("load", domReady, false);
 		}
-	}
+	};
 
 	/**
 	 * Specify a function to execute when the DOM is fully loaded
@@ -358,11 +350,14 @@ var me = me || {};
 
 	/************************************************************************************/
 
-	/*
-	 * some "Javascript API" patch & enhancement
-	 */
+	/*---
 
-	var initializing = false, fnTest = /var xyz/.test(function() {/**@nosideeffects*/var xyz;}) ? /\bparent\b/ : /[\D|\d]*/;
+	 	some "Javascript API" patch & enhancement
+
+						---*/
+
+	var initializing = false,
+		fnTest = /xyz/.test(function() {/**@nosideeffects*/xyz;}) ? /\bparent\b/ : /.*/;
 
 	/**
 	 * JavaScript Inheritance Helper <br>
@@ -426,8 +421,8 @@ var me = me || {};
 		// Copy the properties over onto the new prototype
 		for ( var name in prop) {
 			// Check if we're overwriting an existing function
-			proto[name] = typeof prop[name] === "function"
-					&& typeof parent[name] === "function"
+			proto[name] = typeof prop[name] == "function"
+					&& typeof parent[name] == "function"
 					&& fnTest.test(prop[name]) ? (function(name, fn) {
 				return function() {
 					var tmp = this.parent;
@@ -504,7 +499,7 @@ var me = me || {};
 			// http://es5.github.com/#x15.3.4.5
 			// from https://github.com/kriskowal/es5-shim
 			var target = this;
-			if (typeof target !== "function") {
+			if (typeof target != "function") {
 				throw new TypeError("Function.prototype.bind called on incompatible " + target);
 			}
 			var args = Array.prototype.slice.call(arguments, 1);
@@ -526,7 +521,7 @@ var me = me || {};
 			}
 			return bound;
 		};
-	}
+	};
 	
 	
 	if (typeof Date.now === "undefined") {
@@ -535,7 +530,7 @@ var me = me || {};
 		 * supporting Date.now (JS 1.5)
 		 * @private
 		 */
-		Date.now = function(){return new Date().getTime();};
+		Date.now = function(){return new Date().getTime()};
 	}
 
 	if(typeof console === "undefined") {
@@ -610,7 +605,7 @@ var me = me || {};
 	 * @return {Boolean} true if string contains only digits
 	 */
 	String.prototype.isNumeric = function() {
-		return (this !== null && !isNaN(this) && this.trim() !== "");
+		return (this != null && !isNaN(this) && this.trim() != "");
 	};
 
 	/**
@@ -619,7 +614,8 @@ var me = me || {};
 	 * @return {Boolean} true if the string is either true or false
 	 */
 	String.prototype.isBoolean = function() {
-		return (this !== null && ("true" === this.trim() || "false" === this.trim()));
+		return (this != null && ("true" == this.trim() || "false" == this
+				.trim()));
 	};
 
 	/**
@@ -695,7 +691,8 @@ var me = me || {};
 	 * @return {String} converted hexadecimal value
 	 */
 	Number.prototype.toHex = function() {
-		return "0123456789ABCDEF".charAt((this - this % 16) >> 4) + "0123456789ABCDEF".charAt(this % 16);
+		return "0123456789ABCDEF".charAt((this - this % 16) >> 4)
+				+ "0123456789ABCDEF".charAt(this % 16);
 	};
 
 	/**
@@ -771,15 +768,14 @@ var me = me || {};
 		}
 	});
 
-	/*
-	 * me init stuff
-     */
+	/*---
+	 	ME init stuff
+						---*/
 
 	function _init_ME() {
 		// don't do anything if already initialized (should not happen anyway)
-		if (me_initialized) {
+		if (me_initialized)
 			return;
-		}
 
 		// enable/disable the cache
 		me.utils.setNocache(document.location.href.match(/\?nocache/)||false);
@@ -813,7 +809,7 @@ var me = me || {};
 
 		me_initialized = true;
 
-	}
+	};
 
 	/******************************************/
 	/*		OBJECT DRAWING MANAGEMENT           */
@@ -917,7 +913,7 @@ var me = me || {};
 		 */
 		api.remove = function(obj) {
 			var idx = dirtyObjects.indexOf(obj);
-			if (idx !== -1) {
+			if (idx != -1) {
 				// remove the object from the list of obj to draw
 				dirtyObjects.splice(idx, 1);
 
@@ -929,14 +925,14 @@ var me = me || {};
 				api.makeDirty(obj, true);
 			}
  		};
-		
+
 		/**
 		 * return the amount of draw object per frame
 		 */
 		api.getDrawCount = function() {
 			return drawCount;
  		};
-		
+
 		/**
 		 * draw all dirty objects/regions
 		 */
@@ -948,7 +944,7 @@ var me = me || {};
 			// save the current context
 			context.save();
 			// translate by default to screen coordinates
-			context.translate(-posx, -posy);
+			context.translate(-posx, -posy)
 			
 			// substract the map offset to current the current pos
 			posx -= me.game.currentLevel.pos.x;
@@ -1135,7 +1131,7 @@ var me = me || {};
 		 * me.game.onLevelLoaded = this.myFunction.bind(this);
 		 */
 		 api.onLevelLoaded = null;
-		 
+
 		/**
 		 * Initialize the game manager
 		 * @name me.game#init
@@ -1175,18 +1171,16 @@ var me = me || {};
 		api.reset = function() {
 
 			// initialized the object if not yet done
-			if (!initialized) {
+			if (!initialized)
 				api.init();
-			}
 
 			// remove all objects
 			api.removeAll(true);
 
 			// reset the viewport to zero ?
-			if (api.viewport) {
+			if (api.viewport)
 				api.viewport.reset();
-			}
-			
+
 			// also reset the draw manager
 			drawManager.reset();
 
@@ -1221,7 +1215,7 @@ var me = me || {};
 					// only if visible
 					api.add(layers[i]);
 				}
-			}
+			};
 
 			// change the viewport limit
 			api.viewport.setBounds(Math.max(api.currentLevel.width, api.viewport.width),
@@ -1239,7 +1233,7 @@ var me = me || {};
 			}
 			
 			// check if the map has different default (0,0) screen coordinates
-			if (api.currentLevel.pos.x !== api.currentLevel.pos.y) {
+			if (api.currentLevel.pos.x != api.currentLevel.pos.y) {
 				// translate the display accordingly
 				frameBuffer.translate( api.currentLevel.pos.x , api.currentLevel.pos.y );
 			}
@@ -1249,7 +1243,7 @@ var me = me || {};
 
 			// fire the callback if defined
 			if (api.onLevelLoaded) {
-				api.onLevelLoaded.call(api.onLevelLoaded, level.name);
+				api.onLevelLoaded.call(api.onLevelLoaded, level.name)
 			}
 			//publish the corresponding message
 			me.event.publish(me.event.LEVEL_LOADED, [level.name]);
@@ -1460,7 +1454,7 @@ var me = me || {};
 		 * @public
 		 * @function
 		 * @param {me.ObjectEntity} obj Object to be removed
-		 * @param {Boolean} [force=false] Force immediate deletion.<br>
+		 * @param {Boolean=false} force Force immediate deletion.<br>
 		 * <strong>WARNING</strong>: Not safe to force asynchronously (e.g. onCollision callbacks)
 		 */
 		api.remove = function(obj, force) {
@@ -1501,7 +1495,7 @@ var me = me || {};
 		/**
 		 * remove all objects<br>
 		 * @name me.game#removeAll
-		 * @param {Boolean} [force=false] Force immediate deletion.<br>
+		 * @param {Boolean=false} force Force immediate deletion.<br>
 		 * <strong>WARNING</strong>: Not safe to force asynchronously (e.g. onCollision callbacks)
 		 * @public
 		 * @function
@@ -1718,7 +1712,6 @@ var me = me || {};
 	// END END END
 	/*---------------------------------------------------------*/
 })(window);
-
 /*
  * MelonJS Game Engine
  * Copyright (C) 2011 - 2013, Olivier BIOT
@@ -2481,7 +2474,6 @@ var me = me || {};
 	// END END END
 	/*---------------------------------------------------------*/
 })(window);
-
 /*
  * MelonJS Game Engine
  * Copyright (C) 2011 - 2013, Olivier BIOT
@@ -2545,7 +2537,6 @@ var me = me || {};
 	// END END END
 	/*---------------------------------------------------------*/
 })(window);
-
 /*
  * MelonJS Game Engine
  * Copyright (C) 2011 - 2013, Olivier BIOT
@@ -2645,7 +2636,6 @@ var me = me || {};
 	// END END END
 	/*---------------------------------------------------------*/
 })(window);
-
 /*
  * MelonJS Game Engine
  * Copyright (C) 2011 - 2013, Olivier BIOT
@@ -2654,6 +2644,12 @@ var me = me || {};
  */
 
 (function($) {
+	
+	/** 
+	 * a local constant for the (Math.PI * 2) value
+	 * @private
+	 */
+	var PI2 = Math.PI * 2;
 
 	/**
 	 * A Simple object to display a sprite on screen.
@@ -2697,13 +2693,7 @@ var me = me || {};
 		 * @name me.SpriteObject#angle
 		 */
 		angle: 0,
-
-		/**
-		 * Source rotation angle for pre-rotating the source image<br>
-		 * Commonly used for TexturePacker
-		 * @private
-		 */
-		_sourceAngle: 0,
+		
 
 		/**
 		 * Define the sprite opacity<br>
@@ -2914,36 +2904,27 @@ var me = me || {};
 
 			// clamp position vector to pixel grid
 			var xpos = ~~this.pos.x, ypos = ~~this.pos.y;
-
-			var w = this.width, h = this.height;
-			var angle = this.angle + this._sourceAngle;
-
-			if ((this.scaleFlag) || (angle!==0)) {
+			
+			if ((this.scaleFlag) || (this.angle!==0)) {
 				// calculate pixel pos of the anchor point
-				var ax = w * this.anchorPoint.x, ay = h * this.anchorPoint.y;
+				var ax = this.width * this.anchorPoint.x, ay = this.height * this.anchorPoint.y;
 				// translate to the defined anchor point
 				context.translate(xpos + ax, ypos + ay);
 				// scale
 				if (this.scaleFlag)
 					context.scale(this.scale.x, this.scale.y);
-				if (angle!==0)
-					context.rotate(angle);
-
-				if (this._sourceAngle!==0) {
-					// swap w and h for rotated source images
-					w = this.height, h = this.width;
-					xpos = -ay, ypos = -ax;
-				}
-				else
-					// reset coordinates back to upper left coordinates
-					xpos = -ax, ypos = -ay;
+				if (this.angle!==0)
+					context.rotate(this.angle);
+				// reset coordinates back to upper left coordinates
+				xpos = -ax;
+				ypos = -ay;
 			}
 
 			context.drawImage(this.image,
 							this.offset.x, this.offset.y,
-							w, h,
+							this.width, this.height,
 							xpos, ypos,
-							w, h);
+							this.width, this.height);
 
 			
 			// restore the context
@@ -3034,6 +3015,10 @@ var me = me || {};
 			// Spacing and margin
 			this.spacing = spacing || 0;
 			this.margin = margin || 0;
+			
+			// to keep track of angle change
+			// (texture packer)
+			this.defaultAngle = 0;
 
 			// call the constructor
 			this.parent(x, y, image, spritewidth, spriteheight, spacing, margin);
@@ -3180,7 +3165,10 @@ var me = me || {};
 			this.offset = frame.offset;
 			this.width = frame.width;
 			this.height = frame.height;
-			this._sourceAngle = frame.angle;
+			if (this.defaultAngle !== frame.angle) {
+				this.angle = (this.angle + frame.angle - this.defaultAngle) % (PI2);
+				this.defaultAngle = frame.angle;
+			}
 		},
 		
 		/**
@@ -3223,7 +3211,6 @@ var me = me || {};
 	// END END END
 	/*---------------------------------------------------------*/
 })(window);
-
 /*
  * MelonJS Game Engine
  * Copyright (C) 2011 - 2013, Olivier BIOT
@@ -3232,12 +3219,6 @@ var me = me || {};
  */
 
 (function($) {
-
-	/**
-	 * a local constant for the -(Math.PI / 2) value
-	 * @private
-	 */
-	var nhPI = -(Math.PI / 2);
 
 	/**
 	 * A Texture atlas object.
@@ -3297,20 +3278,29 @@ var me = me || {};
 		 */
 		initFromTexturePacker : function (data) {
 			var atlas = {};
-			data.frames.forEach(function(frame) {
+			data['frames'].forEach(function(frame) {
+				
+				// check if the frame is rotated
+				if(frame['rotated']===true){
+					var w = frame['frame']['h'];
+					var h = frame['frame']['w'];
+				} else {
+					var w = frame['frame']['w'];
+					var h = frame['frame']['h'];
+				}
+				
 				atlas[frame.filename] = {
 					frame: new me.Rect( 
-						new me.Vector2d(frame.frame.x, frame.frame.y),
-						frame.frame.w, frame.frame.h
+						new me.Vector2d(frame['frame']['x'], frame['frame']['y']), w, h
 					),
 					source: new me.Rect(
-						new me.Vector2d(frame.spriteSourceSize.x, frame.spriteSourceSize.y),
-						frame.spriteSourceSize.w, frame.spriteSourceSize.h
+						new me.Vector2d(frame['spriteSourceSize']['x'], frame['spriteSourceSize']['y']), 
+						frame['spriteSourceSize']['w'], frame['spriteSourceSize']['h']
 					),
 					// non trimmed size, but since we don't support trimming both value are the same
-					//sourceSize: new me.Vector2d(frame.sourceSize.w,frame.sourceSize.h),
-					rotated : frame.rotated===true,
-					trimmed : frame.trimmed===true
+					//sourceSize: new me.Vector2d(frame['sourceSize']['w'],frame['sourceSize']['h']),
+					rotated : frame['rotated']===true,
+					trimmed : frame['trimmed']===true
 				};
 			});
 			return atlas;
@@ -3351,7 +3341,7 @@ var me = me || {};
 				
 				// check if we need rotation
 				if (tex.rotated===true) {
-					sprite._sourceAngle = nhPI;
+					sprite.angle = - (Math.PI/2);
 					// >> sprite pos not correct when rotated ? <<
 				}
 				// return our object
@@ -3400,7 +3390,7 @@ var me = me || {};
 						offset: tex.frame.pos.clone(),
 						width: tex.frame.width,
 						height: tex.frame.height,
-						angle : (tex.rotated===true) ? nhPI : 0
+						angle : (tex.rotated===true) ? -(Math.PI/2) : 0
 					};
 				} else {
 					// throw an error
@@ -3417,7 +3407,6 @@ var me = me || {};
 	// END END END
 	/*---------------------------------------------------------*/
 })(window);
-
 /*
  * MelonJS Game Engine
  * Copyright (C) 2011 - 2013, Olivier BIOT
@@ -3711,9 +3700,6 @@ var me = me || {};
 		 */
 
 		shake : function(intensity, duration, axis, onComplete) {
-			if (this.shaking)
-				return;
-
 			this.shaking = true;
 
 			this._shake = {
@@ -3829,7 +3815,6 @@ var me = me || {};
 	// END END END
 	/*---------------------------------------------------------*/
 })(window);
-
 /*
  * MelonJS Game Engine
  * Copyright (C) 2011 - 2013, Olivier BIOT
@@ -4285,7 +4270,7 @@ var me = me || {};
 			 * falling state of the object<br>
 			 * true if the object is falling<br>
 			 * false if the object is standing on something<br>
-			 * @readonly
+			 * @readonly property
 			 * @public
 			 * @type Boolean
 			 * @name me.ObjectEntity#falling
@@ -4294,7 +4279,7 @@ var me = me || {};
 			/**
 			 * jumping state of the object<br>
 			 * equal true if the entity is jumping<br>
-			 * @readonly
+			 * @readonly property
 			 * @public
 			 * @type Boolean
 			 * @name me.ObjectEntity#jumping
@@ -4305,7 +4290,7 @@ var me = me || {};
 			this.slopeY = 0;
 			/**
 			 * equal true if the entity is standing on a slope<br>
-			 * @readonly
+			 * @readonly property
 			 * @public
 			 * @type Boolean
 			 * @name me.ObjectEntity#onslope
@@ -4313,7 +4298,7 @@ var me = me || {};
 			this.onslope = false;
 			/**
 			 * equal true if the entity is on a ladder<br>
-			 * @readonly
+			 * @readonly property
 			 * @public
 			 * @type Boolean
 			 * @name me.ObjectEntity#onladder
@@ -4321,7 +4306,7 @@ var me = me || {};
 			this.onladder = false;
 			/**
 			 * equal true if the entity can go down on a ladder<br>
-			 * @readonly
+			 * @readonly property
 			 * @public
 			 * @type Boolean
 			 * @name me.ObjectEntity#disableTopLadderCollision
@@ -5006,7 +4991,6 @@ var me = me || {};
 	// END END END
 	/*---------------------------------------------------------*/
 })(window);
-
 /*
  * MelonJS Game Engine
  * Copyright (C) 2011 - 2013, Olivier BIOT
@@ -5705,7 +5689,6 @@ var me = me || {};
 	// END END END
 	/*---------------------------------------------------------*/
 })(window);
-
 /*
  * MelonJS Game Engine
  * Copyright (C) 2011 - 2013, Olivier BIOT
@@ -5906,12 +5889,7 @@ var me = me || {};
 			}
 			
 			xmlhttp.open("GET", tmxData.src + me.nocache, true);
-
-			// add the tmx to the levelDirector
-			if (tmxData.type === "tmx") {
-				me.levelDirector.addTMXLevel(tmxData.name);
-			}
-
+						
 			// set the callbacks
 			xmlhttp.ontimeout = onerror;
 			xmlhttp.onreadystatechange = function() {
@@ -5953,6 +5931,10 @@ var me = me || {};
 							format : format
 						};
 						
+						// add the tmx to the levelDirector
+						if (tmxData.type === "tmx") {
+							me.levelDirector.addTMXLevel(tmxData.name);
+						}
 						// fire the callback
 						onload();
 					} else {
@@ -6417,7 +6399,6 @@ var me = me || {};
 	// END END END
 	/*---------------------------------------------------------*/
 })(window);
-
 /*
  * MelonJS Game Engine
  * Copyright (C) 2011 - 2013, Olivier BIOT
@@ -6766,7 +6747,6 @@ var me = me || {};
 	// END END END
 	/*---------------------------------------------------------*/
 })(window);
-
 /*
  * MelonJS Game Engine
  * Copyright (C) 2011 - 2013, Olivier BIOT
@@ -6896,7 +6876,6 @@ var me = me || {};
 	// END END END
 	/*---------------------------------------------------------*/
 })(window);
-
 /*
  * MelonJS Game Engine
  * Copyright (C) 2011 - 2013, Olivier BIOT
@@ -7081,8 +7060,6 @@ var me = me || {};
 			// create a canvas where to draw everything
 			this.HUDCanvas = me.video.createCanvas(this.width, this.height);
 			this.HUDCanvasSurface = this.HUDCanvas.getContext('2d');
-			// set scaling interpolation filter
-			me.video.setImageSmoothing(this.HUDCanvasSurface, me.sys.scalingInterpolation);
 			
 			// this is a little hack to ensure the HUD is always the first draw
 			this.z = 999;
@@ -7249,7 +7226,6 @@ var me = me || {};
 	// END END END
 	/*---------------------------------------------------------*/
 })(window);
-
 /*
  * MelonJS Game Engine
  * Copyright (C) 2011 - 2013, Olivier BIOT
@@ -7310,8 +7286,8 @@ var me = me || {};
 		var sync_loader = [];
 		 
 		/**
-		 * return the first audio format extension supported by the browser
 		 * @private
+		 * return the first audio format extension supported by the browser
 		 */
 		function getSupportedAudioFormat(requestedFormat) {
 			var result = "";
@@ -7345,8 +7321,8 @@ var me = me || {};
 		};
 
 		/**
-		 * return the specified sound
 		 * @private
+		 * return the specified sound
 		 */
 
 		function get(sound_id) {
@@ -7367,8 +7343,8 @@ var me = me || {};
 		};
 
 		/**
-		 * event listener callback on load error
 		 * @private
+		 * event listener callback on load error
 		 */
 
 		function soundLoadError(sound_id, onerror_cb) {
@@ -7396,8 +7372,8 @@ var me = me || {};
 		};
 
 		/**
-		 * event listener callback when a sound is loaded
 		 * @private
+		 * event listener callback when a sound is loaded
 		 */
 
 		function soundLoaded(sound_id, sound_channel, onload_cb) {
@@ -7469,8 +7445,8 @@ var me = me || {};
 		};
 
 		/**
-		 * play_audio with simulated callback
 		 * @private
+		 * play_audio with simulated callback
 		 */
 
 		function _play_audio_disable(sound_id, loop, callback) {
@@ -7939,7 +7915,6 @@ var me = me || {};
 	// END END END
 	/*---------------------------------------------------------*/
 })(window);
-
 /*
  * MelonJS Game Engine
  * Copyright (C) 2011 - 2013, Olivier BIOT
@@ -8205,15 +8180,11 @@ var me = me || {};
 				
 			// get the 2D context
 			context2D = canvas.getContext('2d');
-			// set scaling interpolation filter
-			me.video.setImageSmoothing(context2D, me.sys.scalingInterpolation);
 
 			// create the back buffer if we use double buffering
 			if (double_buffering) {
 				backBufferCanvas = api.createCanvas(game_width, game_height, false);
 				backBufferContext2D = backBufferCanvas.getContext('2d');
-				// set scaling interpolation filter
-				me.video.setImageSmoothing(backBufferContext2D, me.sys.scalingInterpolation);
 			} else {
 				backBufferCanvas = canvas;
 				backBufferContext2D = context2D;
@@ -8307,10 +8278,7 @@ var me = me || {};
 		 * @return {Context2D}
 		 */
 		api.createCanvasSurface = function(width, height) {
-			var _canvas = api.createCanvas(width, height, false);
-			var _context = _canvas.getContext('2d');
-			me.video.setImageSmoothing(_context, me.sys.scalingInterpolation);
-			return _context;
+			return api.createCanvas(width, height, false).getContext('2d');
 		};
 
 		/**
@@ -8430,16 +8398,10 @@ var me = me || {};
 		 * @param {Color} col
 		 */
 		api.clearSurface = function(context, col) {
-			var w = context.canvas.width;
-			var h = context.canvas.height;
-
 			context.save();
 			context.setTransform(1, 0, 0, 1, 0, 0);
-			if (col.substr(0, 4) === "rgba") {
-				context.clearRect(0, 0, w, h);
-			}
 			context.fillStyle = col;
-			context.fillRect(0, 0, w, h);
+			context.fillRect(0, 0, api.getWidth(),api.getHeight());
 			context.restore();
 		};
 
@@ -8460,23 +8422,29 @@ var me = me || {};
 		};
 		
 		/**
-		 * enable/disable image smoothing (scaling interpolation) for the specified 2d Context<br>
+		 * enable/disable image smoothing <br>
 		 * (!) this might not be supported by all browsers <br>
+		 * default : enabled
 		 * @name me.video#setImageSmoothing
 		 * @function
-		 * @param {Context2D} context
-		 * @param {Boolean} [enable=false]
+		 * @param {Boolean} enable
 		 */
-		api.setImageSmoothing = function(context, enable) {
+		api.setImageSmoothing = function(enable) {
 			// a quick polyfill for the `imageSmoothingEnabled` property
 			var vendors = ['ms', 'moz', 'webkit', 'o'];
 			for(var x = 0; x < vendors.length; ++x) {
-				if (context[vendors[x]+'ImageSmoothingEnabled'] !== undefined) {
-					context[vendors[x]+'ImageSmoothingEnabled'] = (enable===true);
+				if (context2D[vendors[x]+'ImageSmoothingEnabled'] !== undefined) {
+					context2D[vendors[x]+'ImageSmoothingEnabled'] = enable;
+					if (double_buffering) {
+						backBufferContext2D[vendors[x]+'ImageSmoothingEnabled'] = enable;
+					}
 				}
 			};
 			// generic one (if implemented)
-			context.imageSmoothingEnabled = (enable===true);
+			context2D.imageSmoothingEnabled = enable;
+			if (double_buffering) {
+				backBufferContext2D.imageSmoothingEnabled = enable;
+			}
 		};
 		
 		/**
@@ -8587,7 +8555,6 @@ var me = me || {};
 	// END END END
 	/*---------------------------------------------------------*/
 })(window);
-
 /*
  * MelonJS Game Engine
  * Copyright (C) 2011 - 2013, Olivier BIOT
@@ -9348,7 +9315,6 @@ var me = me || {};
 	// END END END
 	/*---------------------------------------------------------*/
 })(window);
-
 /*
  * MelonJS Game Engine
  * Copyright (C) 2011 - 2013, Olivier BIOT
@@ -9622,7 +9588,6 @@ var me = me || {};
 	// END END END
 	/*---------------------------------------------------------*/
 })(window);
-
 /*
  * MelonJS Game Engine
  * Copyright (C) 2011 - 2013, Olivier BIOT
@@ -9710,7 +9675,7 @@ var me = me || {};
 		 * @name me.gamestat#add
 		 * @public
 		 * @function
-		 * @param {String|Object} name name of the item or hash of items
+		 * @param {String||Object} name name of the item or hash of items
 		 * @param {int} [val="0"] default value
 		 * @example
 		 * // add a "stars" item
@@ -9735,7 +9700,7 @@ var me = me || {};
 		 * @name me.gamestat#updateValue
 		 * @public
 		 * @function
-		 * @param {String|Object} name name of the item or hash of items
+		 * @param {String||Object} name name of the item or hash of items
 		 * @param {int} val value to be added
 		 * @example
 		 * // update the "stars" item
@@ -9758,7 +9723,7 @@ var me = me || {};
 		 * @name me.gamestat#setValue 
 		 * @public 
 		 * @function 
-		 * @param {String|Object} name name of the item or hash of items
+		 * @param {String||Object} name name of the item or hash of items
 		 * @param {int} val value to be set 
 		 * @example 
 		 * // set the"stars" item 
@@ -9831,7 +9796,6 @@ var me = me || {};
 	// END END END
 	/*---------------------------------------------------------*/
 })(window);
-
 /*
  * MelonJS Game Engine
  * Copyright (C) 2011 - 2013, Olivier BIOT
@@ -9895,7 +9859,6 @@ var me = me || {};
 	// END END END
 	/*---------------------------------------------------------*/
 })(window);
-
 /*
  * MelonJS Game Engine
  * Copyright (C) 2011 - 2013, Olivier BIOT
@@ -9917,32 +9880,6 @@ var me = me || {};
 	 */
 
 	me.TMXUtils = (function() {
-		
-		/**
-		 * set and interpret a TMX property value 
-		 * @private
-		 */
-		function setTMXValue(value) {
-			if (!value || value.isBoolean()) {
-				// if value not defined or boolean
-				value = value ? (value === "true") : true;
-			} else if (value.isNumeric()) {
-				// check if numeric
-				value = Number(value);
-			} else if (value.match(/^json:/i)) {
-				// try to parse it
-				var match = value.split(/^json:/i)[1];
-				try {
-					value = JSON.parse(match);
-				}
-				catch (e) {
-					throw "Unable to parse JSON: " + match
-				}
-			}
-			// return the interpreted value
-			return value;
-		};
-	
 		// hold public stuff in our singleton
 		var api = {};
 
@@ -9959,8 +9896,17 @@ var me = me || {};
 				for ( var i = 0; i < oProp.length; i++) {
 					var propname = me.mapReader.TMXParser.getStringAttribute(oProp[i], me.TMX_TAG_NAME);
 					var value = me.mapReader.TMXParser.getStringAttribute(oProp[i], me.TMX_TAG_VALUE);
-					// set the value
-					obj[propname] = setTMXValue(value);
+					
+					// if value not defined or boolean
+					if (!value || value.isBoolean()) {
+						value = value ? (value == "true") : true;
+					}
+					// check if numeric
+					else if (value.isNumeric()) {
+						value = Number(value);
+					}
+					// add the new prop to the object prop list
+					obj[propname] = value;
 							
 				}
 			}
@@ -9976,8 +9922,18 @@ var me = me || {};
 			if (properties) {
 				for(var name in properties){
                     if (properties.hasOwnProperty(name)) {
-                        // set the value
-                        obj[name] = setTMXValue(properties[name]);
+                        var value = properties[name];
+
+                        // if value not defined or boolean
+                        if (!value || value.isBoolean()) {
+                            value = value ? (value == "true") : true;
+                        }
+                        // check if numeric
+                        else if (value.isNumeric()) {
+                            value = Number(value);
+                        }
+                        // add the new prop to the object prop list
+                        obj[name] = value;
                     }
                 }
 			}
@@ -10004,7 +9960,6 @@ var me = me || {};
 	// END END END
 	/*---------------------------------------------------------*/
 })(window);
-
 /*
  * MelonJS Game Engine
  * Copyright (C) 2011 - 2013, Olivier BIOT
@@ -10113,7 +10068,7 @@ var me = me || {};
 			this.width = me.mapReader.TMXParser.getIntAttribute(tmxObj, me.TMX_TAG_WIDTH, 0);
 			this.height = me.mapReader.TMXParser.getIntAttribute(tmxObj, me.TMX_TAG_HEIGHT, 0);
 			this.gid = me.mapReader.TMXParser.getIntAttribute(tmxObj, me.TMX_TAG_GID, null);
-
+			
 			// check if the object has an associated gid	
 			if (this.gid) {
 				this.setImage(this.gid, tilesets);
@@ -10135,10 +10090,6 @@ var me = me || {};
 					}
 				}
 			}
-			
-			// Adjust the Position to match Tiled
-			me.game.renderer.adjustPosition(this);
-			
 			// set the object properties
 			me.TMXUtils.applyTMXPropertiesFromXML(this, tmxObj);
 		},
@@ -10176,10 +10127,6 @@ var me = me || {};
 					});
 				}
 			}
-			
-			// Adjust the Position to match Tiled
-			me.game.renderer.adjustPosition(this);
-			
 			// set the object properties
 			me.TMXUtils.applyTMXPropertiesFromJSON(this, tmxObj);
 		},
@@ -10191,9 +10138,13 @@ var me = me || {};
 			// set width and height equal to tile size
 			this.width = tileset.tilewidth;
 			this.height = tileset.tileheight;
-			
+
 			// force spritewidth size
 			this.spritewidth = this.width;
+			
+			// Offset the object position by the tileheight
+			// (Objects origin point is "bottom-left" in Tiled, "top-left" in melonJS)
+			this.y -= tileset.tileheight;
 
 			// the object corresponding tile 
 			var tmxTile = new me.Tile(this.x, this.y, tileset.tilewidth, tileset.tileheight, this.gid);
@@ -10212,7 +10163,6 @@ var me = me || {};
 // END END END
 /*---------------------------------------------------------*/
 })(window);
-
 /*
  * MelonJS Game Engine
  * Copyright (C) 2011 - 2013, Olivier BIOT
@@ -10688,7 +10638,6 @@ var me = me || {};
 	// END END END
 	/*---------------------------------------------------------*/
 })(window);
-
 /*
  * MelonJS Game Engine
  * Copyright (C) 2011 - 2013, Olivier BIOT
@@ -10745,20 +10694,6 @@ var me = me || {};
 		tileToPixelCoords : function(x, y) {
 			return new me.Vector2d(x * this.tilewidth,
 								   y * this.tileheight);		
-		},
-
-		/**
-		 * fix the position of Objects to match
-		 * the way Tiled places them
-		 * @private
-		 */
-		adjustPosition: function(obj) {
-			// only adjust position if obj.gid is defined
-			if (obj.gid) {
-				 // Tiled objects origin point is "bottom-left" in Tiled, 
-				 // "top-left" in melonJS)
-				obj.y -= obj.height;
-			}
 		},
 		
 		/**
@@ -10863,23 +10798,6 @@ var me = me || {};
 								   (x + y) * this.hTileheight);
 		},
 
-		/**
-		 * fix the position of Objects to match
-		 * the way Tiled places them
-		 * @private
-		 */
-		adjustPosition: function(obj){
-			var tilex = obj.x/this.hTilewidth;
-			var tiley = obj.y/this.tileheight;
-			var isoPos = this.tileToPixelCoords(tilex, tiley);
-			isoPos.x -= obj.width/2;
-			isoPos.y -= obj.height;
-			
-			obj.x = isoPos.x;
-			obj.y = isoPos.y;
-
-			//return isoPos;
-		},
 		
 		/**
 		 * draw the tile map
@@ -10981,7 +10899,6 @@ var me = me || {};
 	});
 
 })(window);
-
 /*
  * MelonJS Game Engine
  * Copyright (C) 2011 - 2013, Olivier BIOT
@@ -11447,12 +11364,11 @@ var me = me || {};
 			}
 
 
+
 			// if pre-rendering method is use, create the offline canvas
 			if (this.preRender) {
 				this.layerCanvas = me.video.createCanvas(this.cols * this.tilewidth, this.rows * this.tileheight);
 				this.layerSurface = this.layerCanvas.getContext('2d');
-				// set scaling interpolation filter
-				me.video.setImageSmoothing(this.layerSurface, me.sys.scalingInterpolation);
 					
 				// set alpha value for this layer
 				this.layerSurface.globalAlpha = this.opacity;
@@ -11492,9 +11408,7 @@ var me = me || {};
 			if (this.preRender) {
 				this.layerCanvas = me.video.createCanvas(this.cols * this.tilewidth, this.rows * this.tileheight);
 				this.layerSurface = this.layerCanvas.getContext('2d');
-				// set scaling interpolation filter
-				me.video.setImageSmoothing(this.layerSurface, me.sys.scalingInterpolation);				
-				
+					
 				// set alpha value for this layer
 				this.layerSurface.globalAlpha = this.opacity;
 			}	
@@ -11734,7 +11648,6 @@ var me = me || {};
 	// END END END
 	/*---------------------------------------------------------*/
 })(window);
-
 /*
  * MelonJS Game Engine
  * Copyright (C) 2011 - 2013, Olivier BIOT
@@ -11947,7 +11860,6 @@ var me = me || {};
 	// END END END
 	/*---------------------------------------------------------*/
 })(window);
-
 /*
  * MelonJS Game Engine
  * Copyright (C) 2011 - 2013, Olivier BIOT
@@ -12521,7 +12433,6 @@ var me = me || {};
 
 
 })(window);
-
 /*
  * MelonJS Game Engine
  * Copyright (C) 2011 - 2013, Olivier BIOT
@@ -12591,7 +12502,7 @@ var me = me || {};
 				// set the name of the level
 				levels[levelId].name = levelId;
 				// level index
-				levelIdx.push(levelId);
+				levelIdx[levelIdx.length] = levelId;
 			} 
 			else  {
 				//console.log("level %s already loaded", levelId);
@@ -12748,7 +12659,6 @@ var me = me || {};
 	// END END END
 	/*---------------------------------------------------------*/
 })(window);
-
 /**
  * @preserve Tween JS
  * https://github.com/sole/Tween.js
@@ -13324,7 +13234,6 @@ var me = me || {};
 	// END END END
 	/*---------------------------------------------------------*/
 })();
-
 /**
  * @preserve MinPubSub
  * a micro publish/subscribe messaging framework
@@ -13517,7 +13426,6 @@ var me = me || {};
 	})();
 
 })();
-
 /*
  * MelonJS Game Engine
  * Copyright (C) 2011 - 2013, Olivier BIOT

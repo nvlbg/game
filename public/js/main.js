@@ -102,6 +102,10 @@
 			var register_password = $('#register_password');
 			var register_re_password = $('#register_re_password');
 
+			// tabs
+			var login_tab = $('#logintab');
+			var register_tab = $('#registertab');
+
 			window.game.network.socket.on(window.game.ENUM.TYPE.GUEST_LOGIN_ANSWER, function(success) {
 				if (success === window.game.ENUM.LOGIN.SUCCESS) {
 
@@ -136,6 +140,11 @@
 
 			window.game.network.socket.on(window.game.ENUM.TYPE.REGISTER_ANSWER, function(success) {
 				if (success === window.game.ENUM.LOGIN.SUCCESS) {
+
+					apprise('You are registered successfully');
+					$('#register input').val('');
+					login_tab.click();
+
 					return;
 				} else if (success === window.game.ENUM.LOGIN.USER_EXISTS) {
 					apprise('Username is already taken', {animate:true});
@@ -203,9 +212,6 @@
 			});
 
 			// tabs functionality
-			var login_tab = $('#logintab');
-			var register_tab = $('#registertab');
-
 			$('#logintab, #registertab').click(function(e) {
 				e.preventDefault();
 				
@@ -223,18 +229,6 @@
 					login_form.fadeIn();
 				}
 			});
-
-			/*
-			toastr.options = {
-				fadeIn: 500,
-				fadeOut: 500,
-				debug: true,
-				timeOut: 50000,
-				extendedTimeOut: 50000,
-				tapToDismiss: false
-			};
-			toastr.success('You killed 5 enemies in a row. You\'re on fire!', 'Achievment unlocked');
-			*/
 
 			// guest_btn.click();
 		});
