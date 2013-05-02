@@ -33,7 +33,9 @@ Here is what each option does:
 - FRIENDLY_FIRE - should friendly fire be turned on. Default: false
 - NET_PING_UPDATE_STEP - in what interval should ping calculations be done. Default: 2500 (ms)
 - RESPAWN_TIME_STEP - how much time should pass before player is respawned after death. Default: 3000 (ms)
-- INVULNERABLE_TIME_STEP - how much time should the player be invulnerable after respawn. Default: 2500 (ms) 
+- INVULNERABLE_TIME_STEP - how much time should the player be invulnerable after respawn. Default: 2500 (ms)
+- BONUS_TIME_STEP - in what interval should a new bonus be spawned. Default: 10000 (ms)
+- BONUS_LIFE_TIME - how long should a bonus stay on screen before it disappears. Default: 5000 (ms)
 
 How to build with Grunt
 -------------

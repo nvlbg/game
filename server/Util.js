@@ -104,3 +104,17 @@ Number.prototype.random = function(min, max) {
 String.prototype.contains = function(word) {
 	return this.indexOf(word) > -1;
 };
+
+/**
+ * return the length of an object
+ * @param {Object}
+ * @extends Object
+ * @return {Number}
+ */
+Object.size = function(obj) {
+	var size = 0, key;
+	for (key in obj) {
+		if (obj.hasOwnProperty(key)) size++;
+	}
+	return size;
+};

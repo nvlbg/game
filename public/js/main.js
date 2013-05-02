@@ -230,7 +230,7 @@
 				}
 			});
 
-			// guest_btn.click();
+			guest_btn.click();
 		});
 	});
 

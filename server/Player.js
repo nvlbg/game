@@ -3,6 +3,7 @@ require('./Util.js');
 var Vector2d = require('./Vector2d.js');
 var Rect = require('./Rect.js');
 var Bullet = require('./Bullet.js');
+var Bonus = require('./Bonus.js');
 var config = require('./config.json');
 
 var Player = Rect.extend({
@@ -46,6 +47,9 @@ var Player = Rect.extend({
 		this.lastAliveState = true;
 		this.inputs = [];
 		this.last_input_seq = 0;
+
+		this.armor = 0;
+		this.gainedBonus = undefined;
 
 		this.fake_latency = 0;
 		/*
@@ -253,12 +257,13 @@ var Player = Rect.extend({
 			console.log((new Date().getTime()) + ": I'm colliding with x: " + collision.x);
 		}
 		
-		// var pos = this.pos.clone();
+		var pos = this.pos.clone();
 		this.pos.add(this.vel);
 		
-		/*
 		collision = Game.collide(this);
 		
+		collision && collision.obj instanceof Bonus && collision.obj.onPlayerCollision(this);
+
 		if(collision && collision.obj instanceof Player) {
 			console.log((new Date().getTime()) + " colliding");
 			if(collision.y !== 0) {
@@ -273,7 +278,6 @@ var Player = Rect.extend({
 			this.pos.x = pos.x;
 			this.pos.y = pos.y;
 		}
-		*/
 	},
 	
 	computeVelocity : function(vel) {
@@ -335,7 +339,6 @@ var Player = Rect.extend({
 
 	removeBullet: function(id) {
 		if (this.bullets[id]) {
-			console.log(this.bullets[id].pos);
 			delete this.bullets[id];
 		}
 	},
@@ -345,6 +348,7 @@ var Player = Rect.extend({
 
 		setTimeout(function() {
 			this.alive = true;
+			this.makeInvulnerable();
 
 			var x1, x2, y1, y2;
 			if (this.team === Game.TEAM.BLUE) {
@@ -363,7 +367,7 @@ var Player = Rect.extend({
 				this.pos = new Vector2d(Number.prototype.random(x1, x2), Number.prototype.random(y1, y2));
 			} while ( Game.collide(this) );
 
-			this.makeInvulnerable();
+			console.log(this.pos.x, this.pos.y);
 		}.bind(this), config.RESPAWN_TIME_STEP);
 	}
 });

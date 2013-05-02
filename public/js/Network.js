@@ -165,7 +165,7 @@
 				}
 
 				if (player === this.player && !player.smarthphoneConnected) {
-					if (data[i].x !== undefined || data[i].y !==undefined || data[i].a !== undefined) {
+					if (data[i].x !== undefined || data[i].y !== undefined || data[i].a !== undefined) {
 						player.correction = data[i];
 						player.applyClientSideAdjustment();
 					}

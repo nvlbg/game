@@ -41,7 +41,7 @@ var Chat = {
 		// debug chat messages
 		//TODO: remove this when in production
 		if (message === '/bonus') {
-			Game.bonuses.push(new Bonus( new Vector2d(300, 300), 0, 2500 ));
+			Game.bonuses[ Game.bonusIdCounter++ ] = new Bonus( new Vector2d(300, 300), 0, 2500 );
 		}
 
 		var i, data_packet = [message, this.id], players = global.Game.players;

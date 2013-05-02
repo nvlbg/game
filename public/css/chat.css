@@ -16,9 +16,27 @@
 
 #chat form input[type=text] {
 	width: 89%;
+	height: 20px;
+	border-radius: 4px;
+	padding: 0 4px;
+	outline: 0;
 }
 
 #chat form input[type=submit] {
 	float: right;
 	width: 9%;
+	height: 20px;
+	border-radius: 4px;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	font-weight: bold;
+	text-align: center;
+	cursor: pointer;
 }
+
+/*
+<p class="message_user">
+	<span class="msg_time">09:38</span>
+	<span class="msg_sender">Guest0005</span>: <span class="msg_message">hello, there</span>
+</p>
+*/

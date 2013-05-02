@@ -2,14 +2,16 @@ require('./Util.js');
 
 var Player = require('./Player.js');
 var World = require('./World.js');
+var Bonus = require('./Bonus.js');
 var Chat = require('./Chat.js');
 var Vector2d = require('./Vector2d.js');
 var config = require('./config.json');
 
 var Game = {
 	players : {},
-	bonuses : [],
+	bonuses : {},
 	idCounter : 0,
+	bonusIdCounter : 0,
 
 	StatsManager : null,
 	world : null,
@@ -22,6 +24,7 @@ var Game = {
 	PRESSED : null,
 	SMARTPHONE : null,
 	INPUT_TYPE : null,
+	BONUS_TYPE : null,
 
 	blue  : 0,
 	green : 0,
@@ -118,6 +121,20 @@ var Game = {
 				isEmpty = false;
 			}
 
+			if (player.gainedBonus !== undefined) {
+				if (correction[player.id] !== undefined) {
+					correction[player.id].z = player.gainedBonus;
+				} else {
+					correction[player.id] = {
+						z: player.gainedBonus,
+						s: player.last_input_seq
+					};
+				}
+
+				player.gainedBonus = undefined;
+				isEmpty = false;
+			}
+
 			for (j in player.bullets) {
 				bullet = player.bullets[j];
 
@@ -155,9 +172,9 @@ var Game = {
 		}
 
 		// add bonus updates
-		var bonus, bonusCnt = 0, bonusLen = Game.bonuses.length;
-		for ( ; bonusCnt < bonusLen; bonusCnt++ ) {
-			bonus = Game.bonuses[ bonusCnt ];
+		var idx, bonus;
+		for ( idx in Game.bonuses ) {
+			bonus = Game.bonuses[ idx ];
 
 			if (bonus.updated) {
 				if (correction.b === undefined) {
@@ -166,18 +183,20 @@ var Game = {
 				}
 
 				if (bonus.valid) {
-					correction.b[bonus.id] = {
+					correction.b[ idx ] = {
 						x : bonus.pos.x,
 						y : bonus.pos.y,
 						t : bonus.type,
 						v : true
 					};
 				} else {
-					correction.b[bonus.id] = {
+					correction.b[ idx ] = {
 						v : false
 					};
+				}
 
-					//TODO: remove bonus from bonuses array
+				if (bonus.needsRemove) {
+					delete Game.bonuses[ idx ];
 				}
 
 				bonus.updated = false;
@@ -186,7 +205,7 @@ var Game = {
 
 		if(!isEmpty) {
 			correction.t = Game.local_time;
-			console.log(correction);
+			// console.log(correction);
 
 			for(i in Game.players) {
 				if (Game.players[i].fake_latency) {
@@ -340,8 +359,9 @@ var Game = {
 	},
 
 	collide : function (obj) {
-		var res, player;
-		for ( var i in Game.players ) {
+		var res, player, bonus, i;
+
+		for ( i in Game.players ) {
 			player = Game.players[i];
 			if (player !== obj) {
 				res = obj.collideVsAABB.call(obj, player);
@@ -354,6 +374,24 @@ var Game = {
 				}
 			}
 		}
+
+		for ( i in Game.bonuses ) {
+			bonus = Game.bonuses[i];
+
+			if (!bonus.valid) { continue; }
+
+			if (bonus !== obj) {
+				res = obj.collideVsAABB.call(obj, bonus);
+				if (res.x !== 0 || res.y !== 0) {
+					// notify the object
+					obj.onCollision.call(res, bonus);
+					// return a reference of the colliding object
+					res.obj  = bonus;
+					return res;
+				}
+			}
+		}
+
 		return null;
 	},
 
@@ -365,12 +403,31 @@ var Game = {
 		}.bind(this), 4);
 	},
 
+	createBonusTimer : function() {
+		var size = Object.size(Game.BONUS_TYPE) - 1;
+		setInterval(function() {
+			Game.bonuses[ Game.bonusIdCounter++ ] = new Bonus(
+														
+														new Vector2d(
+															Number.prototype.random(
+																	0,
+																	Game.world.collisionLayer.realWidth
+																),
+															Number.prototype.random(
+																	0,
+																	Game.world.collisionLayer.realHeight
+																)
+														),
+
+														Number.prototype.random(0, size),
+														config.BONUS_LIFE_TIME
+													);
+		}, config.BONUS_TIME_STEP);
+	},
+
 	init : function () {
 		Game.StatsManager = require('./StatsManager.js');
 		
-		this.local_time = 0.016;
-		this._dt = this._dte = new Date().getTime();
-		this.createTimer();
 
 		var constants = require('../shared/constants.json');
 
@@ -381,10 +438,16 @@ var Game = {
 		Game.PRESSED = constants.PRESSED;
 		Game.SMARTPHONE = constants.SMARTPHONE;
 		Game.INPUT_TYPE = constants.INPUT_TYPE;
+		Game.BONUS_TYPE = constants.BONUS_TYPE;
 
 		Game.net_ping_update_step = config.NET_PING_UPDATE_STEP;
 		
 		Game.world = new World(require('./../public/data/maps/' + config.MAP + '.json'));
+		
+		this.local_time = 0.016;
+		this._dt = this._dte = new Date().getTime();
+		this.createTimer();
+		this.createBonusTimer();
 
 		Game.timer = require('./timer.js');
 		Game.timer.init();

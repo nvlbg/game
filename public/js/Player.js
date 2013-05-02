@@ -28,6 +28,8 @@
 
 			this.isShooting = false;
 			
+			this.gun.isLocalGun = true;
+
 			me.game.viewport.follow(this.pos, me.game.viewport.AXIS.BOTH);
 		},
 
@@ -53,7 +55,7 @@
 
 			if (!updated && this.needsUpdate) {
 				if (!this.invulnerable && this.renderable.alpha !== 1.0) {
-					this.renderable.alpha = 1.0;
+					this.renderable.alpha = this.gun.alpha = 1.0;
 				}
 
 				updated = true;
@@ -159,6 +161,19 @@
 			if(this.correction !== null) {
 				var i, len;
 
+				// handle gained bonuses (if any)
+				if (this.correction.z) {
+					console.log(this.correction.z);
+					switch (this.correction.z[0]) {
+						case window.game.ENUM.BONUS_TYPE.SPEED:
+							this.setVelocity(this.correction.z[1], this.correction.z[1]);
+							break;
+						case window.game.ENUM.BONUS_TYPE.FASTER_BULLETS:
+							this.shootSpeed = this.correction.z[1];
+							break;
+					}
+				}
+
 				// remove bullets that the server declined
 				if (this.correction.u !== undefined) {
 					for (i = 0, len = this.correction.u.length; i < len; i++) {
@@ -250,20 +265,6 @@
 			return false;
 		},
 
-		_shootInternal: function(dir, flipX, flipY, animFrame) {
-			this.isShooting = true;
-
-			var capitalizedDirection = dir.charAt(0).toUpperCase() + dir.slice(1);
-			this.renderable.setCurrentAnimation("shoot" + capitalizedDirection, function() {
-				this.renderable.setCurrentAnimation("move" + capitalizedDirection);
-				this.renderable.setAnimationFrame(animFrame);
-				this.isShooting = false;
-			}.bind(this));
-
-			this.renderable.flipX(flipX);
-			this.renderable.flipY(flipY);
-		},
-
 		shoot : function() {
 			if(this.canShoot) {
 				this.canShoot = false;
@@ -272,19 +273,6 @@
 				}.bind(this), this.shootSpeed);
 			} else {
 				return false;
-			}
-
-			var animFrame = this.renderable.getCurrentAnimationFrame();
-			if(this.direction === game.ENUM.DIRECTION.UP) {
-				this._shootInternal("forward", false, false, animFrame);
-			} else if (this.direction === game.ENUM.DIRECTION.DOWN) {
-				this._shootInternal("forward", false, true, animFrame);
-			} else if (this.direction === game.ENUM.DIRECTION.LEFT) {
-				this._shootInternal("sideward", true, false, animFrame);
-			} else if (this.direction === game.ENUM.DIRECTION.RIGHT) {
-				this._shootInternal("sideward", false, false, animFrame);
-			} else { // this should never happen
-				throw "unknown direction \"" + this.direction + "\"";
 			}
 
 			// compute angle/direction
@@ -302,6 +290,39 @@
 			me.game.sort();
 
 			return bullet;
+		},
+
+		updateMovement: function() {
+			this.computeVelocity(this.vel);
+
+			var collision = this.collisionMap.checkCollision(this.collisionBox, this.vel);
+
+			if (collision.y !== 0 || collision.yprop.type === 'water') {
+				this.vel.y = 0;
+			}
+
+			if (collision.x !== 0 || collision.yprop.type === 'water') {
+				this.vel.x = 0;
+			}
+
+			var pos = this.pos.clone();
+			this.pos.add(this.vel);
+
+			collision = me.game.collide(this);
+
+			if(collision && collision.obj instanceof game.Tank && !collision.obj.isExploding) {
+				if(collision.y !== 0) {
+					this.vel.y = 0;
+				}
+
+				if(collision.x !== 0) {
+					this.vel.x = 0;
+				}
+
+				pos.add(this.vel);
+				this.pos.x = pos.x;
+				this.pos.y = pos.y;
+			}
 		},
 
 		moveLeft : function() {

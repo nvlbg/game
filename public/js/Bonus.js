@@ -11,10 +11,23 @@
 			
 			this.parent(x, y, settings);
 
-			// this.addAnimation("default", [this.bonus * settings.spritewidth]);
 			this.renderable.addAnimation("default", [0]);
+
+			switch (type) {
+				case window.game.ENUM.BONUS_TYPE.SPEED:
+					this.renderable.setCurrentAnimation("default");
+					break;
+				case window.game.ENUM.BONUS_TYPE.ARMOR:
+					this.renderable.setCurrentAnimation("default");
+					break;
+				case window.game.ENUM.BONUS_TYPE.FASTER_BULLETS:
+					this.renderable.setCurrentAnimation("default");
+					break;
+				case window.game.ENUM.BONUS_TYPE.ENERGY_SHIELD:
+					this.renderable.setCurrentAnimation("default");
+					break;
+			} 
 			
-			this.renderable.setCurrentAnimation("default");
 		}
 	});
 })();

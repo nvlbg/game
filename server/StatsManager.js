@@ -93,7 +93,7 @@ var StatsManager = {
 			return;
 		}
 
-		db.update.find({_id:player.mongoId}, function(err, user) {
+		db.users.find({_id:player.mongoId}, function(err, user) {
 			if (err) {
 				console.log('ERROR: I couldn\'t read a record');
 				return;

@@ -13,9 +13,9 @@
 			this.collidable = true;
 			this.gravity = 0;
 
-			// this.renderable.addAnimation("forward", [43]);
-			this.renderable.addAnimation("sideward", [44]);
-			this.renderable.addAnimation("explode", [45,46]);
+			// this.renderable.addAnimation("forward", [39]);
+			this.renderable.addAnimation("sideward", [40]);
+			this.renderable.addAnimation("explode", [41,42]);
 
 			this.type = me.game.BULLET_OBJECT;
 			
