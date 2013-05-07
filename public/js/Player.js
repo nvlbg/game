@@ -98,14 +98,6 @@
 					updated = true;
 				}
 				
-				/*
-				// TODO: choose (or add option to switch) between this and the aproach above
-				if (this.deltaFrames > 0) {
-					this.deltaFrames -= 1;
-					this.pos.add(this.delta);
-				}
-				*/
-			
 				var bullet = null;
 				if(me.input.isKeyPressed("shoot")) {
 					bullet = this.shoot();
@@ -161,21 +153,33 @@
 			if(this.correction !== null) {
 				var i, len;
 
-				// handle gained bonuses (if any)
+				// change props (if needed)
 				if (this.correction.z) {
-					console.log(this.correction.z);
-					switch (this.correction.z[0]) {
-						case window.game.ENUM.BONUS_TYPE.SPEED:
-							this.setVelocity(this.correction.z[1], this.correction.z[1]);
-							break;
-						case window.game.ENUM.BONUS_TYPE.FASTER_BULLETS:
-							this.shootSpeed = this.correction.z[1];
-							break;
+					var props;
+					if (!Array.isArray( this.correction.z[0] )) {
+						props = [ this.correction.z ];
+					} else {
+						props = this.correction.z;
+					}
+					
+					for (var prop, val, i = 0, len = props.length; i < len; i++) {
+						prop = props[i][0];
+						val  = props[i][1];
+
+						switch (prop) {
+							case window.game.ENUM.PLAYER_PROPERTIES.SPEED:
+								this.setVelocity(val, val);
+								break;
+							case window.game.ENUM.PLAYER_PROPERTIES.SHOOT_SPEED:
+								this.shootSpeed = val;
+								break;
+						}
 					}
 				}
 
 				// remove bullets that the server declined
 				if (this.correction.u !== undefined) {
+					console.log(this.correction.u);
 					for (i = 0, len = this.correction.u.length; i < len; i++) {
 						this.removeBulletById(this.correction.u[i]);
 					}
@@ -253,9 +257,16 @@
 				this.delta.copy(this.pos);
 				this.delta.sub(currentPos);
 
-				// set pos to the original one
-				// the delta will make sure we get to the predicted pos in a few frames
-				this.pos.copy(currentPos);
+				// but, only compensate if the difference is low
+				// otherwise directly snap to the new one (here it already is if we don't reset)
+				if ((this.delta.x*this.delta.x + this.delta.y*this.delta.y) < 400) {
+						// same as `this.delta.length() < 20` but faster, since sqrt won't be calculated
+						// more precisely, same as `sqare(this.delta.length()) < sqare(20)`
+					
+					// reset pos to the original one
+					// the delta will make sure we get to the predicted pos in a few frames
+					this.pos.copy(currentPos);
+				}
 
 				this.correction = null;
 

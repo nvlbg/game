@@ -187,19 +187,19 @@
 	var input_seq = 0;
 	var interval;
 
-	var jsonRequest = new XMLHttpRequest();
+	var jsonRequest = new XMLHttpRequest(), ENUM, DIR_ENUM;
 	jsonRequest.onreadystatechange = function() {
 		if (this.readyState === 4 && this.status === 200) {
-			window.ENUM = JSON.parse(this.responseText);
-			window.DIR_ENUM = ENUM.PRESSED;
+			ENUM = JSON.parse(this.responseText);
+			DIR_ENUM = ENUM.PRESSED;
 
-			socket.on(window.ENUM.TYPE.SMARTPHONE_AUTH, function(result) {
-				if (result === window.ENUM.SMARTPHONE.ACCEPTED) {
+			socket.on(ENUM.TYPE.SMARTPHONE_AUTH, function(result) {
+				if (result === ENUM.SMARTPHONE.ACCEPTED) {
 					interval = setInterval(update, 1000 / 10);
 				} else {
-					if (result === window.ENUM.SMARTPHONE.DECLINED) {
+					if (result === ENUM.SMARTPHONE.DECLINED) {
 						window.alert("Sorry, the user declined your access.");
-					} else if (result === window.ENUM.SMARTPHONE.NO_SUCH_USER) {
+					} else if (result === ENUM.SMARTPHONE.NO_SUCH_USER) {
 						window.alert("There isn't a player with that nickname playing.");
 					}
 
@@ -207,10 +207,10 @@
 				}
 			});
 
-			socket.on(window.ENUM.TYPE.SET_INPUT, function(input_method) {
-				if (input_method === window.ENUM.INPUT_TYPE.KEYBOARD_AND_MOUSE) {
+			socket.on(ENUM.TYPE.SET_INPUT, function(input_method) {
+				if (input_method === ENUM.INPUT_TYPE.KEYBOARD_AND_MOUSE) {
 					clearInterval(interval);
-				} else if (input_method === window.ENUM.INPUT_TYPE.SMARTPHONE_CONTROLLER) {
+				} else if (input_method === ENUM.INPUT_TYPE.SMARTPHONE_CONTROLLER) {
 					interval = setInterval(update, 1000 / 10);
 				}
 			});
@@ -225,7 +225,7 @@
 		var player = window.prompt("Please, enter your player's username", "");
 
 		if (player) {
-			socket.emit(window.ENUM.TYPE.SMARTPHONE_CONNECT, player);
+			socket.emit(ENUM.TYPE.SMARTPHONE_CONNECT, player);
 		}
 	};
 
@@ -270,7 +270,7 @@
 				input.a = angle;
 			}
 
-			socket.emit(window.ENUM.TYPE.UPDATE, input);
+			socket.emit(ENUM.TYPE.UPDATE, input);
 			input_seq += 1;
 		}
 	};

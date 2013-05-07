@@ -36,13 +36,14 @@ var Chat = {
 			return;
 		}
 
-		log.write('[' + new Date().toLocaleTimeString() + '] ' + this.nickname + ': ' + message + '\n');
-
 		// debug chat messages
 		//TODO: remove this when in production
 		if (message === '/bonus') {
 			Game.bonuses[ Game.bonusIdCounter++ ] = new Bonus( new Vector2d(300, 300), 0, 2500 );
+			return;
 		}
+
+		log.write('[' + new Date().toLocaleString() + '] ' + this.nickname + ': ' + message + '\n');
 
 		var i, data_packet = [message, this.id], players = global.Game.players;
 		for (i in players) {

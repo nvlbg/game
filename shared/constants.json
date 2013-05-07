@@ -40,8 +40,12 @@
 	"BONUS_TYPE" : {
 		"SPEED"                   : 0,
 		"ARMOR"                   : 1,
-		"FASTER_BULLETS"          : 2,
-		"ENERGY_SHIELD"           : 3
+		"FASTER_BULLETS"          : 2
+	},
+
+	"PLAYER_PROPERTIES" : {
+		"SPEED"                   : 0,
+		"SHOOT_SPEED"             : 1
 	},
 
 	"LOGIN" : {

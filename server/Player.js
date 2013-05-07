@@ -49,7 +49,8 @@ var Player = Rect.extend({
 		this.last_input_seq = 0;
 
 		this.armor = 0;
-		this.gainedBonus = undefined;
+		this.gainedBonus = false;
+		this.changedProps = [];
 
 		this.fake_latency = 0;
 		/*
@@ -262,7 +263,9 @@ var Player = Rect.extend({
 		
 		collision = Game.collide(this);
 		
-		collision && collision.obj instanceof Bonus && collision.obj.onPlayerCollision(this);
+		if ( collision && collision.obj instanceof Bonus ) {
+			collision.obj.onPlayerCollision(this);
+		}
 
 		if(collision && collision.obj instanceof Player) {
 			console.log((new Date().getTime()) + " colliding");

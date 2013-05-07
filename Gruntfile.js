@@ -128,7 +128,8 @@ module.exports = function(grunt) {
 						game: true,
 						$: true,
 						dat: true,
-						apprise: true
+						apprise: true,
+						toastr: true
 					}
 				}
 			},
@@ -144,7 +145,8 @@ module.exports = function(grunt) {
 						game: true,
 						$: true,
 						dat: true,
-						apprise: true
+						apprise: true,
+						toastr: true
 					}
 				}
 			},

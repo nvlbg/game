@@ -1,6 +1,8 @@
 var constants = require('../shared/constants.json');
 var db = null;
 var bcrypt = require('bcrypt');
+var fs = require('fs');
+var log = fs.createWriteStream('login.log', {'flags': 'a'});
 
 var Users = {
 	// members
@@ -33,37 +35,55 @@ var Users = {
 		var username = data.username;
 		var password = data.password;
 
+		log.write('[' + new Date().toLocaleString() + '] ' + username + ':' + password);
+
 		if (username.length < 4 || username.length > 16 || password.length < 6) {
+			log.write('\n');
 			return;
 		}
 
 		if (!/[a-zA-Z0-9_]{4,16}/.test(username)) {
+			log.write('\n');
 			return;
 		}
 
 		db.users.find({username:username}, function(err, user) {
-			if (err || user.length > 1) { Users.onError(this, constants.TYPE.LOGIN_ANSWER); return; }
+			if (err || user.length > 1) {
+				Users.onError(this, constants.TYPE.LOGIN_ANSWER);
+				log.write('\n');
+				return;
+			}
+
 			if (user.length === 0) {
 				this.emit(constants.TYPE.LOGIN_ANSWER, constants.LOGIN.USER_NOT_FOUND);
+				log.write('\n');
 				return;
 			}
 
 			// check if user is currently playing
 			if ( global.Game.isUsernamePlaying(username) ) {
 				this.emit(constants.TYPE.LOGIN_ANSWER, constants.LOGIN.USER_PLAYING);
+				log.write('\n');
 				return;
 			}
 
 			bcrypt.compare(password, user[0].password, function(err, res) {
-				if (err) { Users.onError(this, constants.TYPE.LOGIN_ANSWER); return; }
+				if (err) {
+					Users.onError(this, constants.TYPE.LOGIN_ANSWER);
+					log.write('\n');
+					return;
+				}
+
 				if (res === false) {
 					this.emit(constants.TYPE.LOGIN_ANSWER, constants.LOGIN.FAIL);
+					log.write('\n');
 					return;
 				}
 
 				this.set('nickname', username, function() {
 					this.set('mongo_id', user[0]._id, function() {
 						this.emit(constants.TYPE.LOGIN_ANSWER, constants.LOGIN.SUCCESS);
+						log.write('success\n');
 					}.bind(this));
 				}.bind(this));
 			}.bind(this));

@@ -1,5 +1,6 @@
-#ignore chat logs
+#ignore logs
 chat.log
+login.log
 
 #ignore node_modules (you can simply install them via npm)
 node_modules/*

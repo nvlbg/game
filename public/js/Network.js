@@ -165,10 +165,13 @@
 				}
 
 				if (player === this.player && !player.smarthphoneConnected) {
-					if (data[i].x !== undefined || data[i].y !== undefined || data[i].a !== undefined) {
-						player.correction = data[i];
-						player.applyClientSideAdjustment();
+					if (data[i].g !== undefined && data[i].g === true) {
+						//TODO: play a sound or something
+						console.log('a bonus has been gained');
 					}
+
+					player.correction = data[i];
+					player.applyClientSideAdjustment();
 				} else {
 					data[i].t = data.t;
 
@@ -244,7 +247,7 @@
 
 					if (bonus.v) { // is bonus valid?
 						// add this bonus
-						this.bonuses[idx] = new game.Bonus(bonus.x, bonus.y, bonus.t);
+						this.bonuses[idx] = me.entityPool.newInstanceOf('Bonus', bonus.x, bonus.y, bonus.t);
 						me.game.add(this.bonuses[idx], 3);
 						me.game.sort();
 					} else {

@@ -20,12 +20,15 @@ var Bonus = Rect.extend({
 			return;
 		}
 
+		console.log('bonus gained');
+
 		switch(this.type) {
 			case Game.BONUS_TYPE.SPEED:
 				var newSpeed = 5;
 
 				player.accel.set(newSpeed, newSpeed);
-				player.gainedBonus = [Game.BONUS_TYPE.SPEED, newSpeed];
+				player.gainedBonus = true;
+				player.changedProps.push([Game.PLAYER_PROPERTIES.SPEED, newSpeed]);
 
 				setTimeout(function() {
 					this.needsRemove = true;
@@ -33,18 +36,20 @@ var Bonus = Rect.extend({
 					var newSpeed = 3;
 
 					player.accel.set(newSpeed, newSpeed);
-					player.gainedBonus = [Game.BONUS_TYPE.SPEED, newSpeed];
+					player.changedProps.push([Game.PLAYER_PROPERTIES.SPEED, newSpeed]);
 				}.bind(this), 10000);
 				break;
 			case Game.BONUS_TYPE.ARMOR:
 				player.armor += 1;
+				player.gainedBonus = true;
 				this.needsRemove = true;
 				break;
 			case Game.BONUS_TYPE.FASTER_BULLETS:
 				var newShootSpeed = 250;
 
 				player.shootSpeed = newShootSpeed - 25;
-				player.gainedBonus = [Game.BONUS_TYPE.FASTER_BULLETS, newShootSpeed];
+				player.gainedBonus = true;
+				player.changedProps.push([Game.PLAYER_PROPERTIES.SHOOT_SPEED, newShootSpeed]);
 
 				setTimeout(function() {
 					this.needsRemove = true;
@@ -52,7 +57,8 @@ var Bonus = Rect.extend({
 					var newShootSpeed = 500;
 
 					player.shootSpeed = newShootSpeed - 25;
-					player.gainedBonus = [Game.BONUS_TYPE.FASTER_BULLETS, newShootSpeed];
+					player.gainedBonus = true;
+					player.changedProps.push([Game.PLAYER_PROPERTIES.SHOOT_SPEED, newShootSpeed]);
 				}.bind(this), 10000);
 				break;
 		}

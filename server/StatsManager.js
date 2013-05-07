@@ -54,35 +54,27 @@ var StatsManager = {
 				case 50:
 					player.socket.emit(Game.TYPE.ACHIEVEMENT_UNLOCKED, {
 						title: 'Kills',
-						message: 'You killed yout 50th enemy'
+						message: 'You killed your 50th enemy'
 					});
 					break;
 				case 100:
 					player.socket.emit(Game.TYPE.ACHIEVEMENT_UNLOCKED, {
 						title: 'Kills',
-						message: 'You killed yout 100th enemy'
+						message: 'You killed your 100th enemy'
 					});
 					break;
 			}
 		});
 
 		switch(player.metaStats.killStreak) {
+			case 100:
+			case 50:
 			case 20:
-				player.socket.emit(Game.TYPE.ACHIEVEMENT_UNLOCKED, {
-					title: 'Killstreak',
-					message: 'You are on a streak of 20 players in a row'
-				});
-				break;
 			case 10:
-				player.socket.emit(Game.TYPE.ACHIEVEMENT_UNLOCKED, {
-					title: 'Killstreak',
-					message: 'You are on a streak of 10 players in a row'
-				});
-				break;
 			case 5:
 				player.socket.emit(Game.TYPE.ACHIEVEMENT_UNLOCKED, {
-					title: 'Killstreak',
-					message: 'You are on a streak of 5 players in a row'
+					title: 'New achievement',
+					message: 'You are on a killstreak of ' + player.metaStats.killStreak + ' players in a row'
 				});
 				break;
 		}
@@ -110,7 +102,7 @@ var StatsManager = {
 
 					player.socket.emit(Game.TYPE.ACHIEVEMENT_UNLOCKED, {
 						title: 'New personal record',
-						message: 'You beat your personal killstreak record: ' + player.metaStats.killStreak + 'in a row'
+						message: 'You have beaten your personal killstreak record: ' + player.metaStats.killStreak + 'in a row'
 					});
 					player.metaStats.killStreak = 0;
 				});
@@ -168,7 +160,7 @@ var StatsManager = {
 
 				player.socket.emit(Game.TYPE.ACHIEVEMENT_UNLOCKED, {
 					title: 'New achievement',
-					message: 'you unlocked an achievement by using your smartphone'
+					message: 'You used your smartphone as a controller'
 				});
 			});
 		});

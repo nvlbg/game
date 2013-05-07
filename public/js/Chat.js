@@ -2,6 +2,7 @@
 
 	window.game.Chat = {
 		// members
+		win: null,
 		chat: null,
 		msg_box: null,
 		msg_form: null,
@@ -10,6 +11,7 @@
 
 		// initialization
 		init: function() {
+			this.win = $( window );
 			this.chat = $('#chat');
 			this.msg_box = $('#messages');
 			this.msg_form = this.chat.find('form');
@@ -36,6 +38,9 @@
 			window.game.network.socket.on(window.game.ENUM.TYPE.CHAT_MESSAGE, this.onNewMessageRecieved.bind(this));
 
 			this.chat.show();
+
+			this.setSize();
+			this.win.resize( this.setSize.bind(this) );
 		},
 
 		// methods
@@ -49,6 +54,10 @@
 									'</p>'
 								  ) 
 								);
+
+			(function() {
+				this.msg_box[0].scrollTop = this.msg_box[0].scrollHeight;
+			}.bind(this)).defer();
 		},
 
 		escapeHtml: function(text) {
@@ -58,6 +67,34 @@
 					.replace(/>/g, "&gt;")
 					.replace(/"/g, "&quot;")
 					.replace(/'/g, "&#039;");
+		},
+
+		setSize: function() {
+			(function () {
+				
+				var width = this.win.width();
+				var height = this.win.height();
+
+				if (height > 770 || (width > 1100 && height > 130)) {
+					this.chat.show();
+				} else {
+					this.chat.hide();
+				}
+
+				if (height > 770) {
+					this.chat.css('height', (height - 640) + 'px');
+					this.msg_input.css('width', (width - 138) + 'px' );
+					this.msg_box.css('height', (height - 670) + 'px');
+				} else if(height > 130 && width > 1100) {
+					var chat_width = width - 860;
+
+					this.chat.css('width', chat_width + 'px');
+					this.msg_input.css('width', (chat_width - 138) + 'px');
+					this.msg_box.css('width', chat_width + 'px');
+				}
+
+			}.bind(this)).defer();
+			
 		},
 
 		// events

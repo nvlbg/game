@@ -4,13 +4,12 @@ body {
 }
 
 canvas {
-	float: left;
 	position: fixed;
 	left: 50%;
-	top: 50%;
 	margin-left: -400px;
-	margin-top: -300px;
-	/* cursor: none; */
+	margin-top: 20px;
+	width: 800px;
+	height: 600px;
 
 	image-rendering: optimizeSpeed;
 	image-rendering: -moz-crisp-edges;

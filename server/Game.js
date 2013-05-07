@@ -25,6 +25,7 @@ var Game = {
 	SMARTPHONE : null,
 	INPUT_TYPE : null,
 	BONUS_TYPE : null,
+	PLAYER_PROPERTIES : null,
 
 	blue  : 0,
 	green : 0,
@@ -121,18 +122,34 @@ var Game = {
 				isEmpty = false;
 			}
 
-			if (player.gainedBonus !== undefined) {
+			if (player.gainedBonus === true) {
 				if (correction[player.id] !== undefined) {
-					correction[player.id].z = player.gainedBonus;
+					correction[player.id].g = true;
 				} else {
 					correction[player.id] = {
-						z: player.gainedBonus,
+						g: true,
 						s: player.last_input_seq
 					};
 				}
 
-				player.gainedBonus = undefined;
+				player.gainedBonus = false;
 				isEmpty = false;
+			}
+
+			if (player.changedProps.length > 0) {
+				if (correction[player.id] === undefined) {
+					correction[player.id] = {
+						s: player.last_input_seq
+					};
+				}
+
+				if (player.changedProps.length === 1) {
+					correction[player.id].z = player.changedProps[0];
+					player.changedProps.length = 0;
+				} else {
+					correction[player.id].z = player.changedProps.splice(0, player.changedProps.length);
+				}
+
 			}
 
 			for (j in player.bullets) {
@@ -292,6 +309,21 @@ var Game = {
 
 				socket.emit(Game.TYPE.SPAWN, data);
 
+				var packet = {
+					x : player.pos.x,
+					y : player.pos.y,
+					d : player.direction,
+					t : player.team,
+					n : player.nickname,
+
+					i : player.id
+				};
+
+				for (var i in Game.players) {
+					Game.players[i].socket.emit(Game.TYPE.NEW_PLAYER, packet);
+				}
+				
+				/*
 				socket.broadcast.emit(Game.TYPE.NEW_PLAYER, {
 					x : player.pos.x,
 					y : player.pos.y,
@@ -301,6 +333,7 @@ var Game = {
 
 					i : player.id
 				});
+				*/
 
 				Game.players[player.id] = player;
 
@@ -345,7 +378,10 @@ var Game = {
 						Game.green -= 1;
 					}
 
-					socket.broadcast.emit(Game.TYPE.PLAYER_DISCONNECTED, player.id);
+					for (var i in Game.players) {
+						Game.players[i].socket.emit(Game.TYPE.PLAYER_DISCONNECTED, player.id);
+					}
+					//socket.broadcast.emit(Game.TYPE.PLAYER_DISCONNECTED, player.id);
 
 					if(this.players !== null && typeof player !== 'undefined') {
 						delete Game.players[player.id];
@@ -439,6 +475,7 @@ var Game = {
 		Game.SMARTPHONE = constants.SMARTPHONE;
 		Game.INPUT_TYPE = constants.INPUT_TYPE;
 		Game.BONUS_TYPE = constants.BONUS_TYPE;
+		Game.PLAYER_PROPERTIES = constants.PLAYER_PROPERTIES;
 
 		Game.net_ping_update_step = config.NET_PING_UPDATE_STEP;
 		

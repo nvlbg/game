@@ -8,6 +8,8 @@
 			window.game.network.start();
 			//window.game.melonDebugPanel = new window.debugPanel();
 			window.game.debugPanel = new window.game.debug();
+
+			//me.audio.playTrack("background");
 			
 			//me.gamestat.add("team", game.ENUM.TEAM.GREEN);
 			//me.gamestat.add("friendly_fire", true);
@@ -39,6 +41,10 @@
 			//this.stats.begin();
 			this.parent();
 			//this.stats.end();
+		},
+
+		onDestroyEvent : function() {
+			me.audio.stopTrack();
 		}
 	});
 

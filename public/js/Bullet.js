@@ -48,7 +48,7 @@
 		},
 
 		update : function() {
-			if(!this.renderable.visible) {
+			if(!me.game.viewport.isVisible( this.collisionBox )) {
 				this.remove();
 				return false;
 			}
