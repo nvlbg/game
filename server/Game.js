@@ -66,127 +66,12 @@ var Game = {
 	},
 
 	correctionUpdate : function () {
-		//TODO: last_input_seq should be send only to your player and not to others
-		//TODO: only what has changed should be sent
-		var i, player, correction = {}, isEmpty = true, j, bullet, unconfimedCnt;
-		for(i in Game.players) {
-			player = Game.players[i];
-			
-			if (!player.lastSentPos.equals(player.pos)) {
-				correction[player.id] = {
-					s: player.last_input_seq
-				};
+		//TODO: it is still possible to reduce packets' size
 
-				if (player.lastSentPos.x !== player.pos.x) {
-					correction[player.id].x = player.pos.x;
-				}
-
-				if (player.lastSentPos.y !== player.pos.y) {
-					correction[player.id].y = player.pos.y;
-				}
-
-				player.lastSentPos = player.pos.clone();
-				isEmpty = false;
-			}
-
-			if (player.lastSentDir !== player.direction) {
-				if (correction[player.id] !== undefined) {
-					correction[player.id].d = player.direction;
-				} else {
-					correction[player.id] = {
-						d: player.direction,
-						s: player.last_input_seq
-					};
-				}
-
-				player.lastSentDir = player.direction;
-				isEmpty = false;
-			}
-
-			if (player.alive !== player.lastAliveState) {
-				if (correction[player.id] !== undefined) {
-					correction[player.id].a = player.alive;
-				} else {
-					correction[player.id] = {
-						a: player.alive,
-						s: player.last_input_seq
-					};
-				}
-
-				if (player.alive === true) {
-					correction[player.id].x = player.pos.x;
-					correction[player.id].y = player.pos.y;
-				}
-
-				player.lastAliveState = player.alive;
-				isEmpty = false;
-			}
-
-			if (player.gainedBonus === true) {
-				if (correction[player.id] !== undefined) {
-					correction[player.id].g = true;
-				} else {
-					correction[player.id] = {
-						g: true,
-						s: player.last_input_seq
-					};
-				}
-
-				player.gainedBonus = false;
-				isEmpty = false;
-			}
-
-			if (player.changedProps.length > 0) {
-				if (correction[player.id] === undefined) {
-					correction[player.id] = {
-						s: player.last_input_seq
-					};
-				}
-
-				if (player.changedProps.length === 1) {
-					correction[player.id].z = player.changedProps[0];
-					player.changedProps.length = 0;
-				} else {
-					correction[player.id].z = player.changedProps.splice(0, player.changedProps.length);
-				}
-
-			}
-
-			for (j in player.bullets) {
-				bullet = player.bullets[j];
-
-				if (!bullet.isBroadcasted) {
-					if (correction[player.id] === undefined) {
-						correction[player.id] = {s: player.last_input_seq};
-					}
-
-					if (correction[player.id].b === undefined) {
-						correction[player.id].b = [];
-					}
-
-					correction[player.id].b.push({
-						x: bullet.pos.x,
-						y: bullet.pos.y,
-						z: bullet.vel.x,
-						c: bullet.vel.y
-					});
-
-					isEmpty = false;
-					bullet.isBroadcasted = true;
-				}
-			}
-
-			unconfimedCnt = player.unconfirmedBullets.length;
-			if (unconfimedCnt > 0) {
-				if (correction[player.id] === undefined) {
-					correction[player.id] = {s: player.last_input_seq};
-				}
-
-				correction[player.id].u = player.unconfirmedBullets.splice(0, unconfimedCnt);
-
-				isEmpty = false;
-			}
-		}
+		// correction that should be recieved by everyone
+		var correction = {
+			t: Game.local_time
+		};
 
 		// add bonus updates
 		var idx, bonus;
@@ -196,7 +81,6 @@ var Game = {
 			if (bonus.updated) {
 				if (correction.b === undefined) {
 					correction.b = {};
-					isEmpty = false;
 				}
 
 				if (bonus.valid) {
@@ -220,19 +104,121 @@ var Game = {
 			}
 		}
 
-		if(!isEmpty) {
-			correction.t = Game.local_time;
-			// console.log(correction);
-
-			for(i in Game.players) {
-				if (Game.players[i].fake_latency) {
-					Game.delayCorrectionUpdate(Game.players[i], correction);
-				} else {
-					Game.players[i].socket.emit(Game.TYPE.CORRECTION, correction);
+		// add info about every player that everyone cares about
+		var i, player, j, bullet, isEmpty;
+		for (i in Game.players) {
+			player = Game.players[i];
+			isEmpty = true;
+			correction[player.id] = {};
+			
+			if (!player.lastSentPos.equals(player.pos)) {
+				if (player.lastSentPos.x !== player.pos.x) {
+					correction[player.id].x = player.pos.x;
 				}
+
+				if (player.lastSentPos.y !== player.pos.y) {
+					correction[player.id].y = player.pos.y;
+				}
+
+				player.lastSentPos = player.pos.clone();
+				isEmpty = false;
+			}
+
+			if (player.lastSentDir !== player.direction) {
+				correction[player.id].d = player.direction;
+
+				player.lastSentDir = player.direction;
+				isEmpty = false;
+			}
+
+			if (player.alive !== player.lastAliveState) {
+				correction[player.id].a = player.alive;
+
+				if (player.alive === true) {
+					correction[player.id].x = player.pos.x;
+					correction[player.id].y = player.pos.y;
+				}
+
+				player.lastAliveState = player.alive;
+				isEmpty = false;
+			}
+
+			for (j in player.bullets) {
+				bullet = player.bullets[j];
+
+				if (!bullet.isBroadcasted) {
+					if (correction[player.id].b === undefined) {
+						correction[player.id].b = [];
+					}
+
+					correction[player.id].b.push({
+						x: bullet.pos.x,
+						y: bullet.pos.y,
+						z: bullet.vel.x,
+						c: bullet.vel.y
+					});
+
+					bullet.isBroadcasted = true;
+					isEmpty = false;
+				}
+			}
+
+			if (isEmpty === true) {
+				correction[player.id] = undefined;
 			}
 		}
 
+		// add additional info about each individual player and send it to him
+		var playerCorrection, wasEmpty;
+		for (i in Game.players) {
+			player = Game.players[i];
+			isEmpty = true;
+			wasEmpty = false;
+			playerCorrection = JSON.parse(JSON.stringify(correction)); // some neat hacky way of copying an object
+			
+			if (playerCorrection[player.id] === undefined) {
+				playerCorrection[player.id] = {};
+				wasEmpty = true;
+			}
+
+			playerCorrection[player.id].s = player.last_input_seq;
+
+			if (player.gainedBonus === true) {
+				playerCorrection[player.id].g = true;
+				
+				player.gainedBonus = false;
+				isEmpty = false;
+			}
+
+			if (player.changedProps.length > 0) {
+				if (player.changedProps.length === 1) {
+					playerCorrection[player.id].z = player.changedProps[0];
+					player.changedProps.length = 0;
+				} else {
+					playerCorrection[player.id].z = player.changedProps.splice(0, player.changedProps.length);
+				}
+
+				isEmpty = false;
+			}
+
+
+			unconfimedCnt = player.unconfirmedBullets.length;
+			if (unconfimedCnt > 0) {
+				playerCorrection[player.id].u = player.unconfirmedBullets.splice(0, unconfimedCnt);
+				isEmpty = false;
+			}
+
+
+			if (isEmpty === true && wasEmpty === true) {
+				correction[player.id] = undefined;
+			}
+
+			if (player.fake_latency) {
+				Game.delayCorrectionUpdate(player, playerCorrection);
+			} else {
+				player.socket.emit(Game.TYPE.CORRECTION, playerCorrection);
+			}
+		}
 	},
 
 	delayCorrectionUpdate: function(player, correction) {
