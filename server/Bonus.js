@@ -61,6 +61,11 @@ var Bonus = Rect.extend({
 					player.changedProps.push([Game.PLAYER_PROPERTIES.SHOOT_SPEED, newShootSpeed]);
 				}.bind(this), 10000);
 				break;
+			case Game.BONUS_TYPE.SHIELD:
+				player.makeInvulnerable();
+				player.gainedBonus = true;
+				player.changedProps.push([Game.PLAYER_PROPERTIES.INVULNERABLE]);
+				break;
 		}
 
 		this.updated = true;

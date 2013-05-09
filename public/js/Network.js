@@ -184,7 +184,8 @@
 						lastData = {
 							x: player.pos.x,
 							y: player.pos.y,
-							d: player.direction
+							d: player.direction,
+							w: player.gun.angle
 						};
 					}
 
@@ -198,6 +199,10 @@
 
 					if (data[i].d === undefined) {
 						data[i].d = lastData.d;
+					}
+
+					if (data[i].w === undefined) {
+						data[i].w = lastData.w;
 					}
 
 					if (middleDataNeeded) {

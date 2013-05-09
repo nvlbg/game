@@ -31,23 +31,23 @@ var Player = Rect.extend({
 		this.unconfirmedBullets = [];
 		this.bulletsCounter = 0;
 
-		this.alive = true;
-
 		this.accel = new Vector2d(speed, speed);
 		this.friction = new Vector2d(friction, friction);
 
 		this.vel = new Vector2d(0, 0);
 		this.pressed = 0;
+
+		this.alive = this.lastAliveState = true;
 		this.direction = this.lastSentDir = dir;
+		this.lastSentPos = this.pos.clone();
+		this.gunAngle = this.lastSentGunAngle = 0;
 
 		this.invulnerable = false;
 		this.makeInvulnerable();
 
-		this.lastSentPos = null;
-		this.lastAliveState = true;
 		this.inputs = [];
 		this.last_input_seq = 0;
-
+		
 		this.armor = 0;
 		this.gainedBonus = false;
 		this.changedProps = [];
@@ -143,11 +143,12 @@ var Player = Rect.extend({
 		}
 
 		if (this.inputs.length > 0) {
-			var pressed, shootAngle, clientBulletId;
+			var pressed, shootAngle, clientBulletId, gunAngle;
 			for (var i = 0, len = this.inputs.length; i < len; i++) {
 				pressed = this.inputs[i].pressed;
 				shootAngle = this.inputs[i].shootAngle;
 				clientBulletId = this.inputs[i].clientBulletId;
+				gunAngle = this.inputs[i].angle;
 
 				if ( pressed !== undefined ) {
 					if(pressed & Game.PRESSED.LEFT) {
@@ -170,7 +171,11 @@ var Player = Rect.extend({
 					this.shoot(shootAngle, clientBulletId);
 				}
 
-				pressed = shootAngle = clientBulletId = undefined;
+				if ( gunAngle !== undefined ) {
+					this.gunAngle = gunAngle;
+				}
+
+				pressed = shootAngle = clientBulletId = gunAngle = undefined;
 			}
 
 

@@ -14,6 +14,8 @@
 
 			this.setCurrentAnimation(owner.team === game.ENUM.TEAM.GREEN ? 'green' : 'blue');
 			this.isLocalGun = false;
+
+			this.alwaysUpdate = true;
 		},
 
 		draw: function(ctx) {
@@ -21,6 +23,10 @@
 		},
 
 		update: function() {
+			if (!this.visible) {
+				return false;
+			}
+			
 			this.parent();
 
 			switch( this.owner.direction ) {

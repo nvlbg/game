@@ -68,10 +68,9 @@
 				me.game.remove(this);
 			}
 
-			// force redraw next frame ( avoids a bug where the bullet is gone but is still drawn )
-			setTimeout(function() {
+			(function() {
 				me.game.repaint();
-			}, 0);
+			}).defer();
 		},
 
 		explode : function() {

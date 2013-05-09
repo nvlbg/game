@@ -29,6 +29,7 @@
 			this.isShooting = false;
 			
 			this.gun.isLocalGun = true;
+			this.lastSentGunAngle = this.gun.angle;
 
 			me.game.viewport.follow(this.pos, me.game.viewport.AXIS.BOTH);
 		},
@@ -113,6 +114,10 @@
 						s: this.input_seq
 					};
 
+					if (this.lastSentGunAngle !== this.gun.angle && bullet === null) {
+						input.w = this.gun.angle;
+					}
+
 					if (this.pressed > 0) {
 						input.p = this.pressed;
 					}
@@ -173,13 +178,15 @@
 							case window.game.ENUM.PLAYER_PROPERTIES.SHOOT_SPEED:
 								this.shootSpeed = val;
 								break;
+							case window.game.ENUM.PLAYER_PROPERTIES.INVULNERABLE:
+								this.makeInvulnerable();
+								break;
 						}
 					}
 				}
 
 				// remove bullets that the server declined
 				if (this.correction.u !== undefined) {
-					console.log(this.correction.u);
 					for (i = 0, len = this.correction.u.length; i < len; i++) {
 						this.removeBulletById(this.correction.u[i]);
 					}

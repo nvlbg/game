@@ -27,6 +27,7 @@
 			this.alive = true;
 
 			this.needsUpdate = false;
+			this.alwaysUpdate = true;
 			
 			this.setVelocity(speed, speed);
 			this.setFriction(friction, friction);
@@ -147,13 +148,35 @@
 				pos.x += (target.x - previous.x) * time_point;
 				pos.y += (target.y - previous.y) * time_point;
 
+				this.gun.angle = previous.w + (target.w - previous.w) * time_point;
+				
 				this.vel.x = pos.x - this.pos.x;
 				this.vel.y = pos.y - this.pos.y;
 
 				this.setDirection(target.d);
 
-				// this.computeVelocity(this.vel);
 				this.pos.add(this.vel);
+
+				if (previous.c !== undefined) {
+					var props;
+					if (!Array.isArray( previous.c )) {
+						props = [ previous.c ];
+					} else {
+						props = previous.c;
+					}
+					
+					for (var prop, i = 0, len = props.length; i < len; i++) {
+						prop = props[i];
+						
+						switch (prop) {
+							case window.game.ENUM.PLAYER_PROPERTIES.INVULNERABLE:
+								this.makeInvulnerable();
+								break;
+						}
+					}
+
+					previous.c = undefined;
+				}
 
 				if (previous.b !== undefined) {
 					var bullet, dir, bulletObj;
@@ -175,12 +198,12 @@
 					
 					me.game.sort();
 
-					this.gun.angle = bulletObj.angle + 1.57079633;
+					this.gun.angle = target.w = bulletObj.angle + 1.57079633;
 
 					previous.b = undefined;
 				}
 
-				if (previous.a !== undefined) {
+				if (previous.a !== undefined) { console.log(JSON.stringify(previous));
 					if (previous.a === false) {
 						this.explode();
 					} else {
@@ -266,9 +289,9 @@
 				this.isExploding = false;
 				this.alive = false;
 
-				setTimeout(function() {
+				(function() {
 					me.game.repaint();
-				}, 0);
+				}).defer();
 			}.bind(this));
 		},
 
@@ -277,6 +300,7 @@
 			this.gun.visible = true;
 			this.collidable = true;
 			this.needsUpdate = true;
+			this.alive = true;
 
 			if (this.direction === game.ENUM.DIRECTION.LEFT || this.direction === game.ENUM.DIRECTION.RIGHT) {
 				this.renderable.setCurrentAnimation("idleSideward");

@@ -14,6 +14,7 @@
 			this.renderable.addAnimation("speed", [0]);
 			this.renderable.addAnimation("armor", [1]);
 			this.renderable.addAnimation("faster_bullets", [2]);
+			this.renderable.addAnimation("shield", [3]);
 
 			switch (type) {
 				case window.game.ENUM.BONUS_TYPE.SPEED:
@@ -24,6 +25,9 @@
 					break;
 				case window.game.ENUM.BONUS_TYPE.FASTER_BULLETS:
 					this.renderable.setCurrentAnimation("faster_bullets");
+					break;
+				case window.game.ENUM.BONUS_TYPE.SHIELD:
+					this.renderable.setCurrentAnimation("shield");
 					break;
 			}
 		}

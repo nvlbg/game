@@ -74,7 +74,7 @@ var Game = {
 		};
 
 		// add bonus updates
-		var idx, bonus;
+		var idx, bonus, needsBroadcast = false;
 		for ( idx in Game.bonuses ) {
 			bonus = Game.bonuses[ idx ];
 
@@ -100,12 +100,13 @@ var Game = {
 					delete Game.bonuses[ idx ];
 				}
 
+				needsBroadcast = true;
 				bonus.updated = false;
 			}
 		}
 
 		// add info about every player that everyone cares about
-		var i, player, j, bullet, isEmpty;
+		var i, player, j, bullet, isEmpty, k, len;
 		for (i in Game.players) {
 			player = Game.players[i];
 			isEmpty = true;
@@ -120,7 +121,7 @@ var Game = {
 					correction[player.id].y = player.pos.y;
 				}
 
-				player.lastSentPos = player.pos.clone();
+				player.lastSentPos.setV(player.pos);
 				isEmpty = false;
 			}
 
@@ -129,6 +130,11 @@ var Game = {
 
 				player.lastSentDir = player.direction;
 				isEmpty = false;
+			}
+
+			if (player.lastSentGunAngle !== player.gunAngle) {
+				correction[player.id].w = player.gunAngle;
+				player.lastSentGunAngle = player.gunAngle;
 			}
 
 			if (player.alive !== player.lastAliveState) {
@@ -163,13 +169,34 @@ var Game = {
 				}
 			}
 
+			// handle props that everyone needs to know about
+			for (k = 0, len = player.changedProps.length; k < len; k++) {
+				if (player.changedProps[k][0] === Game.PLAYER_PROPERTIES.INVULNERABLE) {
+					if (correction[player.id].c === undefined) {
+						correction[player.id].c = [];
+					}
+
+					correction[player.id].c.push(Game.PLAYER_PROPERTIES.INVULNERABLE);
+				}
+			}
+
+			if (correction[player.id].c !== undefined) {
+				if (correction[player.id].c.length === 1) {
+					correction[player.id].c = correction[player.id].c[0];
+				}
+
+				isEmpty = false;
+			}
+
 			if (isEmpty === true) {
 				correction[player.id] = undefined;
+			} else {
+				needsBroadcast = true;
 			}
 		}
 
 		// add additional info about each individual player and send it to him
-		var playerCorrection, wasEmpty;
+		var playerCorrection, wasEmpty, needsEmition = needsBroadcast;
 		for (i in Game.players) {
 			player = Game.players[i];
 			isEmpty = true;
@@ -181,12 +208,21 @@ var Game = {
 				wasEmpty = true;
 			}
 
+			if (playerCorrection[player.id].w !== undefined) {
+				delete playerCorrection[player.id].w;
+			}
+
+			if (playerCorrection[player.id].c !== undefined) {
+				delete playerCorrection[player.id].c;
+			}
+
 			playerCorrection[player.id].s = player.last_input_seq;
 
 			if (player.gainedBonus === true) {
 				playerCorrection[player.id].g = true;
 				
 				player.gainedBonus = false;
+				needsEmition = true;
 				isEmpty = false;
 			}
 
@@ -198,6 +234,7 @@ var Game = {
 					playerCorrection[player.id].z = player.changedProps.splice(0, player.changedProps.length);
 				}
 
+				needsEmition = true;
 				isEmpty = false;
 			}
 
@@ -205,18 +242,22 @@ var Game = {
 			unconfimedCnt = player.unconfirmedBullets.length;
 			if (unconfimedCnt > 0) {
 				playerCorrection[player.id].u = player.unconfirmedBullets.splice(0, unconfimedCnt);
+				needsEmition = true;
 				isEmpty = false;
 			}
 
 
 			if (isEmpty === true && wasEmpty === true) {
-				correction[player.id] = undefined;
+				delete playerCorrection[player.id];
 			}
 
-			if (player.fake_latency) {
-				Game.delayCorrectionUpdate(player, playerCorrection);
-			} else {
-				player.socket.emit(Game.TYPE.CORRECTION, playerCorrection);
+			if (needsEmition) {
+				console.log( playerCorrection );
+				if (player.fake_latency) {
+					Game.delayCorrectionUpdate(player, playerCorrection);
+				} else {
+					player.socket.emit(Game.TYPE.CORRECTION, playerCorrection);
+				}
 			}
 		}
 	},
@@ -324,10 +365,20 @@ var Game = {
 				Game.players[player.id] = player;
 
 				socket.on(Game.TYPE.UPDATE, function(data) {
-					var update = {input_seq: data.s};
+					if (data.s === undefined) {
+						return;
+					}
+
+					var update = { input_seq: data.s };
+
+					if (data.w !== undefined) {
+						update.angle = data.w;
+					}
+
 					if (data.p !== undefined) {
 						update.pressed = data.p;
 					}
+					
 					if (data.a !== undefined && data.i !== undefined) {
 						update.shootAngle = data.a;
 						update.clientBulletId = data.i;
@@ -385,7 +436,7 @@ var Game = {
 
 		for ( i in Game.players ) {
 			player = Game.players[i];
-			if (player !== obj) {
+			if (player !== obj && player.alive) {
 				res = obj.collideVsAABB.call(obj, player);
 				if (res.x !== 0 || res.y !== 0) {
 					// notify the object

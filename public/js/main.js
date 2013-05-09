@@ -10,17 +10,18 @@
 	assets to be loaded
 	*/
 	window.game.resources = [
-		{ name : "bonuses",    type : "image", src : "data/sprites/bonuses.png"   },
-		{ name : "tanks",      type : "image", src : "data/sprites/tanks.png"     },
-		{ name : "metatiles",  type : "image", src : "data/sprites/metatiles.png" },
+		{ name : "bonuses",      type : "image", src : "data/sprites/bonuses.png"     },
+		{ name : "tanks",        type : "image", src : "data/sprites/tanks.png"       },
+		{ name : "metatiles",    type : "image", src : "data/sprites/metatiles.png"   },
 
 		{ name : "tile_pack_1",  type : "image", src : "data/sprites/tile_pack_1.png" },
 		{ name : "tile_pack_2",  type : "image", src : "data/sprites/tile_pack_2.png" },
 
-		{ name : "map",        type : "tmx",   src : "data/maps/map.json"          },
+		{ name : "map",          type : "tmx",   src : "data/maps/map.json"           },
 
 		// audio and SFX
-		//{ name : "background", type : "audio", src : "data/audio/", channel : 1 }
+		//{ name: "background",    type : "audio", src : "data/audio/",     channel : 1, stream : true },
+		//{ name: "powerup",       type : "audio", src : "data/audio/",     channel : 2 }
 	];
 
 	/*
@@ -47,7 +48,7 @@
 		}
 		
 		// initialize the "audio"
-		me.audio.init("mp3");//TODO: ,ogg
+		me.audio.init("mp3,ogg");
 		
 		// set all resources to be loaded
 		me.loader.onload = this.loaded.bind(this);
@@ -239,7 +240,7 @@
 				}
 			});
 
-			// guest_btn.click();
+			guest_btn.click();
 		});
 	});
 
