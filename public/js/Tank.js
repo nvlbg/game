@@ -203,7 +203,7 @@
 					previous.b = undefined;
 				}
 
-				if (previous.a !== undefined) { console.log(JSON.stringify(previous));
+				if (previous.a !== undefined) {
 					if (previous.a === false) {
 						this.explode();
 					} else {
@@ -283,8 +283,9 @@
 			this.isExploding = true;
 			this.collidable = false;
 			this.gun.visible = false;
+			me.audio.play('explosion');
 
-			this.renderable.setCurrentAnimation("explode", function() {
+			this.renderable.setCurrentAnimation('explode', function() {
 				this.visible = false;
 				this.isExploding = false;
 				this.alive = false;

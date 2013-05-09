@@ -20,8 +20,9 @@
 		{ name : "map",          type : "tmx",   src : "data/maps/map.json"           },
 
 		// audio and SFX
-		//{ name: "background",    type : "audio", src : "data/audio/",     channel : 1, stream : true },
-		//{ name: "powerup",       type : "audio", src : "data/audio/",     channel : 2 }
+		{ name: "background",    type : "audio", src : "data/audio/",     channel : 1, stream : true },
+		{ name: "powerup",       type : "audio", src : "data/audio/",     channel : 2 },
+		{ name: "explosion",     type : "audio", src : "data/audio/",     channel : 2 }
 	];
 
 	/*

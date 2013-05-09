@@ -166,7 +166,7 @@
 
 				if (player === this.player && !player.smarthphoneConnected) {
 					if (data[i].g !== undefined && data[i].g === true) {
-						//TODO: play a sound or something
+						me.audio.play('powerup');
 						console.log('a bonus has been gained');
 					}
 
