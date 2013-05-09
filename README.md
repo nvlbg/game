@@ -1,7 +1,7 @@
 General
 =======
 
-This is a fast paced game using melonJS as engine. It is supposed to be a massive multiplayer but it is currently in development. Currently I have not came with an idea how to name the game, so if you thought of a good name, please email me on nvl.bg.rules@gmail.com
+This is a fast paced game using melonJS as engine. It is a massive multiplayer game. Currently I have not came with an idea how to name the game, so if you thought of a good name, please email me on nvl.bg.rules@gmail.com
 
 
 Server requirements
@@ -39,7 +39,7 @@ Here is what each option does:
 
 How to build with Grunt
 -------------
-To build with grunt, you must have grunt-cli and grunt 0.4 already installed. If you have run `npm install` you already have grunt 0.4, but you must also have grunt-cli. If you don't have it, install it with this command:
+To build with grunt, you must have grunt-cli and grunt 0.4 already installed. By previously running `npm install`, you already installed grunt 0.4, but you must also have grunt-cli. If you don't have it, run this command:
 
 `$ npm install -g grunt-cli`
 
