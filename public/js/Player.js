@@ -93,7 +93,7 @@
 				}
 
 				if (this.delta.x > 0.1 || this.delta.y > 0.1) {
-					this.delta.div(2);
+					this.delta.div(2).ceilSelf();
 					this.pos.add(this.delta);
 
 					updated = true;

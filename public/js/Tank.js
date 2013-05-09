@@ -74,10 +74,10 @@
 			var currentAnimation = "move";
 
 			if(direction === game.ENUM.DIRECTION.UP || direction === game.ENUM.DIRECTION.DOWN) {
-				//this.updateColRect(4, 24, 1, 29);
+				this.updateColRect(4, 24, 2, 29);
 				currentAnimation += "Forward";
 			} else if(direction === game.ENUM.DIRECTION.LEFT || direction === game.ENUM.DIRECTION.RIGHT) {
-				//this.updateColRect(2, 29, 4, 24);
+				this.updateColRect(2, 29, 4, 24);
 				currentAnimation += "Sideward";
 			} else {
 				throw "unknown direction \"" + direction + "\"";
@@ -365,10 +365,10 @@
 
 			var currentAnimation;
 			if(dir === game.ENUM.DIRECTION.UP || dir === game.ENUM.DIRECTION.DOWN) {
-				//this.updateColRect(4, 24, 1, 29);
+				this.updateColRect(4, 24, 2, 29);
 				currentAnimation = "moveForward";
 			} else if(dir === game.ENUM.DIRECTION.LEFT || dir === game.ENUM.DIRECTION.RIGHT) {
-				//this.updateColRect(2, 29, 4, 24);
+				this.updateColRect(2, 29, 4, 24);
 				currentAnimation = "moveSideward";
 			}
 

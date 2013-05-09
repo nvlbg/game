@@ -47,20 +47,20 @@ var Player = Rect.extend({
 
 		this.inputs = [];
 		this.last_input_seq = 0;
-		
+
 		this.armor = 0;
 		this.gainedBonus = false;
 		this.changedProps = [];
 
 		this.fake_latency = 0;
-		/*
+		
 		if(dir === Game.DIRECTION.UP || dir === Game.DIRECTION.DOWN) {
 			this.updateColRect(24, 29);
 		} else if(dir === Game.DIRECTION.LEFT || dir === Game.DIRECTION.RIGHT) {
 			this.updateColRect(29, 24);
 		} else {
 			throw "unknown direction \"" + dir + "\"";
-		}*/
+		}
 
 		this.id = id;
 		this.mongoId = mongoId;
@@ -185,12 +185,31 @@ var Player = Rect.extend({
 		}
 	},
 
+	setPosWithouhOffset : function(v) {
+		v.setV( this.pos );
+		if(this.direction === Game.DIRECTION.UP || this.direction === Game.DIRECTION.DOWN) {
+			v.x -= 4;
+			v.y -= 2;
+		} else if(this.direction === Game.DIRECTION.LEFT || this.direction === Game.DIRECTION.RIGHT) {
+			v.x -= 2;
+			v.y -= 4;
+		}
+	},
+
+	getPosWithouhOffset : function() {
+		if(this.direction === Game.DIRECTION.UP || this.direction === Game.DIRECTION.DOWN) {
+			return new Vector2d( this.pos.x - 4, this.pos.y - 2 );
+		} else if(this.direction === Game.DIRECTION.LEFT || this.direction === Game.DIRECTION.RIGHT) {
+			return new Vector2d( this.pos.x - 2, this.pos.y - 4 );
+		}
+	},
+
 	moveLeft : function() {
 		this.vel.x -= this.accel.x * Game.timer.tick;
 		this.vel.y = 0;
 
 		if(this.direction !== Game.DIRECTION.LEFT) {
-			//this.updateColRect(29, 24);
+			this.updateColRect(29, 24);
 			this.direction = Game.DIRECTION.LEFT;
 		}
 	},
@@ -200,7 +219,7 @@ var Player = Rect.extend({
 		this.vel.y = 0;
 
 		if(this.direction !== Game.DIRECTION.RIGHT) {
-			//this.updateColRect(29, 24);
+			this.updateColRect(29, 24);
 			this.direction = Game.DIRECTION.RIGHT;
 		}
 	},
@@ -210,7 +229,7 @@ var Player = Rect.extend({
 		this.vel.y -= this.accel.y * Game.timer.tick;
 
 		if(this.direction !== Game.DIRECTION.UP) {
-			//this.updateColRect(24, 29);
+			this.updateColRect(24, 29);
 			this.direction = Game.DIRECTION.UP;
 		}
 	},
@@ -220,7 +239,7 @@ var Player = Rect.extend({
 		this.vel.y += this.accel.y * Game.timer.tick;
 
 		if(this.direction !== Game.DIRECTION.DOWN) {
-			//this.updateColRect(24, 29);
+			this.updateColRect(24, 29);
 			this.direction = Game.DIRECTION.DOWN;
 		}
 	},

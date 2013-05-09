@@ -106,19 +106,20 @@ var Game = {
 		}
 
 		// add info about every player that everyone cares about
-		var i, player, j, bullet, isEmpty, k, len;
+		var i, player, pos = new Vector2d(0, 0), j, bullet, isEmpty, k, len;
 		for (i in Game.players) {
 			player = Game.players[i];
+			player.setPosWithouhOffset(pos);
 			isEmpty = true;
 			correction[player.id] = {};
 			
 			if (!player.lastSentPos.equals(player.pos)) {
 				if (player.lastSentPos.x !== player.pos.x) {
-					correction[player.id].x = player.pos.x;
+					correction[player.id].x = pos.x;
 				}
 
 				if (player.lastSentPos.y !== player.pos.y) {
-					correction[player.id].y = player.pos.y;
+					correction[player.id].y = pos.y;
 				}
 
 				player.lastSentPos.setV(player.pos);
@@ -141,8 +142,8 @@ var Game = {
 				correction[player.id].a = player.alive;
 
 				if (player.alive === true) {
-					correction[player.id].x = player.pos.x;
-					correction[player.id].y = player.pos.y;
+					correction[player.id].x = pos.x;
+					correction[player.id].y = pos.y;
 				}
 
 				player.lastAliveState = player.alive;
