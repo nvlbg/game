@@ -49,11 +49,6 @@
 }
 
 @media all and (min-height: 130px) and (max-height: 770px) and (min-width: 1100px) {
-	canvas {
-		left: 0;
-		margin-left: 20px;
-	}
-
 	#chat {
 		position: relative;
 		float: right;

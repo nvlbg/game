@@ -470,11 +470,13 @@ var Game = {
 	},
 
 	createTimer : function() {
+		var now;
 		setInterval(function() {
-			this._dt = new Date().getTime() - this._dte;
-			this._dte = new Date().getTime();
+			now = new Date().getTime();
+			this._dt = now - this._dte;
+			this._dte = now;
 			this.local_time += this._dt/1000.0;
-		}.bind(this), 4);
+		}.bind(this), 5);
 	},
 
 	createBonusTimer : function() {

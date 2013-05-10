@@ -1,6 +1,6 @@
 {
 	"MONGO_CONNECTION_STRING": "database",
-	"MAP": "map",
+	"MAP": "desert",
 	"FPS": 60,
 	"PORT": 1337,
 	"CORRECTION_TIME_STEP": 50,

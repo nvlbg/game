@@ -6,10 +6,22 @@
 		onResetEvent : function() {
 			// window.game.network = new game.Network();
 			window.game.network.start();
-			//window.game.melonDebugPanel = new window.debugPanel();
-			window.game.debugPanel = new window.game.debug();
+			window.game.melonDebugPanel = new window.debugPanel();
+			//window.game.debugPanel = new window.game.debug();
 
-			me.audio.playTrack("background");
+			// add audio button functionality
+			me.audio.playTrack('background');
+			var sound = $('#sound').show().click(function(e) {
+				e.preventDefault();
+
+				sound.toggleClass('soundOn');
+
+				if (sound.hasClass('soundOn')) {
+					me.audio.unmuteAll();
+				} else {
+					me.audio.muteAll();
+				}
+			});
 			
 			//me.gamestat.add("team", game.ENUM.TEAM.GREEN);
 			//me.gamestat.add("friendly_fire", true);
@@ -37,11 +49,13 @@
 			*/
 		},
 
+		/*
 		onUpdateFrame : function() {
-			//this.stats.begin();
+			this.stats.begin();
 			this.parent();
-			//this.stats.end();
+			this.stats.end();
 		},
+		*/
 
 		onDestroyEvent : function() {
 			me.audio.stopTrack();

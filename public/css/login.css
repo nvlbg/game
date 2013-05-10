@@ -1,7 +1,7 @@
 * { margin: 0; padding: 0; text-decoration: none; border: 0; }
  body {
  	background: #000;
- 	background: url(../data/sprites/background.png) no-repeat center center fixed; 
+ 	background: url(../img/background.png) no-repeat center center fixed; 
 	-webkit-background-size: cover;
 	-moz-background-size: cover;
 	-o-background-size: cover;
@@ -21,7 +21,7 @@
     color:    #194013;
 }
 
- .login_background { background: url(../data/sprites/login.png) no-repeat; }
+ .login_background { background: url(../img/login.png) no-repeat; }
 
  #login { width: 292px; margin: auto; background: transparent; padding-top: 125px; }
  #logintab { cursor: pointer; width: 146px; height: 53px; margin: auto; float: left; background-position: -2px -58px; }
@@ -39,7 +39,7 @@
  	border-left: 1px solid;
  	border-right: 1px solid;
 
-	border-image: url(../data/sprites/border.png) 1 100%;
+	border-image: url(../img/border.png) 1 100%;
  	-webkit-border-image: -webkit-gradient(linear, 0 0, 0 100%, from(rgba(52,103,45,1)), color-stop(.5, rgba(52,103,45,.85)), to(rgba(52,103,45,0))) 1 100%;
  	-webkit-border-image: -webkit-linear-gradient(rgba(52,103,45,1), rgba(52,103,45,.85), rgba(52,103,45,0)) 1 100%;
  	-o-border-image: -o-linear-gradient(rgba(52,103,45,1), rgba(52,103,45,.85), rgba(52,103,45,0)) 1 100%;

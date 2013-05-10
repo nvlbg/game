@@ -117,7 +117,7 @@
 
 		onNewMessageRecieved: function(msg) {
 			var timestamp = new Date().toLocaleTimeString();
-			var username = msg.length === 2 ? msg[1] : 'System';
+			var username = msg.length === 2 ? window.game.network.players[ msg[1] ].nickname : 'System';
 			var message = msg[0];
 			var cls = username === 'System' ? 'message_system' : 'message_user';
 

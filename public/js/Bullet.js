@@ -39,6 +39,12 @@
 			
 			this.vel.x = this.direction.x * this.speed;
 			this.vel.y = this.direction.y * this.speed;
+
+			this.alwaysUpdate = true;
+
+			if (me.game.viewport.isVisible(this)) {
+				me.audio.play('shot');
+			}
 		},
 
 
@@ -48,11 +54,6 @@
 		},
 
 		update : function() {
-			if(!me.game.viewport.isVisible( this.collisionBox )) {
-				this.remove();
-				return false;
-			}
-
 			if(!this.isExploding) {
 				this.updateMovement();
 			}

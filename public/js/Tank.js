@@ -283,7 +283,10 @@
 			this.isExploding = true;
 			this.collidable = false;
 			this.gun.visible = false;
-			me.audio.play('explosion');
+
+			if (me.game.viewport.isVisible(this)) {
+				me.audio.play('explosion');
+			}
 
 			this.renderable.setCurrentAnimation('explode', function() {
 				this.visible = false;
@@ -302,6 +305,10 @@
 			this.collidable = true;
 			this.needsUpdate = true;
 			this.alive = true;
+
+			if (me.game.viewport.isVisible(this)) {
+				me.audio.play('spawn');
+			}
 
 			if (this.direction === game.ENUM.DIRECTION.LEFT || this.direction === game.ENUM.DIRECTION.RIGHT) {
 				this.renderable.setCurrentAnimation("idleSideward");

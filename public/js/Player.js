@@ -31,7 +31,18 @@
 			this.gun.isLocalGun = true;
 			this.lastSentGunAngle = this.gun.angle;
 
-			me.game.viewport.follow(this.pos, me.game.viewport.AXIS.BOTH);
+			me.game.viewport.follow(this, me.game.viewport.AXIS.BOTH);
+			this.interpolationPos = new me.Vector2d();
+			this.respawnTween = new me.Tween(this.interpolationPos).onComplete(function() {
+				me.game.viewport.follow(this.interpolationPos, me.game.viewport.AXIS.NONE);
+				me.game.viewport.follow(this.pos, me.game.viewport.AXIS.BOTH);
+			}.bind(this));
+			this.respawnTween.easing(me.Tween.Easing.Sinusoidal.EaseIn);
+
+			this.engineSoundPlaying = false;
+
+
+			me.audio.play('spawn');
 		},
 
 		draw: function(ctx) {
@@ -92,11 +103,9 @@
 					}
 				}
 
-				if (this.delta.x > 0.1 || this.delta.y > 0.1) {
-					this.delta.div(2).ceilSelf();
+				if (this.deltaFrames > 0) {
+					this.deltaFrames -= 1;
 					this.pos.add(this.delta);
-
-					updated = true;
 				}
 				
 				var bullet = null;
@@ -127,9 +136,13 @@
 						input.i = bullet.id;
 					}
 
+					this.socket.emit(game.ENUM.TYPE.UPDATE, input);
+
+					/*
 					setTimeout(function() {
 						this.socket.emit(game.ENUM.TYPE.UPDATE, input);
 					}.bind(this), window.game.network.fake_latency);
+					*/
 
 					this.input_seq += 1;
 					this.inputs.push(input);
@@ -137,9 +150,20 @@
 
 				this.updateMovement();
 				updated = updated || this.vel.x !== 0 || this.vel.y !== 0;
-				this.vel.setZero();
+
+				if (this.vel.x !== 0 || this.vel.y !== 0) {
+					this.vel.setZero();
+
+					if (!this.engineSoundPlaying) {
+						me.audio.play('engine', true);
+						this.engineSoundPlaying = true;
+					}
+				} else if (this.engineSoundPlaying) {
+					me.audio.pause('engine');
+					this.engineSoundPlaying = false;
+				}
 			}
-		
+
 			if(updated) {
 				this.parent(this);
 				return true;
@@ -259,12 +283,11 @@
 
 				// compute a delta with the difference between client-side predicted pos
 				// and our new predicted pos (after the correction we recieved)
-				// each frame we will add half of that delta to our pos, so it will smoothly
+				// each frame we will add portion of that delta to our pos, so it will smoothly
 				// be corrected after few frames
-				this.delta.copy(this.pos);
-				this.delta.sub(currentPos);
+				this.delta.copy(this.pos).sub(currentPos).div(this.deltaFrames);
 
-				// but, only compensate if the difference is low
+				// but, only compensate if the difference between the current and the true pos is low
 				// otherwise directly snap to the new one (here it already is if we don't reset)
 				if ((this.delta.x*this.delta.x + this.delta.y*this.delta.y) < 400) {
 						// same as `this.delta.length() < 20` but faster, since sqrt won't be calculated
@@ -365,18 +388,14 @@
 
 		explode: function() {
 			this.parent();
-			me.game.viewport.follow(this.pos, me.game.viewport.AXIS.NONE);
+			this.interpolationPos.setV( this.pos );
+			me.game.viewport.follow(this, me.game.viewport.AXIS.NONE);
 		},
 
 		respawn: function() {
 			this.parent();
-			/*var tween = new me.Tween(me.game.viewport.pos).to(this.pos, 2000).onComplete(function() {
-				me.game.viewport.follow(this.pos, me.game.viewport.AXIS.BOTH);
-			}.bind(this));
-			tween.easing(me.Tween.Easing.Sinusoidal.EaseIn);
-			tween.start();
-			*/
-			me.game.viewport.follow(this.pos, me.game.viewport.AXIS.BOTH);
+			me.game.viewport.follow( this.interpolationPos, me.game.viewport.AXIS.BOTH );
+			this.respawnTween.to({ x:this.pos.x, y:this.pos.y }, 2000).start();
 		}
 	});
 	

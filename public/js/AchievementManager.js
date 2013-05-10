@@ -15,6 +15,7 @@
 
 		// events
 		onNewAchievement: function(achievement) {
+			me.audio.play('achievement');
 			toastr.success(achievement.message, '<h3>' + achievement.title + '</h3>');
 		}
 	};

@@ -7,9 +7,10 @@
 	me.sys.useNativeAnimFrame = true;
 	window.game.config.doubleBuffering = true;
 	// me.sys.interpolation = true;
-	me.sys.preRender = true;
+	// me.sys.preRender = true;
 	// me.sys.dirtyRegion = true;
 	me.sys.fps = 60;
+	me.sys.stopOnAudioError = false;
 
 	// add custom types
 	me.game.BULLET_OBJECT = 4;

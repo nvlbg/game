@@ -10,19 +10,28 @@
 	assets to be loaded
 	*/
 	window.game.resources = [
+		// game objects
 		{ name : "bonuses",      type : "image", src : "data/sprites/bonuses.png"     },
 		{ name : "tanks",        type : "image", src : "data/sprites/tanks.png"       },
 		{ name : "metatiles",    type : "image", src : "data/sprites/metatiles.png"   },
 
-		{ name : "tile_pack_1",  type : "image", src : "data/sprites/tile_pack_1.png" },
-		{ name : "tile_pack_2",  type : "image", src : "data/sprites/tile_pack_2.png" },
+		// tilesets
+		{ name : "forest",       type : "image", src : "data/sprites/forest.png"      },
+		{ name : "desert",       type : "image", src : "data/sprites/desert.png"      },
 
-		{ name : "map",          type : "tmx",   src : "data/maps/map.json"           },
+		// maps
+		{ name : "forest",       type : "tmx",   src : "data/maps/forest.json"        },
+		{ name : "desert",       type : "tmx",   src : "data/maps/desert.json"        },
 
 		// audio and SFX
 		{ name: "background",    type : "audio", src : "data/audio/",     channel : 1, stream : true },
 		{ name: "powerup",       type : "audio", src : "data/audio/",     channel : 2 },
-		{ name: "explosion",     type : "audio", src : "data/audio/",     channel : 2 }
+		{ name: "explosion",     type : "audio", src : "data/audio/",     channel : 2 },
+		{ name: "shot",          type : "audio", src : "data/audio/",     channel : 3 },
+		{ name: "engine",        type : "audio", src : "data/audio/",     channel : 1 },
+		{ name: "achievement",   type : "audio", src : "data/audio/",     channel : 1 },
+		{ name: "spawn",         type : "audio", src : "data/audio/",     channel : 2 }
+
 	];
 
 	/*
@@ -241,7 +250,7 @@
 				}
 			});
 
-			guest_btn.click();
+			// guest_btn.click();
 		});
 	});
 

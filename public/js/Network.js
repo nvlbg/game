@@ -48,12 +48,14 @@
 		},
 		
 		createTimer : function() {
+			var now;
 			setInterval(function() {
-				this._dt = new Date().getTime() - this._dte;
-				this._dte = new Date().getTime();
+				now = new Date().getTime();
+				this._dt = now - this._dte;
+				this._dte = now;
 				this.server_time += this._dt/1000.0;
 				this.client_time = this.server_time - (this.net_offset/1000);
-			}.bind(this), 4);
+			}.bind(this), 5);
 		},
 
 		createPingTimer: function() {
@@ -167,7 +169,7 @@
 				if (player === this.player && !player.smarthphoneConnected) {
 					if (data[i].g !== undefined && data[i].g === true) {
 						me.audio.play('powerup');
-						console.log('a bonus has been gained');
+						console.log('a bonus has been gained: ', data[i].g);
 					}
 
 					player.correction = data[i];
