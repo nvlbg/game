@@ -11,17 +11,7 @@
 
 			// add audio button functionality
 			me.audio.playTrack('background');
-			var sound = $('#sound').show().click(function(e) {
-				e.preventDefault();
-
-				sound.toggleClass('soundOn');
-
-				if (sound.hasClass('soundOn')) {
-					me.audio.unmuteAll();
-				} else {
-					me.audio.muteAll();
-				}
-			});
+			$('#sound').show();
 			
 			//me.gamestat.add("team", game.ENUM.TEAM.GREEN);
 			//me.gamestat.add("friendly_fire", true);

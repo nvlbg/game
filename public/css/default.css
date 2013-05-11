@@ -3,6 +3,11 @@ body {
 	background: #666;
 }
 
+@font-face {
+	font-family: LCD_Solid;
+	src: url(../data/fonts/LCD_Solid.ttf);
+}
+
 #jsapp {
 	position: relative;
 	width: 100%;
@@ -25,12 +30,24 @@ canvas {
 	-ms-interpolation-mode: nearest-neighbor;
 }
 
-@font-face {
-	font-family: LCD_Solid;
-	src: url(../data/fonts/LCD_Solid.ttf);
+#controls {
+	position: absolute;
+	left: 50%;
+	margin-left: -340px;
+	top: 100px;
+	z-index: 999;
 }
 
-#toggleInput {
+#controls a {
+	margin-right: 20px;
+	float: left;
+}
+
+#input {
+	width: 32px;
+	height: 32px;
+	background-image: url(../img/input.png);
+	background-repeat: no-repeat;
 	display: none;
 }
 
@@ -39,15 +56,14 @@ canvas {
 	height: 32px;
 	background-image: url(../img/volume.png);
 	background-repeat: no-repeat;
-	position: absolute;
-	left: 50%;
-	margin-left: -300px;
-	top: 100px;
-	z-index: 999;
 	display: none;
 }
 
 .soundOn {
+	background-position: -32px 0;
+}
+
+.smartphone {
 	background-position: -32px 0;
 }
 
@@ -57,10 +73,8 @@ canvas {
 		margin-left: 20px;
 	}
 
-	#sound {
-		left: 100px;
-		top: 100px;
+	#controls {
+		left: 60px;
 		margin-left: 0;
 	}
 }
-

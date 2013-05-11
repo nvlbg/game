@@ -136,13 +136,14 @@
 						input.i = bullet.id;
 					}
 
-					this.socket.emit(game.ENUM.TYPE.UPDATE, input);
-
 					/*
+					//TODO: use this, because setTimout each frame is really slow
+					this.socket.emit(game.ENUM.TYPE.UPDATE, input);
+					*/
+
 					setTimeout(function() {
 						this.socket.emit(game.ENUM.TYPE.UPDATE, input);
 					}.bind(this), window.game.network.fake_latency);
-					*/
 
 					this.input_seq += 1;
 					this.inputs.push(input);

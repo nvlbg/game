@@ -30,10 +30,10 @@
 		this.render.add(me.debug, 'renderHitBox');
 
 		/*
-		setTimeout(function() {
+		(function() {
 			this.player.add(window.game.network.player.pos, 'x').listen();
 			this.player.add(window.game.network.player.pos, 'y').listen();
-		}.bind(this), 250);
+		}.bind(this)).defer();
 		*/
 
 		this.networking.open();

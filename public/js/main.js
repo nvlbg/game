@@ -250,6 +250,35 @@
 				}
 			});
 
+			// controls functionality
+			var sound = $('#sound').click(function(e) {
+				e.preventDefault();
+
+				sound.toggleClass('soundOn');
+
+				if (sound.hasClass('soundOn')) {
+					me.audio.unmuteAll();
+				} else {
+					me.audio.muteAll();
+				}
+			});
+
+			var input = $('#input').click(function(e) {
+				e.preventDefault();
+
+				window.game.network.player.smarthphoneConnected = !window.game.network.player.smarthphoneConnected;
+				window.game.network.socket.emit(window.game.ENUM.TYPE.SET_INPUT,
+												window.game.network.player.smarthphoneConnected ? 
+												window.game.ENUM.INPUT_TYPE.SMARTPHONE_CONTROLLER :
+												window.game.ENUM.INPUT_TYPE.KEYBOARD_AND_MOUSE);
+
+				if (window.game.network.player.smarthphoneConnected) {
+					input.addClass('smartphone');
+				} else {
+					input.removeClass('smartphone');
+				}
+			});
+
 			// guest_btn.click();
 		});
 	});
