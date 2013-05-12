@@ -205,7 +205,10 @@
 
 				if (previous.a !== undefined) {
 					if (previous.a === false) {
-						this.explode();
+						(function() {
+							this.explode();
+						}.bind(this)).defer();
+
 					} else {
 						this.pos.set(previous.x, previous.y);
 						this.respawn();

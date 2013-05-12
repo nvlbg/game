@@ -10,7 +10,7 @@
 			this.shootSpeed = shootSpeed;
 			this.socket = socket;
 			this.canShoot = true;
-			this.smarthphoneConnected = false;
+			this.smartphoneConnected = false;
 
 			this.correction = null;
 			this.lastCorrectionPos = this.pos.clone();
@@ -23,7 +23,6 @@
 			this.delta = new me.Vector2d(0, 0);
 			this.deltaFrames = 0;
 
-			this.lastPressed = 0;
 			this.pressed = 0;
 
 			this.isShooting = false;
@@ -40,7 +39,6 @@
 			this.respawnTween.easing(me.Tween.Easing.Sinusoidal.EaseIn);
 
 			this.engineSoundPlaying = false;
-
 
 			me.audio.play('spawn');
 		},
@@ -75,7 +73,7 @@
 			
 			this.needsUpdate = false;
 
-			if (this.smarthphoneConnected) {
+			if (this.smartphoneConnected) {
 				updated = this.applyClientSideInterpolation() || updated;
 			} else {
 				this.pressed = 0;
@@ -233,7 +231,9 @@
 
 				if (this.correction.a !== undefined) {
 					if (this.correction.a === false) {
-						this.explode();
+						setTimeout(function() {
+							this.explode();
+						}.bind(this), window.game.network.net_offset);
 					} else {
 						this.pos.set(this.correction.x, this.correction.y);
 						this.respawn();

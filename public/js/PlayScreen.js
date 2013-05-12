@@ -4,10 +4,12 @@
 		stats: null,
 
 		onResetEvent : function() {
-			// window.game.network = new game.Network();
 			window.game.network.start();
-			window.game.melonDebugPanel = new window.debugPanel();
-			//window.game.debugPanel = new window.game.debug();
+
+			if (window.location.hash === '#debug') {
+				window.game.melonDebugPanel = new window.debugPanel();
+				window.game.debugPanel = new window.game.debug();
+			}
 
 			// add audio button functionality
 			me.audio.playTrack('background');

@@ -44,7 +44,7 @@
 					break;
 			}
 
-			if (this.isLocalGun) {
+			if (this.isLocalGun && !this.owner.smartphoneConnected) {
 				var dir = new me.Vector2d(
 								me.input.mouse.pos.x - this.owner.pos.x + me.game.viewport.pos.x - 16,
 								me.input.mouse.pos.y - this.owner.pos.y + me.game.viewport.pos.y - 16

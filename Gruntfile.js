@@ -36,10 +36,11 @@ module.exports = function(grunt) {
 					  'public/js/PlayScreen.js',
 					  'public/js/Bullet.js',
 					  'public/js/Bonus.js',
+					  'public/js/Gun.js',
 					  'public/js/Tank.js',
 					  'public/js/Friend.js',
 					  'public/js/Enemy.js',
-					  'public/js/EnemyBoy.js',
+					  'public/js/EnemyBot.js',
 					  'public/js/Player.js',
 					  'public/js/main.js'],
 				dest: 'public/build/<%= pkg.name %>.<%= pkg.version %>.js'

@@ -84,7 +84,8 @@
 				this.socket.emit(game.ENUM.TYPE.SMARTPHONE_AUTH, answer);
 
 				if ( answer === true ) {
-					this.player.smarthphoneConnected = true;
+					this.player.smartphoneConnected = true;
+					this.player.inputs.length = 0;
 
 					var input = $('#input');
 
@@ -92,7 +93,7 @@
 
 					this.socket.on(game.ENUM.TYPE.SMARTPHONE_DISCONNECTED, function() {
 						input.hide();
-						this.player.smarthphoneConnected = false;
+						this.player.smartphoneConnected = false;
 					}.bind(this));
 				}
 			}.bind(this));
@@ -158,12 +159,14 @@
 					continue;
 				}
 
-				if (player === this.player && !player.smarthphoneConnected) {
+				if (player === this.player) {
 					if (data[i].g !== undefined && data[i].g === true) {
 						me.audio.play('powerup');
-						console.log('a bonus has been gained: ', data[i].g);
+						console.log('a bonus has been gained');
 					}
+				}
 
+				if (player === this.player && !player.smartphoneConnected) {
 					player.correction = data[i];
 					player.applyClientSideAdjustment();
 				} else {
@@ -235,6 +238,10 @@
 					}
 
 					player.updates.push(data[i]);
+
+					if (player === this.player) {
+						player.lastCorrectionPos.set( data[i].x, data[i].y );
+					}
 				}
 			}
 

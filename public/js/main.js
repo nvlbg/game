@@ -30,7 +30,9 @@
 		{ name: "shot",          type : "audio", src : "data/audio/",     channel : 3 },
 		{ name: "engine",        type : "audio", src : "data/audio/",     channel : 1 },
 		{ name: "achievement",   type : "audio", src : "data/audio/",     channel : 1 },
-		{ name: "spawn",         type : "audio", src : "data/audio/",     channel : 2 }
+		{ name: "spawn",         type : "audio", src : "data/audio/",     channel : 2 },
+		{ name: "armor",         type : "audio", src : "data/audio/",     channel : 2 },
+		{ name: "impact",        type : "audio", src : "data/audio/",     channel : 3 }
 
 	];
 
@@ -266,13 +268,13 @@
 			var input = $('#input').click(function(e) {
 				e.preventDefault();
 
-				window.game.network.player.smarthphoneConnected = !window.game.network.player.smarthphoneConnected;
+				window.game.network.player.smartphoneConnected = !window.game.network.player.smartphoneConnected;
 				window.game.network.socket.emit(window.game.ENUM.TYPE.SET_INPUT,
-												window.game.network.player.smarthphoneConnected ? 
+												window.game.network.player.smartphoneConnected ? 
 												window.game.ENUM.INPUT_TYPE.SMARTPHONE_CONTROLLER :
 												window.game.ENUM.INPUT_TYPE.KEYBOARD_AND_MOUSE);
 
-				if (window.game.network.player.smarthphoneConnected) {
+				if (window.game.network.player.smartphoneConnected) {
 					input.addClass('smartphone');
 				} else {
 					input.removeClass('smartphone');

@@ -57,7 +57,6 @@ var Bonus = Rect.extend({
 					var newShootSpeed = 500;
 
 					player.shootSpeed = newShootSpeed - 25;
-					player.gainedBonus = true;
 					player.changedProps.push([Game.PLAYER_PROPERTIES.SHOOT_SPEED, newShootSpeed]);
 				}.bind(this), 10000);
 				break;

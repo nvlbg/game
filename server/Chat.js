@@ -38,10 +38,12 @@ var Chat = {
 
 		// debug chat messages
 		//TODO: remove this when in production
+		/*
 		if (message === '/bonus') {
 			Game.bonuses[ Game.bonusIdCounter++ ] = new Bonus( new Vector2d(300, 300), Number.prototype.random(0, 3), 2500 );
 			return;
 		}
+		*/
 
 		log.write('[' + new Date().toLocaleString() + '] ' + this.nickname + ': ' + message + '\n');
 

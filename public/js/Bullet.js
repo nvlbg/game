@@ -79,6 +79,10 @@
 			this.isExploding = true;
 
 			this.renderable.setCurrentAnimation("explode", this.remove.bind(this));
+
+			if (me.game.viewport.isVisible(this)) {
+				me.audio.play('impact');
+			}
 		},
 
 		updateMovement : function() {
@@ -105,6 +109,7 @@
 					me.gamestat.getItemValue("friendly_fire"))) { // with friendly_fire
 					
 					if (!collision.obj.invulnerable) {
+						me.audio.play('armor');
 						this.remove();
 						return;
 					}

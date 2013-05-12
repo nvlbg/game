@@ -252,7 +252,10 @@ var Player = Rect.extend({
 			}.bind(this), this.shootSpeed);
 		} else {
 			console.log('you cannot shoot: ' + clientBulletId);
-			this.unconfirmedBullets.push(clientBulletId);
+
+			if (clientBulletId !== -1) {
+				this.unconfirmedBullets.push(clientBulletId);
+			}
 			return false;
 		}
 

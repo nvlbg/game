@@ -217,7 +217,9 @@ var Game = {
 				delete playerCorrection[player.id].c;
 			}
 
-			playerCorrection[player.id].s = player.last_input_seq;
+			if (!player.smartphoneConnected) {
+				playerCorrection[player.id].s = player.last_input_seq;
+			}
 
 			if (player.gainedBonus === true) {
 				playerCorrection[player.id].g = true;
