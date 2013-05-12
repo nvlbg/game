@@ -38,7 +38,7 @@ var StatsManager = {
 				return;
 			}
 
-			switch(user.kills) {
+			switch(user[0].kills) {
 				case 10:
 					player.socket.emit(Game.TYPE.ACHIEVEMENT_UNLOCKED, {
 						title: 'Kills',
@@ -91,7 +91,7 @@ var StatsManager = {
 				return;
 			}
 
-			if (player.metaStats.killStreak > user.highest_killstreak) {
+			if (player.metaStats.killStreak > user[0].highest_killstreak) {
 				db.users.update({_id:player.mongoId},
 								{ $set: {highest_killstreak:player.metaStats.killStreak} },
 								function(err, updated) {
@@ -127,7 +127,7 @@ var StatsManager = {
 				return;
 			}
 
-			if (timePlayed > user.longest_time_played) {
+			if (timePlayed > user[0].longest_time_played) {
 				db.users.update({_id:player.mongoId},
 								{ $set: {longest_time_played: timePlayed} },
 								this.onError);
@@ -148,7 +148,8 @@ var StatsManager = {
 				return;
 			}
 
-			if (user.smartphone_used === true) {
+			if (user[0].smartphone_used === true) {
+				console.log("yesssssssss");
 				return;
 			}
 
@@ -174,7 +175,7 @@ var StatsManager = {
 
 		db.users.find({_id:player.mongoId}, function(err, user) {
 			if (user && user.kills) {
-				return user.kills;
+				return user[0].kills;
 			}
 			return -1;
 		});
@@ -186,7 +187,7 @@ var StatsManager = {
 		}
 
 		db.users.find({_id:player.mongoId}, function(err, user) {
-			if (user && user.deaths) {
+			if (user && user[0].deaths) {
 				return user.deaths;
 			}
 			return -1;
@@ -199,8 +200,8 @@ var StatsManager = {
 		}
 
 		db.users.find({_id:player.mongoId}, function(err, user) {
-			if (user && user.highest_killstreak) {
-				return Math.max(user.highest_killstreak, player.metaStats.killStreak);
+			if (user && user[0].highest_killstreak) {
+				return Math.max(user[0].highest_killstreak, player.metaStats.killStreak);
 			}
 			return -1;
 		});
@@ -214,8 +215,8 @@ var StatsManager = {
 		var sessionDuration = new Date().getTime() - player.metaStats.startTime;
 
 		db.users.find({_id:player.mongoId}, function(err, user) {
-			if (user && user.time_played) {
-				return user.time_played + sessionDuration;
+			if (user && user[0].time_played) {
+				return user[0].time_played + sessionDuration;
 			}
 			return -1;
 		});
@@ -229,8 +230,8 @@ var StatsManager = {
 		var sessionDuration = new Date().getTime() - player.metaStats.startTime;
 
 		db.users.find({_id:player.mongoId}, function(err, user) {
-			if (user && user.longest_time_played) {
-				return Math.max(user.longest_time_played, sessionDuration);
+			if (user && user[0].longest_time_played) {
+				return Math.max(user[0].longest_time_played, sessionDuration);
 			}
 			return -1;
 		});
@@ -242,8 +243,8 @@ var StatsManager = {
 		}
 
 		db.users.find({_id:player.mongoId}, function(err, user) {
-			if (user && user.smartphone_used) {
-				return user.smartphone_used;
+			if (user && user[0].smartphone_used) {
+				return user[0].smartphone_used;
 			}
 			return -1;
 		});
