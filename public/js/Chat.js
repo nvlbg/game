@@ -48,7 +48,7 @@
 			this.msg_box.append( 
 								  $(
 									'<p class="' + cls + '">' +
-									'	<span class="msg_time">[' + timestamp + ']</span>' +
+									'	<span class="msg_time">' + timestamp + '</span>' +
 									'	<span class="msg_sender">' + username + '</span>:' +
 									'	<span class="msg_message">' + msg + '</span>' +
 									'</p>'

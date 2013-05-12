@@ -3,13 +3,25 @@
 }
 
 #messages {
-	background: -webkit-linear-gradient(top, rgba(255,222,173,.5), rgba(255,228,181,.5));
+	background: -webkit-linear-gradient(top, rgba(255,255,255,.25), rgba(255,255,255,.5));
+	background: -moz-linear-gradient(top, rgba(255,255,255,.25), rgba(255,255,255,.5));
+	background: -o-linear-gradient(top, rgba(255,255,255,.25), rgba(255,255,255,.5));
+	background: -ms-linear-gradient(top, rgba(255,255,255,.25), rgba(255,255,255,.5));
+	background: linear-gradient(top, rgba(255,255,255,.25), rgba(255,255,255,.5));
 	overflow-y: auto;
+	border: 1px solid black;
 }
 
 #chat form {
 	height: 20px;
 	padding: 5px 0;
+	background: -webkit-linear-gradient(top, #3B3B3B, #2D2D2D);
+	background: -moz-linear-gradient(top, #3B3B3B, #2D2D2D);
+	background: -o-linear-gradient(top, #3B3B3B, #2D2D2D);
+	background: -ms-linear-gradient(top, #3B3B3B, #2D2D2D);
+	background: linear-gradient(top, #3B3B3B, #2D2D2D);
+	border: 1px solid black;
+	border-top: none;
 }
 
 #chat form input[type=text] {
@@ -87,9 +99,26 @@
 	background: #555;
 }
 
-/*
-<p class="message_user">
-	<span class="msg_time">09:38</span>
-	<span class="msg_sender">Guest0005</span>: <span class="msg_message">hello, there</span>
-</p>
-*/
+.message_user {
+	display: block;
+	padding: 2px;
+	margin-top: 5px;
+    padding: 0 5px;
+	font-family: AdvoCut;
+}
+
+.msg_time {
+	color: white;
+	text-shadow: 1px 1px 0 black;
+	min-width: 70px;
+}
+
+.msg_sender {
+	color: green;
+	text-shadow: 1px 1px 0 #243;
+}
+
+.msg_message {
+	color: #F0B865;
+	text-shadow: 1px 1px 0 #1F0000;
+}

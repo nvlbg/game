@@ -8,6 +8,11 @@ body {
 	src: url(../data/fonts/LCD_Solid.ttf);
 }
 
+@font-face {
+	font-family: AdvoCut;
+	src: url(../data/fonts/AdvoCut.ttf);
+}
+
 #jsapp {
 	position: relative;
 	width: 100%;

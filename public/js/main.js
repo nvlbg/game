@@ -279,6 +279,9 @@
 				} else {
 					input.removeClass('smartphone');
 				}
+
+				window.game.network.player.inputs.length = 0;
+				window.game.network.player.updates.length = 0;
 			});
 
 			// guest_btn.click();
